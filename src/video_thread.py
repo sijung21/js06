@@ -20,15 +20,19 @@ class VideoThread(QtCore.QThread):
     def run(self):
         if self.src == "":
             cap = cv2.VideoCapture(0)
+            # cap = ""
         else:
             cap = cv2.VideoCapture(self.src)
 
         while self._run_flag:
             ret, cv_img = cap.read()
+            #  cv_img = cv2.imread('image_path/v2.png')
+            #  self.update_pixmap_signal.emit(cv_img)
             if ret:
                 self.update_pixmap_signal.emit(cv_img)
+
         # shut down capture system
-        cap.release()
+        # cap.release()
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""

@@ -6,9 +6,8 @@ from PyQt5.QtCore import QPoint, QRect, Qt
 
 import cv2
 
-
 class TestRect(QLabel):
-    def __init__(self):
+    def __init__(self, QWidget:QWidget):
         super().__init__()
         self.begin = QPoint()
         self.end = QPoint()
@@ -24,6 +23,7 @@ class TestRect(QLabel):
     def mousePressEvent(self, event):
         self.begin = event.pos()
         self.end = event.pos()
+        print(self.begin)
         self.update()
 
     def mouseMoveEvent(self, event):
@@ -56,7 +56,7 @@ class TestWindow(QMainWindow):
     def test_image(self):
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
-        label = TestRect()
+        label = TestRect(self.central_widget)
         self.main_layout.addWidget(label)
         image = cv2.imread('image_path/v2.png')
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
