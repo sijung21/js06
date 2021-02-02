@@ -9,7 +9,6 @@ from PyQt5.QtCore import QPoint, QRect, Qt
 
 from video_thread import VideoThread
 from mainwindow import Ui_MainWindow
-from mouse_drag_example4 import TestRect
 
 class Js06MainWindow(Ui_MainWindow):
     def __init__(self):
@@ -23,7 +22,6 @@ class Js06MainWindow(Ui_MainWindow):
 
     def setupUi(self, MainWindow: QMainWindow):
         super().setupUi(MainWindow)
-        # self.centralwidget.paintEvent = self.paintEvent
         self.image_label.paintEvent = self.paintEvent
         self.image_label.mousePressEvent = self.mousePressEvent
         self.image_label.mouseMoveEvent = self.mouseMoveEvent
@@ -37,6 +35,7 @@ class Js06MainWindow(Ui_MainWindow):
         self.camera_name = "PNM-9030V"
         # create the video capture thread
         self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+        # webcam version
         # self.video_thread = VideoThread()
         # connect its signal to the update_image slot
         self.video_thread.update_pixmap_signal.connect(self.update_image)
@@ -46,7 +45,6 @@ class Js06MainWindow(Ui_MainWindow):
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
         self.qt_img = self.convert_cv_qt(cv_img)
-        print(type(self.qt_img))
         self.image_label.setPixmap(self.qt_img)
 
     def convert_cv_qt(self, cv_img):
@@ -65,6 +63,7 @@ class Js06MainWindow(Ui_MainWindow):
         return QPixmap.fromImage(p)
 
     def paintEvent(self, event):
+        """레이블 위에 그림을 그리는 함수, QLabel method overriding"""
         qp = QPainter(self.image_label)
         qp.drawPixmap(self.image_label.rect(), self.qt_img)
         br = QBrush(QColor(100, 10, 10, 40))
@@ -73,17 +72,19 @@ class Js06MainWindow(Ui_MainWindow):
         qp.drawRect(QRect(self.begin, self.end))
 
     def mousePressEvent(self, event):
-        """마우스 프레스 함수 오버라이드"""
+        """마우스 클릭시 발생하는 이벤트, QLabel method overriding"""
         self.begin = event.pos()
         self.end = event.pos()
         print(self.begin)
         self.image_label.update()
 
     def mouseMoveEvent(self, event):
+        """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
         self.end = event.pos()
         self.image_label.update()
 
     def mouseReleaseEvent(self, event):
+        """마우스 클릭이 떼질 때 발생하는 이벤트, QLabel method overriding"""
         self.end = event.pos()
         self.image_label.update()
         print(self.end.x(), self.end.y())
