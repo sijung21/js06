@@ -65,10 +65,13 @@ class Ui_MainWindow(object):
         self.print_label.setObjectName("print_label")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setEnabled(False)
+        self.menubar.setEnabled(True)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1920, 21))
         self.menubar.setNativeMenuBar(False)
         self.menubar.setObjectName("menubar")
+        self.menuFile = QtWidgets.QMenu(self.menubar)
+        self.menuFile.setToolTipsVisible(True)
+        self.menuFile.setObjectName("menuFile")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setEnabled(False)
@@ -76,6 +79,10 @@ class Ui_MainWindow(object):
         self.statusbar.setSizeGripEnabled(False)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.actionstart = QtWidgets.QAction(MainWindow)
+        self.actionstart.setObjectName("actionstart")
+        self.menuFile.addAction(self.actionstart)
+        self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -86,6 +93,8 @@ class Ui_MainWindow(object):
         self.capture_label.setText(_translate("MainWindow", "캡쳐이미지"))
         self.graph_label.setText(_translate("MainWindow", "기울기 그래프"))
         self.print_label.setText(_translate("MainWindow", "소산계수 및 시정 출력"))
+        self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.actionstart.setText(_translate("MainWindow", "start"))
 
 
 if __name__ == "__main__":

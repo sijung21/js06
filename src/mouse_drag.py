@@ -3,9 +3,10 @@ import sys
 
 import cv2
 import numpy as np
+import pandas as pd
 
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap
-from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel
+from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog
 from PyQt5.QtCore import QPoint, QRect, Qt
 
 from video_thread import VideoThread
@@ -24,10 +25,13 @@ class Js06MainWindow(Ui_MainWindow):
 
         self.upper_left = ()
         self.lower_right = ()
-        self.a = ()
-        self.b = ()
-        self.target_x = []
-        self.target_y = []
+        self.left_range = []
+        self.right_range = []
+        self.distance = []
+        self.target_name = []
+        self.min_x = 0
+        self.min_y = 0
+        self.leftflag = False
 
     def setupUi(self, MainWindow: QMainWindow):
         super().setupUi(MainWindow)
@@ -35,6 +39,8 @@ class Js06MainWindow(Ui_MainWindow):
         self.image_label.mousePressEvent = self.mousePressEvent
         self.image_label.mouseMoveEvent = self.mouseMoveEvent
         self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
+
+        self.actionstart.triggered.connect(self.back_capture)
 
     def ipcam_start(self):
         """Connect to webcam"""
@@ -61,19 +67,18 @@ class Js06MainWindow(Ui_MainWindow):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         self.cp_image = rgb_image.copy()
         self.img_height, self.img_width, ch = rgb_image.shape
-        # print(self.img_height, self.img_width)
         self.label_width = self.image_label.width()
         self.label_height = self.image_label.height()
         bytes_per_line = ch * self.img_width
+
         rec_color = (139, 0, 255)
-
-        if len(self.a) > 0:
-            cv2.rectangle(rgb_image, self.a, self.b, rec_color, 6)
-
         tar_color = (0, 255, 0)
-        if len(self.target_x) > 0:
-            for x, y in zip(self.target_x, self.target_y):
-                cv2.rectangle(rgb_image, (x-10, y-10), (x+10, y+10), tar_color, 4)
+
+        if len(self.left_range) > 0:
+            for corner1, corner2 in zip(self.left_range, self.right_range):
+                cv2.rectangle(rgb_image, corner1, corner2, rec_color, 6)
+
+            cv2.rectangle(rgb_image, (self.min_x-10, self.min_y-10), (self.min_x+10, self.min_y+10), tar_color, 4)
 
         convert_to_Qt_format = QImage(rgb_image.data, self.img_width, self.img_height, bytes_per_line,
                                             QImage.Format_RGB888)
@@ -98,13 +103,20 @@ class Js06MainWindow(Ui_MainWindow):
             self.isDrawing = True
             self.begin = event.pos()
             self.end = event.pos()
-            self.upper_left = (int((self.begin.x()/self.label_width)*self.img_width), int((self.begin.y()/self.label_height)*self.img_height))
-
+            self.upper_left = (int((self.begin.x()/self.label_width)*self.img_width),
+                               int((self.begin.y()/self.label_height)*self.img_height))
             self.image_label.update()
+
+            self.leftflag = True
 
         elif event.buttons() == Qt.RightButton:
             self.isDrawing = False
-            pass
+            if len(self.left_range) > 0:
+                del self.distance[-1]
+                del self.target_name[-1]
+                del self.left_range[-1]
+                del self.right_range[-1]
+            self.leftflag = False
 
     def mouseMoveEvent(self, event):
         """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
@@ -115,14 +127,21 @@ class Js06MainWindow(Ui_MainWindow):
 
     def mouseReleaseEvent(self, event):
         """마우스 클릭이 떼질 때 발생하는 이벤트, QLabel method overriding"""
-        self.end = event.pos()
-        self.image_label.update()
-        self.lower_right = (int((self.end.x()/self.label_width)*self.img_width), int((self.end.y()/self.label_height)*self.img_height))
-        self.a = self.upper_left
-        self.b = self.lower_right
-        print("시작점: ", self.upper_left)
-        print("끝점: ", self.lower_right)
-        self.minrgb()
+        if self.leftflag == True:
+            self.end = event.pos()
+            self.image_label.update()
+            self.lower_right = (int((self.end.x()/self.label_width)*self.img_width),
+                                int((self.end.y()/self.label_height)*self.img_height))
+            self.left_range.append(self.upper_left)
+            self.right_range.append(self.lower_right)
+            print("시작점: ", self.upper_left)
+            print("끝점: ", self.lower_right)
+            text, ok = QInputDialog.getText(self.centralwidget, '거리 입력', '거리(km)')
+            if ok:
+                self.distance.append(text)
+                self.minrgb()
+                self.target_name.append("target_" + str(len(self.left_range)))
+                self.save_target()
         self.isDrawing = False
 
     def minrgb(self):
@@ -147,11 +166,40 @@ class Js06MainWindow(Ui_MainWindow):
 
         # RGB 값을 합한 뒤 가장 최솟값의 index를 추출한다.
         t_idx = np.where(sum_rgb == np.min(sum_rgb))
-        # print(t_idx[0][0] + left_x, t_idx[1][0] + up_y)
-        print(left_x, up_y, right_x, down_y)
 
-        self.target_y.append(t_idx[0][0] + up_y)
-        self.target_x.append(t_idx[1][0] + left_x)
+        self.min_y = t_idx[0][0] + up_y
+        self.min_x = t_idx[1][0] + left_x
+
+    ## Key 입력이 안되네 메서드 오버라이딩도 안된다.. 왜이럴까???
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Up:
+            print("sdsds")
+            self.back_capture()
+
+    def back_capture(self):
+        """ 소산계수를 구한 시점의 영상을 캡쳐해 레이블에 출력하는 함수"""
+
+        img_height, img_width, ch = self.cp_image.shape
+        bytes_per_line = ch * img_width
+
+        convert_to_Qt_format = QImage(self.cp_image.data, img_width, img_height, bytes_per_line,
+                                    QImage.Format_RGB888)
+
+        p = convert_to_Qt_format.scaled(self.capture_label.width(), self.capture_label.height(), Qt.IgnoreAspectRatio,
+                                        Qt.SmoothTransformation)
+        self.capture_label.setPixmap(QPixmap.fromImage(p))
+        print("전체 캡쳐")
+
+    def save_target(self):
+        """Save the target information for each camera."""
+        if self.left_range:
+            col = ["target_name", "left_range", "right_range", "distance"]
+            result = pd.DataFrame(columns=col)
+            result["target_name"] = self.target_name
+            result["left_range"] = self.left_range
+            result["right_range"] = self.right_range
+            result["distance"] = self.distance
+            result.to_csv("target_df.csv", mode="w", index=False)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
