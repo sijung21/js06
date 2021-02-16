@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayo
 from PyQt5.QtCore import QPoint, QRect, Qt
 
 from video_thread import VideoThread
+from curved import CurvedThread
 from mainwindow import Ui_MainWindow
 
 class Js06MainWindow(Ui_MainWindow):
@@ -22,6 +23,7 @@ class Js06MainWindow(Ui_MainWindow):
         self.end = QPoint()
         self.qt_img = QPixmap()
         self.isDrawing = True
+        self.curved_thread = None
 
         self.upper_left = ()
         self.lower_right = ()
@@ -29,8 +31,8 @@ class Js06MainWindow(Ui_MainWindow):
         self.right_range = []
         self.distance = []
         self.target_name = []
-        self.min_x = 0
-        self.min_y = 0
+        self.min_x = []
+        self.min_y = []
         self.min_xy = ()
         self.leftflag = False
 
@@ -119,6 +121,7 @@ class Js06MainWindow(Ui_MainWindow):
                 del self.target_name[-1]
                 del self.left_range[-1]
                 del self.right_range[-1]
+                # self.min_xy
             self.leftflag = False
 
     def mouseMoveEvent(self, event):
@@ -171,11 +174,24 @@ class Js06MainWindow(Ui_MainWindow):
         print("소산계수 좌표 출력")
         result = ()
         cnt = 1
+        self.min_x = []
+        self.min_y = []
 
         for upper_left, lower_right in zip(self.left_range, self.right_range):
             result = self.minrgb(upper_left, lower_right)
             print(f"target{cnt}의 소산계수 검출용 픽셀위치 =  ", result)
+            self.min_x.append(result[0])
+            self.min_y.append(result[1])
             cnt += 1
+
+        self.get_rgb()
+
+        self.curved_thread = CurvedThread(self.camera_name)
+        self.curved_thread.update_alpha_signal.connect(self.what)
+        self.curved_thread.run()
+
+    def what(self, alpha1, alpha2):
+        print(alpha1, alpha2)
 
     def minrgb(self, upper_left, lower_right):
         """드래그한 영역의 RGB 최솟값을 추출한다"""
@@ -201,10 +217,23 @@ class Js06MainWindow(Ui_MainWindow):
         # RGB 값을 합한 뒤 가장 최솟값의 index를 추출한다.
         t_idx = np.where(sum_rgb == np.min(sum_rgb))
 
-        min_y = t_idx[0][0] + up_y
-        min_x = t_idx[1][0] + left_x
+        show_min_y = t_idx[0][0] + up_y
+        show_min_x = t_idx[1][0] + left_x
 
-        return (min_x, min_y)
+        return (show_min_x, show_min_y)
+
+    def get_rgb(self):
+        r_list = []
+        g_list = []
+        b_list = []
+
+        for x, y in zip(self.min_x, self.min_y):
+
+            r_list.append(self.cp_image[y, x, 0])
+            g_list.append(self.cp_image[y, x, 1])
+            b_list.append(self.cp_image[y, x, 2])
+
+        self.save_rgb(r_list, g_list, b_list)
 
     def save_target(self):
         """Save the target information for each camera."""
@@ -216,6 +245,18 @@ class Js06MainWindow(Ui_MainWindow):
             result["right_range"] = self.right_range
             result["distance"] = self.distance
             result.to_csv("target_df.csv", mode="w", index=False)
+
+    def save_rgb(self, r_list, g_list, b_list):
+        """Save the rgb information for each target."""
+        if r_list:
+            col = ["target_name", "r", "g", "b", "distance"]
+            result = pd.DataFrame(columns=col)
+            result["target_name"] = self.target_name
+            result["r"] = r_list
+            result["g"] = g_list
+            result["b"] = b_list
+            result["distance"] = self.distance
+            result.to_csv(f"{self.camera_name}_rgb.csv", mode="w", index=False)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
