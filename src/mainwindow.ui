@@ -186,6 +186,7 @@
      <bool>true</bool>
     </property>
     <addaction name="actionstart"/>
+    <addaction name="actionprint"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -206,6 +207,11 @@
   <action name="actionstart">
    <property name="text">
     <string>start</string>
+   </property>
+  </action>
+  <action name="actionprint">
+   <property name="text">
+    <string>print</string>
    </property>
   </action>
  </widget>

@@ -31,6 +31,7 @@ class Js06MainWindow(Ui_MainWindow):
         self.target_name = []
         self.min_x = 0
         self.min_y = 0
+        self.min_xy = ()
         self.leftflag = False
 
     def setupUi(self, MainWindow: QMainWindow):
@@ -41,12 +42,14 @@ class Js06MainWindow(Ui_MainWindow):
         self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
 
         self.actionstart.triggered.connect(self.back_capture)
+        self.actionprint.triggered.connect(self.minprint)
 
     def ipcam_start(self):
         """Connect to webcam"""
         if self.video_thread is not None:
             self.video_thread.stop()
-
+        #test
+        # self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.253/profile2/media.smp')
         self.camera_name = "PNM-9030V"
         # create the video capture thread
         self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
@@ -74,11 +77,11 @@ class Js06MainWindow(Ui_MainWindow):
         rec_color = (139, 0, 255)
         tar_color = (0, 255, 0)
 
-        if len(self.left_range) > 0:
+        if len(self.min_xy) > 0:
             for corner1, corner2 in zip(self.left_range, self.right_range):
                 cv2.rectangle(rgb_image, corner1, corner2, rec_color, 6)
 
-            cv2.rectangle(rgb_image, (self.min_x-10, self.min_y-10), (self.min_x+10, self.min_y+10), tar_color, 4)
+            cv2.rectangle(rgb_image, (self.min_xy[0]-10, self.min_xy[1]-10), (self.min_xy[0]+10, self.min_xy[1]+10), tar_color, 4)
 
         convert_to_Qt_format = QImage(rgb_image.data, self.img_width, self.img_height, bytes_per_line,
                                             QImage.Format_RGB888)
@@ -134,23 +137,54 @@ class Js06MainWindow(Ui_MainWindow):
                                 int((self.end.y()/self.label_height)*self.img_height))
             self.left_range.append(self.upper_left)
             self.right_range.append(self.lower_right)
-            print("시작점: ", self.upper_left)
-            print("끝점: ", self.lower_right)
             text, ok = QInputDialog.getText(self.centralwidget, '거리 입력', '거리(km)')
             if ok:
                 self.distance.append(text)
-                self.minrgb()
+                self.min_xy = self.minrgb(self.upper_left, self.lower_right)
                 self.target_name.append("target_" + str(len(self.left_range)))
                 self.save_target()
         self.isDrawing = False
 
-    def minrgb(self):
-        """드래그한 영역의 RGB 최솟값을 추출한다"""
-        up_y = min(self.upper_left[1], self.lower_right[1])
-        down_y = max(self.upper_left[1], self.lower_right[1])
+    ## Key 입력이 안되네 메서드 오버라이딩도 안된다.. 왜이럴까???
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Up:
+            print("sdsds")
+            self.back_capture()
 
-        left_x = min(self.upper_left[0], self.lower_right[0])
-        right_x = max(self.upper_left[0], self.lower_right[0])
+    def back_capture(self):
+        """소산계수를 구한 시점의 영상을 캡쳐해 레이블에 출력하는 함수"""
+
+        img_height, img_width, ch = self.cp_image.shape
+        bytes_per_line = ch * img_width
+
+        convert_to_Qt_format = QImage(self.cp_image.data, img_width, img_height, bytes_per_line,
+                                    QImage.Format_RGB888)
+
+        p = convert_to_Qt_format.scaled(self.capture_label.width(), self.capture_label.height(), Qt.IgnoreAspectRatio,
+                                        Qt.SmoothTransformation)
+        self.capture_label.setPixmap(QPixmap.fromImage(p))
+        print("전체 캡쳐")
+
+    def minprint(self):
+        """지정한 구역들에서 소산계수 산출용 픽셀을 출력하는 함수"""
+
+        print("소산계수 좌표 출력")
+        result = ()
+        cnt = 1
+
+        for upper_left, lower_right in zip(self.left_range, self.right_range):
+            result = self.minrgb(upper_left, lower_right)
+            print(f"target{cnt}의 소산계수 검출용 픽셀위치 =  ", result)
+            cnt += 1
+
+    def minrgb(self, upper_left, lower_right):
+        """드래그한 영역의 RGB 최솟값을 추출한다"""
+
+        up_y = min(upper_left[1], lower_right[1])
+        down_y = max(upper_left[1], lower_right[1])
+
+        left_x = min(upper_left[0], lower_right[0])
+        right_x = max(upper_left[0], lower_right[0])
 
         test = self.cp_image[up_y:down_y, left_x:right_x, :]
 
@@ -167,28 +201,10 @@ class Js06MainWindow(Ui_MainWindow):
         # RGB 값을 합한 뒤 가장 최솟값의 index를 추출한다.
         t_idx = np.where(sum_rgb == np.min(sum_rgb))
 
-        self.min_y = t_idx[0][0] + up_y
-        self.min_x = t_idx[1][0] + left_x
+        min_y = t_idx[0][0] + up_y
+        min_x = t_idx[1][0] + left_x
 
-    ## Key 입력이 안되네 메서드 오버라이딩도 안된다.. 왜이럴까???
-    def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Up:
-            print("sdsds")
-            self.back_capture()
-
-    def back_capture(self):
-        """ 소산계수를 구한 시점의 영상을 캡쳐해 레이블에 출력하는 함수"""
-
-        img_height, img_width, ch = self.cp_image.shape
-        bytes_per_line = ch * img_width
-
-        convert_to_Qt_format = QImage(self.cp_image.data, img_width, img_height, bytes_per_line,
-                                    QImage.Format_RGB888)
-
-        p = convert_to_Qt_format.scaled(self.capture_label.width(), self.capture_label.height(), Qt.IgnoreAspectRatio,
-                                        Qt.SmoothTransformation)
-        self.capture_label.setPixmap(QPixmap.fromImage(p))
-        print("전체 캡쳐")
+        return (min_x, min_y)
 
     def save_target(self):
         """Save the target information for each camera."""

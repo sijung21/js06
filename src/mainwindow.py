@@ -81,7 +81,10 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.actionstart = QtWidgets.QAction(MainWindow)
         self.actionstart.setObjectName("actionstart")
+        self.actionprint = QtWidgets.QAction(MainWindow)
+        self.actionprint.setObjectName("actionprint")
         self.menuFile.addAction(self.actionstart)
+        self.menuFile.addAction(self.actionprint)
         self.menubar.addAction(self.menuFile.menuAction())
 
         self.retranslateUi(MainWindow)
@@ -95,6 +98,7 @@ class Ui_MainWindow(object):
         self.print_label.setText(_translate("MainWindow", "소산계수 및 시정 출력"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionstart.setText(_translate("MainWindow", "start"))
+        self.actionprint.setText(_translate("MainWindow", "print"))
 
 
 if __name__ == "__main__":
