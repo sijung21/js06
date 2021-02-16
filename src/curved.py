@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 class CurvedThread(QtCore.QThread):
@@ -26,9 +26,14 @@ class CurvedThread(QtCore.QThread):
         self.hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
         self.hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
 
-        hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r)
-        hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g)
-        hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b)
+        try:
+            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r)
+            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g)
+            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b)
+
+        except Exception as e:
+            print("error msg: ", e)
+            return
 
         hanhwa_err_r = np.sqrt(np.diag(hanhwa_cov_r))
         hanhwa_err_g = np.sqrt(np.diag(hanhwa_cov_g))
@@ -41,6 +46,20 @@ class CurvedThread(QtCore.QThread):
         print(f"Blue channel: {self.extcoeff_to_vis(hanhwa_opt_b[2], hanhwa_err_b[2], 3)} km")
 
         self.update_alpha_signal.emit(hanhwa_opt_r[2], hanhwa_err_r[2])
+
+        plt.figure(figsize=(13,8))
+        plt.plot(self.hanhwa_dist, self.hanhwa_r, '.', c='red')
+        plt.plot(self.hanhwa_dist, self.hanhwa_g, '.', c='green')
+        plt.plot(self.hanhwa_dist, self.hanhwa_b, '.', c='blue')
+        plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_r), label='Red', c='red')
+        plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_g), label='Green', c='green')
+        plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_b), label='Blue', c='blue')
+        plt.xlabel('Distance (km)')
+        plt.ylabel('Amplitude')
+        plt.legend(prop={'size': 20})
+        plt.title(self.cam_name)
+        plt.grid(True)
+        plt.savefig('test.png', dpi = 300)
 
     def func(self, x, c1, c2, a):
         return c2 + (c1 - c2) * np.exp(-a * x)
@@ -62,19 +81,6 @@ class CurvedThread(QtCore.QThread):
     def extcoeff_to_vis(self, optimal, error, coeff=3.291):
         return coeff / (optimal + np.array((1, 0, -1)) * error)
 
-
-# plt.figure(figsize=(13,8))
-# plt.plot(hanhwa_dist, hanhwa_r, '.', c='red')
-# plt.plot(hanhwa_dist, hanhwa_g, '.', c='green')
-# plt.plot(hanhwa_dist, hanhwa_b, '.', c='blue')
-# plt.plot(hanhwa_x, func(hanhwa_x, *hanhwa_opt_r), label='Red', c='red')
-# plt.plot(hanhwa_x, func(hanhwa_x, *hanhwa_opt_g), label='Green', c='green')
-# plt.plot(hanhwa_x, func(hanhwa_x, *hanhwa_opt_b), label='Blue', c='blue')
-# plt.xlabel('Distance (km)')
-# plt.ylabel('Amplitude')
-# plt.legend(prop={'size': 20})
-# plt.title(title)
-# plt.grid(True)
 
 
 

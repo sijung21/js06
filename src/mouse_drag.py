@@ -190,8 +190,17 @@ class Js06MainWindow(Ui_MainWindow):
         self.curved_thread.update_alpha_signal.connect(self.what)
         self.curved_thread.run()
 
-    def what(self, alpha1, alpha2):
-        print(alpha1, alpha2)
+        graph_image = cv2.imread("test.png")
+
+        img_height, img_width, ch = graph_image.shape
+        bytes_per_line = ch * img_width
+
+        convert_to_Qt_format = QImage(graph_image.data, img_width, img_height, bytes_per_line,
+                                    QImage.Format_RGB888)
+
+        p = convert_to_Qt_format.scaled(self.graph_label.width(), self.graph_label.height(), Qt.IgnoreAspectRatio,
+                                        Qt.SmoothTransformation)
+        self.graph_label.setPixmap(QPixmap.fromImage(p))
 
     def minrgb(self, upper_left, lower_right):
         """드래그한 영역의 RGB 최솟값을 추출한다"""
@@ -235,17 +244,6 @@ class Js06MainWindow(Ui_MainWindow):
 
         self.save_rgb(r_list, g_list, b_list)
 
-    def save_target(self):
-        """Save the target information for each camera."""
-        if self.left_range:
-            col = ["target_name", "left_range", "right_range", "distance"]
-            result = pd.DataFrame(columns=col)
-            result["target_name"] = self.target_name
-            result["left_range"] = self.left_range
-            result["right_range"] = self.right_range
-            result["distance"] = self.distance
-            result.to_csv("target_df.csv", mode="w", index=False)
-
     def save_rgb(self, r_list, g_list, b_list):
         """Save the rgb information for each target."""
         if r_list:
@@ -257,6 +255,22 @@ class Js06MainWindow(Ui_MainWindow):
             result["b"] = b_list
             result["distance"] = self.distance
             result.to_csv(f"{self.camera_name}_rgb.csv", mode="w", index=False)
+
+    def what(self, alpha1: float = 0.0, alpha2: float = 0.0):
+        print(alpha1, alpha2)
+
+    def save_target(self):
+        """Save the target information for each camera."""
+        if self.left_range:
+            col = ["target_name", "left_range", "right_range", "distance"]
+            result = pd.DataFrame(columns=col)
+            result["target_name"] = self.target_name
+            result["left_range"] = self.left_range
+            result["right_range"] = self.right_range
+            result["distance"] = self.distance
+            result.to_csv("target_df.csv", mode="w", index=False)
+
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

@@ -1,7 +1,7 @@
 target_name,r,g,b,distance
-target_1,9,16,12,1
-target_2,132,130,127,2
-target_3,117,117,113,3
-target_4,116,118,116,4
-target_5,144,140,138,5
-target_6,144,140,138,6
+target_1,35,48,66,4
+target_2,35,50,88,5
+target_3,74,81,101,6
+target_4,12,23,34,2
+target_5,1,19,33,1
+target_6,26,38,59,7
