@@ -1,5 +1,6 @@
 
 import sys
+import os
 
 import cv2
 import numpy as np
@@ -7,7 +8,7 @@ import pandas as pd
 
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap
 from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog
-from PyQt5.QtCore import QPoint, QRect, Qt
+from PyQt5.QtCore import QPoint, QRect, Qt, QRectF
 
 from video_thread import VideoThread
 from curved import CurvedThread
@@ -18,11 +19,11 @@ class Js06MainWindow(Ui_MainWindow):
         super().__init__()
         self.camera_name = ""
         self.video_thread = None
-        self.ipcam_start()
+        # self.ipcam_start()
         self.begin = QPoint()
         self.end = QPoint()
         self.qt_img = QPixmap()
-        self.isDrawing = True
+        self.isDrawing = False
         self.curved_thread = None
 
         self.upper_left = ()
@@ -35,6 +36,9 @@ class Js06MainWindow(Ui_MainWindow):
         self.min_y = []
         self.min_xy = ()
         self.leftflag = False
+        self.rightflag = False
+
+        self.capture_start()
 
     def setupUi(self, MainWindow: QMainWindow):
         super().setupUi(MainWindow)
@@ -43,7 +47,7 @@ class Js06MainWindow(Ui_MainWindow):
         self.image_label.mouseMoveEvent = self.mouseMoveEvent
         self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
 
-        self.actionstart.triggered.connect(self.back_capture)
+        self.actionstart.triggered.connect(self.capture_start)
         self.actionprint.triggered.connect(self.minprint)
 
     def ipcam_start(self):
@@ -62,6 +66,19 @@ class Js06MainWindow(Ui_MainWindow):
         # start the thread
         self.video_thread.start()
 
+    def capture_start(self):
+        if self.video_thread is not None:
+            self.video_thread.stop()
+
+        self.bgrfilter = True
+        self.camera_name = "PNM-9030V"
+        self.get_target(self.camera_name)
+        # create the video capture thread
+        self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+        self.video_thread.update_pixmap_signal.connect(self.update_image)
+        # start the thread
+        self.video_thread.start()
+
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
         self.qt_img = self.convert_cv_qt(cv_img)
@@ -69,8 +86,12 @@ class Js06MainWindow(Ui_MainWindow):
 
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
-        rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        self.cp_image = rgb_image.copy()
+        if self.bgrfilter:
+            rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+            self.cp_image = rgb_image.copy()
+        else:
+            rgb_image = self.cp_image.copy()
+
         self.img_height, self.img_width, ch = rgb_image.shape
         self.label_width = self.image_label.width()
         self.label_height = self.image_label.height()
@@ -79,16 +100,19 @@ class Js06MainWindow(Ui_MainWindow):
         rec_color = (139, 0, 255)
         tar_color = (0, 255, 0)
 
+        for corner1, corner2 in zip(self.left_range, self.right_range):
+            cv2.rectangle(rgb_image, corner1, corner2, rec_color, 6)
         if len(self.min_xy) > 0:
-            for corner1, corner2 in zip(self.left_range, self.right_range):
-                cv2.rectangle(rgb_image, corner1, corner2, rec_color, 6)
-
             cv2.rectangle(rgb_image, (self.min_xy[0]-10, self.min_xy[1]-10), (self.min_xy[0]+10, self.min_xy[1]+10), tar_color, 4)
+
+        self.last_image = rgb_image.copy()
 
         convert_to_Qt_format = QImage(rgb_image.data, self.img_width, self.img_height, bytes_per_line,
                                             QImage.Format_RGB888)
         p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.KeepAspectRatio,
                                         Qt.SmoothTransformation)
+        self.bgrfilter = False
+
         return QPixmap.fromImage(p)
 
     def paintEvent(self, event):
@@ -101,6 +125,23 @@ class Js06MainWindow(Ui_MainWindow):
             qp.setBrush(br)
             qp.setPen(QPen(Qt.red, 2, Qt.SolidLine))
             qp.drawRect(QRect(self.begin, self.end))
+            # test = QPixmap.fromImage(self.cp_image)
+            th_x, th_y = self.tumbnailed_pos(self.end)
+            test = self.tumbnailed(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
+            qp.drawPixmap(QRectF(0, 0, 70, 40), test, QRectF(0, 0, 70, 40))
+
+    def tumbnailed_pos(self, end_pos):
+        x = int((end_pos.x()/self.label_width)*self.img_width)
+        y = int((end_pos.y()/self.label_height)*self.img_height)
+        print(x, y)
+        return x, y
+
+    def tumbnailed(self, image):
+        print(image.shape)
+        height, width, channel = image.shape
+        bytesPerLine = channel * width
+        qImg = QImage(image.data.tobytes(), width, height, bytesPerLine, QImage.Format_RGB888)
+        return qImg
 
     def mousePressEvent(self, event):
         """마우스 클릭시 발생하는 이벤트, QLabel method overriding"""
@@ -113,6 +154,7 @@ class Js06MainWindow(Ui_MainWindow):
             self.image_label.update()
 
             self.leftflag = True
+            self.rightflag = False
 
         elif event.buttons() == Qt.RightButton:
             self.isDrawing = False
@@ -121,7 +163,7 @@ class Js06MainWindow(Ui_MainWindow):
                 del self.target_name[-1]
                 del self.left_range[-1]
                 del self.right_range[-1]
-                # self.min_xy
+                self.rightflag = True
             self.leftflag = False
 
     def mouseMoveEvent(self, event):
@@ -146,6 +188,11 @@ class Js06MainWindow(Ui_MainWindow):
                 self.min_xy = self.minrgb(self.upper_left, self.lower_right)
                 self.target_name.append("target_" + str(len(self.left_range)))
                 self.save_target()
+                self.update_image(self.last_image)
+
+        if self.rightflag:
+            self.update_image(self.last_image)
+
         self.isDrawing = False
 
     ## Key 입력이 안되네 메서드 오버라이딩도 안된다.. 왜이럴까???
@@ -268,9 +315,24 @@ class Js06MainWindow(Ui_MainWindow):
             result["left_range"] = self.left_range
             result["right_range"] = self.right_range
             result["distance"] = self.distance
-            result.to_csv("target_df.csv", mode="w", index=False)
+            result.to_csv(f"{self.camera_name}.csv", mode="w", index=False)
 
+    def get_target(self, camera_name: str):
+        """특정 카메라의 타겟 정보들을 불러온다."""
+        if os.path.isfile(f"{camera_name}.csv"):
+            target_df = pd.read_csv(f"{camera_name}.csv")
+            self.target_name = target_df["target_name"].tolist()
+            self.left_range = target_df["left_range"].tolist()
+            self.left_range = self.str_to_tuple(self.left_range)
+            self.right_range = target_df["right_range"].tolist()
+            self.right_range = self.str_to_tuple(self.right_range)
+            self.distance = target_df["distance"].tolist()
 
+    def str_to_tuple(self, before_list):
+        """저장된 타겟들의 위치정보인 튜플 리스트가 문자열로 바뀌어 다시 튜플형태로 변환하는 함수"""
+        tuple_list = [i.split(',') for i in before_list]
+        tuple_list = [(int(i[0][1:]), int(i[1][:-1])) for i in tuple_list]
+        return tuple_list
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

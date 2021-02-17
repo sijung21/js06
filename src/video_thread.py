@@ -24,7 +24,7 @@ class VideoThread(QtCore.QThread):
         else:
             cap = cv2.VideoCapture(self.src)
 
-        while self._run_flag:
+        if self._run_flag:
             ret, cv_img = cap.read()
             #  cv_img = cv2.imread('image_path/v2.png')
             #  self.update_pixmap_signal.emit(cv_img)
