@@ -125,19 +125,18 @@ class Js06MainWindow(Ui_MainWindow):
             qp.setBrush(br)
             qp.setPen(QPen(Qt.red, 2, Qt.SolidLine))
             qp.drawRect(QRect(self.begin, self.end))
-            # test = QPixmap.fromImage(self.cp_image)
-            th_x, th_y = self.tumbnailed_pos(self.end)
-            test = self.tumbnailed(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
-            qp.drawPixmap(QRectF(0, 0, 70, 40), test, QRectF(0, 0, 70, 40))
+            # 썸네일 만들기
+            th_x, th_y = self.thumbnail_pos(self.end)
+            th_qimage = self.thumbnail(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
+            thumbnail_image = QPixmap.fromImage(th_qimage)
+            qp.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), tumbnail_image)
 
-    def tumbnailed_pos(self, end_pos):
+    def thumbnail_pos(self, end_pos):
         x = int((end_pos.x()/self.label_width)*self.img_width)
         y = int((end_pos.y()/self.label_height)*self.img_height)
-        print(x, y)
         return x, y
 
-    def tumbnailed(self, image):
-        print(image.shape)
+    def thumbnail(self, image):
         height, width, channel = image.shape
         bytesPerLine = channel * width
         qImg = QImage(image.data.tobytes(), width, height, bytesPerLine, QImage.Format_RGB888)
