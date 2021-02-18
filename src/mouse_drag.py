@@ -1,6 +1,7 @@
 
 import sys
 import os
+import time
 
 import cv2
 import numpy as np
@@ -212,10 +213,18 @@ class Js06MainWindow(Ui_MainWindow):
     def keyPressEvent(self, e):
         if e.key() == Qt.Key_Up:
             print("sdsds")
-            self.back_capture()
+            # self.back_capture()
 
-    def back_capture(self):
+    def back_capture(self, epoch):
         """소산계수를 구한 시점의 영상을 캡쳐해 레이블에 출력하는 함수"""
+
+        try:
+            save_path = os.path.join(f"image/{self.camera_name}")
+            os.mkdir(save_path)
+        except Exception as e:
+            pass
+
+        cv2.imwrite(f"{save_path}/{epoch}.png", self.cp_image)
 
         img_height, img_width, ch = self.cp_image.shape
         bytes_per_line = ch * img_width
@@ -231,6 +240,7 @@ class Js06MainWindow(Ui_MainWindow):
     def minprint(self):
         """지정한 구역들에서 소산계수 산출용 픽셀을 출력하는 함수"""
 
+        epoch = time.strftime("%Y%m%d%H%M", time.localtime(time.time()))
         print("소산계수 좌표 출력")
         result = ()
         cnt = 1
@@ -250,6 +260,8 @@ class Js06MainWindow(Ui_MainWindow):
         self.curved_thread.update_alpha_signal.connect(self.what)
         self.curved_thread.run()
 
+        self.back_capture(epoch)
+
         graph_image = cv2.imread("test.png")
 
         img_height, img_width, ch = graph_image.shape
@@ -260,6 +272,7 @@ class Js06MainWindow(Ui_MainWindow):
 
         p = convert_to_Qt_format.scaled(self.graph_label.width(), self.graph_label.height(), Qt.IgnoreAspectRatio,
                                         Qt.SmoothTransformation)
+
         self.graph_label.setPixmap(QPixmap.fromImage(p))
 
     def minrgb(self, upper_left, lower_right):
