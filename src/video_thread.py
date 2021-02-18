@@ -32,7 +32,7 @@ class VideoThread(QtCore.QThread):
                 self.update_pixmap_signal.emit(cv_img)
 
         # shut down capture system
-        # cap.release()
+        cap.release()
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""

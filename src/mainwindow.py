@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mainwindow.ui'
+# Form implementation generated from reading ui file 'MainWindow.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -72,6 +72,10 @@ class Ui_MainWindow(object):
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setToolTipsVisible(True)
         self.menuFile.setObjectName("menuFile")
+        self.menustart = QtWidgets.QMenu(self.menuFile)
+        self.menustart.setObjectName("menustart")
+        self.menuMethod = QtWidgets.QMenu(self.menubar)
+        self.menuMethod.setObjectName("menuMethod")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setEnabled(False)
@@ -79,13 +83,25 @@ class Ui_MainWindow(object):
         self.statusbar.setSizeGripEnabled(False)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.actionstart = QtWidgets.QAction(MainWindow)
-        self.actionstart.setObjectName("actionstart")
-        self.actionprint = QtWidgets.QAction(MainWindow)
-        self.actionprint.setObjectName("actionprint")
-        self.menuFile.addAction(self.actionstart)
-        self.menuFile.addAction(self.actionprint)
+        self.actionupdate = QtWidgets.QAction(MainWindow)
+        self.actionupdate.setObjectName("actionupdate")
+        self.actionPNM_9030V = QtWidgets.QAction(MainWindow)
+        self.actionPNM_9030V.setObjectName("actionPNM_9030V")
+        self.actionQNO_8020R = QtWidgets.QAction(MainWindow)
+        self.actionQNO_8020R.setObjectName("actionQNO_8020R")
+        self.actionWebcam = QtWidgets.QAction(MainWindow)
+        self.actionWebcam.setObjectName("actionWebcam")
+        self.actionPrint = QtWidgets.QAction(MainWindow)
+        self.actionPrint.setObjectName("actionPrint")
+        self.menustart.addSeparator()
+        self.menustart.addAction(self.actionPNM_9030V)
+        self.menustart.addAction(self.actionQNO_8020R)
+        self.menustart.addAction(self.actionWebcam)
+        self.menuFile.addAction(self.menustart.menuAction())
+        self.menuFile.addAction(self.actionupdate)
+        self.menuMethod.addAction(self.actionPrint)
         self.menubar.addAction(self.menuFile.menuAction())
+        self.menubar.addAction(self.menuMethod.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -97,8 +113,13 @@ class Ui_MainWindow(object):
         self.graph_label.setText(_translate("MainWindow", "기울기 그래프"))
         self.print_label.setText(_translate("MainWindow", "소산계수 및 시정 출력"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
-        self.actionstart.setText(_translate("MainWindow", "start"))
-        self.actionprint.setText(_translate("MainWindow", "print"))
+        self.menustart.setTitle(_translate("MainWindow", "Camera"))
+        self.menuMethod.setTitle(_translate("MainWindow", "Method"))
+        self.actionupdate.setText(_translate("MainWindow", "Update"))
+        self.actionPNM_9030V.setText(_translate("MainWindow", "PNM-9030V"))
+        self.actionQNO_8020R.setText(_translate("MainWindow", "QNO-8020R"))
+        self.actionWebcam.setText(_translate("MainWindow", "Webcam"))
+        self.actionPrint.setText(_translate("MainWindow", "Print"))
 
 
 if __name__ == "__main__":

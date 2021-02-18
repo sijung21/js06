@@ -37,8 +37,7 @@ class Js06MainWindow(Ui_MainWindow):
         self.min_xy = ()
         self.leftflag = False
         self.rightflag = False
-
-        self.capture_start()
+        self.create_dir()
 
     def setupUi(self, MainWindow: QMainWindow):
         super().setupUi(MainWindow)
@@ -47,34 +46,45 @@ class Js06MainWindow(Ui_MainWindow):
         self.image_label.mouseMoveEvent = self.mouseMoveEvent
         self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
 
-        self.actionstart.triggered.connect(self.capture_start)
-        self.actionprint.triggered.connect(self.minprint)
+        self.actionPNM_9030V.triggered.connect(lambda: self.capture_start("PNM-9030V"))
+        self.actionQNO_8020R.triggered.connect(lambda: self.capture_start("QNO-8020R"))
+        self.actionWebcam.triggered.connect(lambda: self.capture_start("Webcam"))
+        self.actionupdate.triggered.connect(lambda: self.capture_start(self.camera_name))
+        self.actionPrint.triggered.connect(self.minprint)
 
-    def ipcam_start(self):
-        """Connect to webcam"""
-        if self.video_thread is not None:
-            self.video_thread.stop()
-        #test
-        # self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.253/profile2/media.smp')
-        self.camera_name = "PNM-9030V"
-        # create the video capture thread
-        self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
-        # webcam version
-        # self.video_thread = VideoThread()
-        # connect its signal to the update_image slot
-        self.video_thread.update_pixmap_signal.connect(self.update_image)
-        # start the thread
-        self.video_thread.start()
+    def create_dir(self):
+        """정보를 저장할 폴더(경로)들을 만든다."""
+        folder_name = ["target", "image", "extinction"]
 
-    def capture_start(self):
+        for f_name in folder_name:
+            try:
+                os.mkdir(f_name)
+                print(f"{f_name} 폴더를 생성했습니다.")
+            except Exception as e:
+                pass
+
+    def capture_start(self, camera_name: str):
         if self.video_thread is not None:
             self.video_thread.stop()
 
         self.bgrfilter = True
-        self.camera_name = "PNM-9030V"
+        self.camera_name = camera_name
         self.get_target(self.camera_name)
+
         # create the video capture thread
-        self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+        # hanhwa panorama camera start
+        if camera_name == "PNM-9030V":
+            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+
+        # hanhwa camera start
+        elif camera_name == "QNO-8020R":
+            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.253/profile2/media.smp')
+
+        # webcam start
+        else:
+            self.video_thread = VideoThread()
+
+        # connect its signal to the update_image slot
         self.video_thread.update_pixmap_signal.connect(self.update_image)
         # start the thread
         self.video_thread.start()
@@ -129,7 +139,7 @@ class Js06MainWindow(Ui_MainWindow):
             th_x, th_y = self.thumbnail_pos(self.end)
             th_qimage = self.thumbnail(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
             thumbnail_image = QPixmap.fromImage(th_qimage)
-            qp.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), tumbnail_image)
+            qp.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), thumbnail_image)
 
     def thumbnail_pos(self, end_pos):
         x = int((end_pos.x()/self.label_width)*self.img_width)
@@ -144,6 +154,8 @@ class Js06MainWindow(Ui_MainWindow):
 
     def mousePressEvent(self, event):
         """마우스 클릭시 발생하는 이벤트, QLabel method overriding"""
+
+        # 좌 클릭시 실행
         if event.buttons() == Qt.LeftButton:
             self.isDrawing = True
             self.begin = event.pos()
@@ -155,6 +167,7 @@ class Js06MainWindow(Ui_MainWindow):
             self.leftflag = True
             self.rightflag = False
 
+        # 우 클릭시 실행
         elif event.buttons() == Qt.RightButton:
             self.isDrawing = False
             if len(self.left_range) > 0:
@@ -162,6 +175,7 @@ class Js06MainWindow(Ui_MainWindow):
                 del self.target_name[-1]
                 del self.left_range[-1]
                 del self.right_range[-1]
+                self.save_target()
                 self.rightflag = True
             self.leftflag = False
 
@@ -307,6 +321,13 @@ class Js06MainWindow(Ui_MainWindow):
 
     def save_target(self):
         """Save the target information for each camera."""
+        try:
+            save_path = os.path.join(f"target/{self.camera_name}")
+            os.mkdir(save_path)
+
+        except Exception as e:
+            pass
+
         if self.left_range:
             col = ["target_name", "left_range", "right_range", "distance"]
             result = pd.DataFrame(columns=col)
@@ -314,12 +335,15 @@ class Js06MainWindow(Ui_MainWindow):
             result["left_range"] = self.left_range
             result["right_range"] = self.right_range
             result["distance"] = self.distance
-            result.to_csv(f"{self.camera_name}.csv", mode="w", index=False)
+            result.to_csv(f"{save_path}/{self.camera_name}.csv", mode="w", index=False)
 
     def get_target(self, camera_name: str):
         """특정 카메라의 타겟 정보들을 불러온다."""
-        if os.path.isfile(f"{camera_name}.csv"):
-            target_df = pd.read_csv(f"{camera_name}.csv")
+
+        save_path = os.path.join(f"target/{self.camera_name}")
+
+        if os.path.isfile(f"{save_path}/{camera_name}.csv"):
+            target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
             self.target_name = target_df["target_name"].tolist()
             self.left_range = target_df["left_range"].tolist()
             self.left_range = self.str_to_tuple(self.left_range)

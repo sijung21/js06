@@ -185,10 +185,26 @@
     <property name="toolTipsVisible">
      <bool>true</bool>
     </property>
-    <addaction name="actionstart"/>
-    <addaction name="actionprint"/>
+    <widget class="QMenu" name="menustart">
+     <property name="title">
+      <string>Camera</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="actionPNM_9030V"/>
+     <addaction name="actionQNO_8020R"/>
+     <addaction name="actionWebcam"/>
+    </widget>
+    <addaction name="menustart"/>
+    <addaction name="actionupdate"/>
+   </widget>
+   <widget class="QMenu" name="menuMethod">
+    <property name="title">
+     <string>Method</string>
+    </property>
+    <addaction name="actionPrint"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuMethod"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="enabled">
@@ -204,14 +220,29 @@
     <bool>false</bool>
    </property>
   </widget>
-  <action name="actionstart">
+  <action name="actionupdate">
    <property name="text">
-    <string>start</string>
+    <string>Update</string>
    </property>
   </action>
-  <action name="actionprint">
+  <action name="actionPNM_9030V">
    <property name="text">
-    <string>print</string>
+    <string>PNM-9030V</string>
+   </property>
+  </action>
+  <action name="actionQNO_8020R">
+   <property name="text">
+    <string>QNO-8020R</string>
+   </property>
+  </action>
+  <action name="actionWebcam">
+   <property name="text">
+    <string>Webcam</string>
+   </property>
+  </action>
+  <action name="actionPrint">
+   <property name="text">
+    <string>Print</string>
    </property>
   </action>
  </widget>
