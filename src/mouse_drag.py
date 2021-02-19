@@ -55,7 +55,7 @@ class Js06MainWindow(Ui_MainWindow):
 
     def create_dir(self):
         """정보를 저장할 폴더(경로)들을 만든다."""
-        folder_name = ["target", "image", "extinction"]
+        folder_name = ["target", "image", "extinction", "rgb"]
 
         for f_name in folder_name:
             try:
@@ -254,9 +254,9 @@ class Js06MainWindow(Ui_MainWindow):
             self.min_y.append(result[1])
             cnt += 1
 
-        self.get_rgb()
+        self.get_rgb(epoch)
 
-        self.curved_thread = CurvedThread(self.camera_name)
+        self.curved_thread = CurvedThread(self.camera_name, epoch)
         self.curved_thread.update_alpha_signal.connect(self.what)
         self.curved_thread.run()
 
@@ -304,7 +304,7 @@ class Js06MainWindow(Ui_MainWindow):
 
         return (show_min_x, show_min_y)
 
-    def get_rgb(self):
+    def get_rgb(self, epoch: str):
         r_list = []
         g_list = []
         b_list = []
@@ -315,10 +315,17 @@ class Js06MainWindow(Ui_MainWindow):
             g_list.append(self.cp_image[y, x, 1])
             b_list.append(self.cp_image[y, x, 2])
 
-        self.save_rgb(r_list, g_list, b_list)
+        self.save_rgb(r_list, g_list, b_list, epoch)
 
-    def save_rgb(self, r_list, g_list, b_list):
+    def save_rgb(self, r_list, g_list, b_list, epoch):
         """Save the rgb information for each target."""
+        try:
+            save_path = os.path.join(f"rgb/{self.camera_name}")
+            os.mkdir(save_path)
+
+        except Exception as e:
+            pass
+
         if r_list:
             col = ["target_name", "r", "g", "b", "distance"]
             result = pd.DataFrame(columns=col)
@@ -327,7 +334,7 @@ class Js06MainWindow(Ui_MainWindow):
             result["g"] = g_list
             result["b"] = b_list
             result["distance"] = self.distance
-            result.to_csv(f"{self.camera_name}_rgb.csv", mode="w", index=False)
+            result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
 
     def what(self, alpha1: float = 0.0, alpha2: float = 0.0):
         print(alpha1, alpha2)

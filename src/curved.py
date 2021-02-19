@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
@@ -8,7 +9,7 @@ class CurvedThread(QtCore.QThread):
     update_alpha_signal = QtCore.pyqtSignal(float, float)
     update_graph_signal = QtCore.pyqtSignal(np.ndarray)
 
-    def __init__(self, cam_name: str = ""):
+    def __init__(self, cam_name: str = "", epoch: str = ""):
         super().__init__()
         self.curved_flag = True
         self.cam_name = cam_name
@@ -17,9 +18,12 @@ class CurvedThread(QtCore.QThread):
         self.hanhwa_r = []
         self.hanhwa_g = []
         self.hanhwa_b = []
+        self.epoch = epoch
+        self.savedir = os.path.join(f"rgb/{self.cam_name}")
 
     def run(self):
-        hanhwa = pd.read_csv(f"{self.cam_name}_rgb.csv")
+        
+        hanhwa = pd.read_csv(f"{self.savedir}/{self.epoch}.csv")
         self.hanhwa_dist = hanhwa[['distance']].squeeze().to_numpy()
         self.hanhwa_x = np.linspace(self.hanhwa_dist[0], self.hanhwa_dist[-1], 100, endpoint=True)
         self.hanhwa_r = hanhwa[['r']].squeeze().to_numpy()
