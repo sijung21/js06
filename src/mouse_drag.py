@@ -7,9 +7,9 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap
-from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog
-from PyQt5.QtCore import QPoint, QRect, Qt, QRectF
+from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
+from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem
+from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize
 
 from video_thread import VideoThread
 from curved import CurvedThread
@@ -194,10 +194,10 @@ class Js06MainWindow(Ui_MainWindow):
             self.image_label.update()
             self.lower_right = (int((self.end.x()/self.label_width)*self.img_width),
                                 int((self.end.y()/self.label_height)*self.img_height))
-            self.left_range.append(self.upper_left)
-            self.right_range.append(self.lower_right)
             text, ok = QInputDialog.getText(self.centralwidget, '거리 입력', '거리(km)')
             if ok:
+                self.left_range.append(self.upper_left)
+                self.right_range.append(self.lower_right)
                 self.distance.append(text)
                 self.min_xy = self.minrgb(self.upper_left, self.lower_right)
                 self.target_name.append("target_" + str(len(self.left_range)))
@@ -257,10 +257,11 @@ class Js06MainWindow(Ui_MainWindow):
         self.get_rgb(epoch)
 
         self.curved_thread = CurvedThread(self.camera_name, epoch)
-        self.curved_thread.update_alpha_signal.connect(self.what)
+        self.curved_thread.update_extinc_signal.connect(self.extinc_print)
         self.curved_thread.run()
 
         self.back_capture(epoch)
+        self.list_test()
 
         graph_image = cv2.imread("test.png")
 
@@ -336,8 +337,22 @@ class Js06MainWindow(Ui_MainWindow):
             result["distance"] = self.distance
             result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
 
-    def what(self, alpha1: float = 0.0, alpha2: float = 0.0):
-        print(alpha1, alpha2)
+    def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0]):
+
+        self.r_c1_textbox.setPlainText(f"{c1_list[0]:.2f}")
+        self.g_c1_textbox.setPlainText(f"{c1_list[1]:.2f}")
+        self.b_c1_textbox.setPlainText(f"{c1_list[2]:.2f}")
+
+        self.r_c2_textbox.setPlainText(f"{c2_list[0]:.2f}")
+        self.g_c2_textbox.setPlainText(f"{c2_list[1]:.2f}")
+        self.b_c2_textbox.setPlainText(f"{c2_list[2]:.2f}")
+
+        self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.2f}")
+        self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.2f}")
+        self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.2f}")
+
+    # def what(self, t1: float = 0.0, t2: float = 0.0):
+    #     print(t1, t2)
 
     def save_target(self):
         """Save the target information for each camera."""
@@ -376,6 +391,34 @@ class Js06MainWindow(Ui_MainWindow):
         tuple_list = [i.split(',') for i in before_list]
         tuple_list = [(int(i[0][1:]), int(i[1][:-1])) for i in tuple_list]
         return tuple_list
+
+    def list_test(self):
+        """소산계수 검출용 이미지들을 리스트뷰에 보여주는 함수"""
+        for x, y in zip(self.min_x, self.min_y):
+
+            image = self.cp_image[y-50:y+50, x-50:x+50, :].copy()
+            cv2.rectangle(image, (40, 40), (60, 60), (255, 0, 0), 2)
+
+            image = self.cvt_cv_qpixamp(image)
+            icon_image = QIcon(image)
+            item_image = QListWidgetItem(icon_image, "")
+            item_image.setSizeHint(QSize(200, 100))
+            item_image.setTextAlignment(Qt.AlignTop)
+
+            self.imagelist.addItem(item_image)
+
+    def cvt_cv_qpixamp(self, image: np.ndarray):
+        """cv 이미지를 qpixmap으로 변환하는 함수"""
+        img_height, img_width, ch = image.shape
+        bytes_per_line = ch * img_width
+
+        convert_to_Qt_format = QImage(image.data.tobytes(), img_width, img_height,
+                                    QImage.Format_RGB888)
+
+        p = convert_to_Qt_format.scaled(self.capture_label.width(), self.capture_label.height(), Qt.IgnoreAspectRatio,
+                                        Qt.SmoothTransformation)
+
+        return QPixmap.fromImage(p)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

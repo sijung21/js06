@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 class CurvedThread(QtCore.QThread):
-    update_alpha_signal = QtCore.pyqtSignal(float, float)
-    update_graph_signal = QtCore.pyqtSignal(np.ndarray)
+    # update_extinc_signal = QtCore.pyqtSignal(float, float)
+    update_extinc_signal = QtCore.pyqtSignal(list, list, list)
 
     def __init__(self, cam_name: str = "", epoch: str = ""):
         super().__init__()
@@ -22,7 +22,7 @@ class CurvedThread(QtCore.QThread):
         self.savedir = os.path.join(f"rgb/{self.cam_name}")
 
     def run(self):
-        
+
         hanhwa = pd.read_csv(f"{self.savedir}/{self.epoch}.csv")
         self.hanhwa_dist = hanhwa[['distance']].squeeze().to_numpy()
         self.hanhwa_x = np.linspace(self.hanhwa_dist[0], self.hanhwa_dist[-1], 100, endpoint=True)
@@ -38,6 +38,21 @@ class CurvedThread(QtCore.QThread):
         except Exception as e:
             print("error msg: ", e)
             return
+        list1 = []
+        list2 = []
+        list3 = []
+
+        list1.append(hanhwa_opt_r[0])
+        list1.append(hanhwa_opt_g[0])
+        list1.append(hanhwa_opt_b[0])
+
+        list2.append(hanhwa_opt_r[1])
+        list2.append(hanhwa_opt_g[1])
+        list2.append(hanhwa_opt_b[1])
+
+        list3.append(hanhwa_opt_r[2])
+        list3.append(hanhwa_opt_g[2])
+        list3.append(hanhwa_opt_b[2])
 
         hanhwa_err_r = np.sqrt(np.diag(hanhwa_cov_r))
         hanhwa_err_g = np.sqrt(np.diag(hanhwa_cov_g))
@@ -49,7 +64,7 @@ class CurvedThread(QtCore.QThread):
         print(f"Green channel: {self.extcoeff_to_vis(hanhwa_opt_g[2], hanhwa_err_g[2], 3)} km")
         print(f"Blue channel: {self.extcoeff_to_vis(hanhwa_opt_b[2], hanhwa_err_b[2], 3)} km")
 
-        self.update_alpha_signal.emit(hanhwa_opt_r[2], hanhwa_err_r[2])
+        self.update_extinc_signal.emit(list1, list2, list3)
 
         plt.figure(figsize=(13,8))
         plt.plot(self.hanhwa_dist, self.hanhwa_r, '.', c='red')
@@ -63,7 +78,7 @@ class CurvedThread(QtCore.QThread):
         plt.legend(prop={'size': 20})
         plt.title(self.cam_name)
         plt.grid(True)
-        plt.savefig('test.png', dpi = 300)
+        plt.savefig('test.png', dpi=300)
 
     def func(self, x, c1, c2, a):
         return c2 + (c1 - c2) * np.exp(-a * x)
