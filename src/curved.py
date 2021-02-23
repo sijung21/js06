@@ -19,11 +19,11 @@ class CurvedThread(QtCore.QThread):
         self.hanhwa_g = []
         self.hanhwa_b = []
         self.epoch = epoch
-        self.savedir = os.path.join(f"rgb/{self.cam_name}")
-
+        self.rgbsavedir = os.path.join(f"rgb/{self.cam_name}")
+        self.extsavedir = os.path.join(f"extinction/{self.cam_name}")
     def run(self):
 
-        hanhwa = pd.read_csv(f"{self.savedir}/{self.epoch}.csv")
+        hanhwa = pd.read_csv(f"{self.rgbsavedir}/{self.epoch}.csv")
         self.hanhwa_dist = hanhwa[['distance']].squeeze().to_numpy()
         self.hanhwa_x = np.linspace(self.hanhwa_dist[0], self.hanhwa_dist[-1], 100, endpoint=True)
         self.hanhwa_r = hanhwa[['r']].squeeze().to_numpy()
@@ -66,6 +66,11 @@ class CurvedThread(QtCore.QThread):
 
         self.update_extinc_signal.emit(list1, list2, list3)
 
+        try:
+            os.mkdir(self.extsavedir)
+        except Exception as e:
+            pass
+
         plt.figure(figsize=(13,8))
         plt.plot(self.hanhwa_dist, self.hanhwa_r, '.', c='red')
         plt.plot(self.hanhwa_dist, self.hanhwa_g, '.', c='green')
@@ -78,7 +83,7 @@ class CurvedThread(QtCore.QThread):
         plt.legend(prop={'size': 20})
         plt.title(self.cam_name)
         plt.grid(True)
-        plt.savefig('test.png', dpi=300)
+        plt.savefig(f'{self.extsavedir}/{self.epoch}.png', dpi=300)
 
     def func(self, x, c1, c2, a):
         return c2 + (c1 - c2) * np.exp(-a * x)

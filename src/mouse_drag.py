@@ -263,7 +263,8 @@ class Js06MainWindow(Ui_MainWindow):
         self.back_capture(epoch)
         self.list_test()
 
-        graph_image = cv2.imread("test.png")
+        graph_dir = os.path.join(f"extinction/{self.camera_name}")
+        graph_image = cv2.imread(f"{graph_dir}/{epoch}.png")
 
         img_height, img_width, ch = graph_image.shape
         bytes_per_line = ch * img_width
