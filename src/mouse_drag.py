@@ -264,18 +264,20 @@ class Js06MainWindow(Ui_MainWindow):
         self.list_test()
 
         graph_dir = os.path.join(f"extinction/{self.camera_name}")
-        graph_image = cv2.imread(f"{graph_dir}/{epoch}.png")
+        
+        if os.path.isfile(f"{graph_dir}/{epoch}.png"):
+            graph_image = cv2.imread(f"{graph_dir}/{epoch}.png")
 
-        img_height, img_width, ch = graph_image.shape
-        bytes_per_line = ch * img_width
+            img_height, img_width, ch = graph_image.shape
+            bytes_per_line = ch * img_width
 
-        convert_to_Qt_format = QImage(graph_image.data, img_width, img_height, bytes_per_line,
-                                    QImage.Format_RGB888)
+            convert_to_Qt_format = QImage(graph_image.data, img_width, img_height, bytes_per_line,
+                                        QImage.Format_RGB888)
 
-        p = convert_to_Qt_format.scaled(self.graph_label.width(), self.graph_label.height(), Qt.IgnoreAspectRatio,
-                                        Qt.SmoothTransformation)
+            p = convert_to_Qt_format.scaled(self.graph_label.width(), self.graph_label.height(), Qt.IgnoreAspectRatio,
+                                            Qt.SmoothTransformation)
 
-        self.graph_label.setPixmap(QPixmap.fromImage(p))
+            self.graph_label.setPixmap(QPixmap.fromImage(p))
 
     def minrgb(self, upper_left, lower_right):
         """드래그한 영역의 RGB 최솟값을 추출한다"""

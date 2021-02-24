@@ -31,9 +31,9 @@ class CurvedThread(QtCore.QThread):
         self.hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
 
         try:
-            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r)
-            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g)
-            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b)
+            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r, maxfev=2000)
+            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g, maxfev=2000)
+            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b, maxfev=2000)
 
         except Exception as e:
             print("error msg: ", e)
