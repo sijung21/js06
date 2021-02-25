@@ -9,13 +9,13 @@ import pandas as pd
 
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem
-from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize
+from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication
 
 from video_thread import VideoThread
 from curved import CurvedThread
 from mainwindow import Ui_MainWindow
 
-class Js06MainWindow(Ui_MainWindow):
+class ND01MainWindow(Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.camera_name = ""
@@ -42,6 +42,8 @@ class Js06MainWindow(Ui_MainWindow):
 
     def setupUi(self, MainWindow: QMainWindow):
         super().setupUi(MainWindow)
+        MainWindow.setWindowFlag(Qt.FramelessWindowHint)
+        MainWindow.keyPressEvent = self.keyPressEvent
         self.image_label.paintEvent = self.paintEvent
         self.image_label.mousePressEvent = self.mousePressEvent
         self.image_label.mouseMoveEvent = self.mouseMoveEvent
@@ -209,11 +211,10 @@ class Js06MainWindow(Ui_MainWindow):
 
         self.isDrawing = False
 
-    ## Key 입력이 안되네 메서드 오버라이딩도 안된다.. 왜이럴까???
     def keyPressEvent(self, e):
-        if e.key() == Qt.Key_Up:
-            print("sdsds")
-            # self.back_capture()
+        """키 입력할 때 동작하는 함수 QMainwindow KeyPressEvent를 오버라이딩"""
+        if e.key() == Qt.Key_Escape:
+            sys.exit()
 
     def back_capture(self, epoch):
         """소산계수를 구한 시점의 영상을 캡쳐해 레이블에 출력하는 함수"""
@@ -264,7 +265,7 @@ class Js06MainWindow(Ui_MainWindow):
         self.list_test()
 
         graph_dir = os.path.join(f"extinction/{self.camera_name}")
-        
+
         if os.path.isfile(f"{graph_dir}/{epoch}.png"):
             graph_image = cv2.imread(f"{graph_dir}/{epoch}.png")
 
@@ -426,7 +427,7 @@ class Js06MainWindow(Ui_MainWindow):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     MainWindow = QMainWindow()
-    ui = Js06MainWindow()
+    ui = ND01MainWindow()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())

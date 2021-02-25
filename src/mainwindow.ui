@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1920</width>
-    <height>1024</height>
+    <height>1080</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -19,11 +19,11 @@
   <property name="maximumSize">
    <size>
     <width>1920</width>
-    <height>1024</height>
+    <height>1080</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>ND01</string>
   </property>
   <property name="statusTip">
    <string notr="true"/>
@@ -32,7 +32,7 @@
    <property name="maximumSize">
     <size>
      <width>1920</width>
-     <height>1024</height>
+     <height>1080</height>
     </size>
    </property>
    <property name="mouseTracking">
@@ -76,7 +76,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>579</y>
+      <y>620</y>
       <width>640</width>
       <height>411</height>
      </rect>
@@ -114,7 +114,7 @@
     <property name="geometry">
      <rect>
       <x>640</x>
-      <y>579</y>
+      <y>620</y>
       <width>640</width>
       <height>411</height>
      </rect>
@@ -146,7 +146,7 @@
     <property name="geometry">
      <rect>
       <x>1280</x>
-      <y>579</y>
+      <y>620</y>
       <width>640</width>
       <height>201</height>
      </rect>
@@ -192,7 +192,7 @@
     <property name="geometry">
      <rect>
       <x>1280</x>
-      <y>789</y>
+      <y>830</y>
       <width>640</width>
       <height>201</height>
      </rect>
@@ -593,7 +593,7 @@
     <property name="geometry">
      <rect>
       <x>240</x>
-      <y>555</y>
+      <y>570</y>
       <width>161</width>
       <height>20</height>
      </rect>
@@ -616,7 +616,7 @@
     <property name="geometry">
      <rect>
       <x>860</x>
-      <y>555</y>
+      <y>570</y>
       <width>171</width>
       <height>20</height>
      </rect>
@@ -639,7 +639,7 @@
     <property name="geometry">
      <rect>
       <x>1510</x>
-      <y>555</y>
+      <y>570</y>
       <width>171</width>
       <height>20</height>
      </rect>
