@@ -2,6 +2,7 @@
 import sys
 import os
 import time
+import math
 
 import cv2
 import numpy as np
@@ -52,6 +53,8 @@ class ND01MainWindow(Ui_MainWindow):
         self.actionPNM_9030V.triggered.connect(lambda: self.capture_start("PNM-9030V"))
         self.actionQNO_8020R.triggered.connect(lambda: self.capture_start("QNO-8020R"))
         self.actionWebcam.triggered.connect(lambda: self.capture_start("Webcam"))
+        self.actionRpi_Telephoto_lens.triggered.connect(lambda: self.capture_start("RPI-Telephoto-lens"))
+        self.actionRpi_noir.triggered.connect(lambda: self.capture_start("RPI-noir"))
         self.actionupdate.triggered.connect(lambda: self.capture_start(self.camera_name))
         self.actionPrint.triggered.connect(self.minprint)
 
@@ -83,6 +86,14 @@ class ND01MainWindow(Ui_MainWindow):
         elif camera_name == "QNO-8020R":
             self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.253/profile2/media.smp')
 
+        # Rasberry Pi Telephoto lens camera start
+        elif camera_name == "RPI-Telephoto-lens":
+            self.video_thread = VideoThread('rtsp://192.168.100.33:8554/test')
+
+        # Rasberry Pi No IR filter camera start
+        elif camera_name == "RPI-noir":
+            self.video_thread = VideoThread('rtsp://192.168.100.35:7224/unicast')
+
         # webcam start
         else:
             self.video_thread = VideoThread()
@@ -100,8 +111,15 @@ class ND01MainWindow(Ui_MainWindow):
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
         if self.bgrfilter:
-            rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-            self.cp_image = rgb_image.copy()
+
+            if self.camera_name == "RPI-noir":
+                self.cp_image = cv_img.copy()
+                rgb_image = cv2.cvtColor(self.cp_image.copy(), cv2.COLOR_BGR2RGB)
+
+
+            else:
+                rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+                self.cp_image = rgb_image.copy()
         else:
             rgb_image = self.cp_image.copy()
 
@@ -354,9 +372,26 @@ class ND01MainWindow(Ui_MainWindow):
         self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.2f}")
         self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.2f}")
         self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.2f}")
+        self.ae_print(alp_list[0], alp_list[1])
 
-    # def what(self, t1: float = 0.0, t2: float = 0.0):
-    #     print(t1, t2)
+    def ae_print(self, ae_r: float = 0.0, ae_g: float = 0.0):
+
+        r = round(ae_r, 2)
+        g = round(ae_g, 2)
+        r_ra = 780
+        g_ra = 550
+        l_val = round(g/r, 2)
+        r_val = round(g_ra/r_ra, 2)
+
+        print(l_val, r_val)
+        if l_val > r_val:
+            b_value = round(math.log(r_val, l_val), 2)
+        else:
+            b_value = round(math.log(l_val, r_val), 2)
+
+        # b_value = -b_value
+
+        self.ae_label_value.setText(str(b_value))
 
     def save_target(self):
         """Save the target information for each camera."""
@@ -398,6 +433,8 @@ class ND01MainWindow(Ui_MainWindow):
 
     def list_test(self):
         """소산계수 검출용 이미지들을 리스트뷰에 보여주는 함수"""
+        self.imagelist.clear()
+        cnt = 0
         for x, y in zip(self.min_x, self.min_y):
 
             image = self.cp_image[y-50:y+50, x-50:x+50, :].copy()
@@ -405,11 +442,13 @@ class ND01MainWindow(Ui_MainWindow):
 
             image = self.cvt_cv_qpixamp(image)
             icon_image = QIcon(image)
-            item_image = QListWidgetItem(icon_image, "")
-            item_image.setSizeHint(QSize(200, 100))
+            item_image = QListWidgetItem(icon_image, "target")
+            item_image.setSizeHint(QSize(200, 110))
             item_image.setTextAlignment(Qt.AlignTop)
 
             self.imagelist.addItem(item_image)
+            # self.imagelist.setItem(1, cnt, item_image)
+            cnt += 1
 
     def cvt_cv_qpixamp(self, image: np.ndarray):
         """cv 이미지를 qpixmap으로 변환하는 함수"""

@@ -95,7 +95,8 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color:rgb(255, 255, 255)</string>
+     <string notr="true">background-color:rgb(255, 255, 255);border: 1px solid black;
+</string>
     </property>
     <property name="lineWidth">
      <number>0</number>
@@ -133,7 +134,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color:rgb(255, 255, 255)</string>
+     <string notr="true">background-color:rgb(255, 255, 255);</string>
     </property>
     <property name="text">
      <string/>
@@ -151,6 +152,9 @@
       <height>201</height>
      </rect>
     </property>
+    <property name="mouseTracking">
+     <bool>false</bool>
+    </property>
     <property name="contextMenuPolicy">
      <enum>Qt::DefaultContextMenu</enum>
     </property>
@@ -163,11 +167,26 @@
     <property name="autoScrollMargin">
      <number>1</number>
     </property>
+    <property name="showDropIndicator" stdset="0">
+     <bool>false</bool>
+    </property>
+    <property name="dragEnabled">
+     <bool>false</bool>
+    </property>
+    <property name="dragDropMode">
+     <enum>QAbstractItemView::NoDragDrop</enum>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::NoSelection</enum>
+    </property>
     <property name="iconSize">
      <size>
       <width>200</width>
       <height>200</height>
      </size>
+    </property>
+    <property name="textElideMode">
+     <enum>Qt::ElideMiddle</enum>
     </property>
     <property name="movement">
      <enum>QListView::Free</enum>
@@ -203,6 +222,9 @@
       <weight>75</weight>
       <bold>true</bold>
      </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
     </property>
     <property name="title">
      <string>RGB Extinction(소산계수)</string>
@@ -638,7 +660,7 @@
    <widget class="QLabel" name="targetlist_label_name">
     <property name="geometry">
      <rect>
-      <x>1510</x>
+      <x>1250</x>
       <y>570</y>
       <width>171</width>
       <height>20</height>
@@ -653,6 +675,52 @@
     </property>
     <property name="text">
      <string>Target List</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ae_label_name">
+    <property name="geometry">
+     <rect>
+      <x>1560</x>
+      <y>570</y>
+      <width>211</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Angstrong Exponent</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ae_label_value">
+    <property name="geometry">
+     <rect>
+      <x>1780</x>
+      <y>570</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>15</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>0</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -689,6 +757,8 @@
      <addaction name="actionPNM_9030V"/>
      <addaction name="actionQNO_8020R"/>
      <addaction name="actionWebcam"/>
+     <addaction name="actionRpi_Telephoto_lens"/>
+     <addaction name="actionRpi_noir"/>
     </widget>
     <addaction name="menustart"/>
     <addaction name="actionupdate"/>
@@ -739,6 +809,16 @@
   <action name="actionPrint">
    <property name="text">
     <string>Print</string>
+   </property>
+  </action>
+  <action name="actionRpi_Telephoto_lens">
+   <property name="text">
+    <string>Rpi-Telephoto-lens</string>
+   </property>
+  </action>
+  <action name="actionRpi_noir">
+   <property name="text">
+    <string>Rpi-Noir</string>
    </property>
   </action>
  </widget>
