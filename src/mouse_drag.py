@@ -92,7 +92,7 @@ class ND01MainWindow(Ui_MainWindow):
 
         # Rasberry Pi No IR filter camera start
         elif camera_name == "RPI-noir":
-            self.video_thread = VideoThread('rtsp://192.168.100.35:7224/unicast')
+            self.video_thread = VideoThread('rtsp://192.168.100.4:7224/unicast')
 
         # webcam start
         else:
@@ -111,15 +111,8 @@ class ND01MainWindow(Ui_MainWindow):
     def convert_cv_qt(self, cv_img):
         """Convert from an opencv image to QPixmap"""
         if self.bgrfilter:
-
-            if self.camera_name == "RPI-noir":
-                self.cp_image = cv_img.copy()
-                rgb_image = cv2.cvtColor(self.cp_image.copy(), cv2.COLOR_BGR2RGB)
-
-
-            else:
-                rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-                self.cp_image = rgb_image.copy()
+            rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+            self.cp_image = rgb_image.copy()
         else:
             rgb_image = self.cp_image.copy()
 
@@ -242,8 +235,8 @@ class ND01MainWindow(Ui_MainWindow):
             os.mkdir(save_path)
         except Exception as e:
             pass
-
-        cv2.imwrite(f"{save_path}/{epoch}.png", self.cp_image)
+        write_image = cv2.cvtColor(self.cp_image, cv2.COLOR_RGB2BGR)
+        cv2.imwrite(f"{save_path}/{epoch}.png", write_image)
 
         img_height, img_width, ch = self.cp_image.shape
         bytes_per_line = ch * img_width
@@ -286,6 +279,7 @@ class ND01MainWindow(Ui_MainWindow):
 
         if os.path.isfile(f"{graph_dir}/{epoch}.png"):
             graph_image = cv2.imread(f"{graph_dir}/{epoch}.png")
+            graph_image = cv2.cvtColor(graph_image, cv2.COLOR_BGR2RGB)
 
             img_height, img_width, ch = graph_image.shape
             bytes_per_line = ch * img_width
@@ -376,20 +370,18 @@ class ND01MainWindow(Ui_MainWindow):
 
     def ae_print(self, ae_r: float = 0.0, ae_g: float = 0.0):
 
+
         r = round(ae_r, 2)
         g = round(ae_g, 2)
-        r_ra = 780
+        r_ra = 680
         g_ra = 550
-        l_val = round(g/r, 2)
-        r_val = round(g_ra/r_ra, 2)
 
-        print(l_val, r_val)
-        if l_val > r_val:
+        if r != 0 and g != 0:
+            l_val = round(g/r, 2)
+            r_val = round(g_ra/r_ra, 2)
             b_value = round(math.log(r_val, l_val), 2)
         else:
-            b_value = round(math.log(l_val, r_val), 2)
-
-        # b_value = -b_value
+            b_value = 0
 
         self.ae_label_value.setText(str(b_value))
 
