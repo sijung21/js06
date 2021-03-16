@@ -92,7 +92,7 @@ class ND01MainWindow(Ui_MainWindow):
 
         # Rasberry Pi No IR filter camera start
         elif camera_name == "RPI-noir":
-            self.video_thread = VideoThread('rtsp://192.168.100.4:7224/unicast')
+            self.video_thread = VideoThread('rtsp://192.168.100.28:7224/unicast')
 
         # webcam start
         else:
