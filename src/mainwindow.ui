@@ -29,8 +29,7 @@
    <string notr="true"/>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color:rgb(10, 10, 10);
-</string>
+   <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="maximumSize">
@@ -41,6 +40,9 @@
    </property>
    <property name="mouseTracking">
     <bool>true</bool>
+   </property>
+   <property name="styleSheet">
+    <string notr="true"/>
    </property>
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
@@ -70,8 +72,7 @@
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color:rgb(30, 30, 30);
-</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
@@ -103,7 +104,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color:rgb(30, 30, 30);border: 1px solid black;
+     <string notr="true">border: 1px solid black;
 </string>
     </property>
     <property name="lineWidth">
@@ -142,7 +143,8 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color:rgb(30, 30, 30);</string>
+     <string notr="true">border: 1px solid black;
+</string>
     </property>
     <property name="text">
      <string/>
@@ -170,7 +172,7 @@
      <bool>false</bool>
     </property>
     <property name="styleSheet">
-     <string notr="true">background-color:rgb(30, 30, 30);</string>
+     <string notr="true"/>
     </property>
     <property name="lineWidth">
      <number>0</number>
@@ -235,7 +237,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">color:rgb(255,255,255);background-color:rgb(30, 30, 30);</string>
+     <string notr="true"/>
     </property>
     <property name="title">
      <string>RGB Extinction(소산계수)</string>
@@ -639,7 +641,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">color:rgb(255,255,255)</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Capture Image</string>
@@ -665,7 +667,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">color:rgb(255,255,255)</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Extinction Graph</string>
@@ -691,7 +693,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">color:rgb(255,255,255)</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Target List</string>
@@ -706,7 +708,7 @@
       <x>1560</x>
       <y>570</y>
       <width>211</width>
-      <height>31</height>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
@@ -717,7 +719,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">color:rgb(255,255,255)</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>Angstrong Exponent</string>
@@ -732,7 +734,7 @@
       <x>1780</x>
       <y>570</y>
       <width>121</width>
-      <height>31</height>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
@@ -743,7 +745,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">color:rgb(255, 255, 255);</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string>0</string>
@@ -769,8 +771,7 @@
     <bool>false</bool>
    </property>
    <property name="styleSheet">
-    <string notr="true">background-color:rgb(75,75,75);
-color:rgb(255,255,255);</string>
+    <string notr="true"/>
    </property>
    <property name="nativeMenuBar">
     <bool>false</bool>

@@ -128,7 +128,6 @@ class ND01MainWindow(Ui_MainWindow):
             cv2.rectangle(rgb_image, corner1, corner2, rec_color, 6)
         if len(self.min_xy) > 0:
             cv2.rectangle(rgb_image, (self.min_xy[0]-10, self.min_xy[1]-10), (self.min_xy[0]+10, self.min_xy[1]+10), tar_color, 4)
-
         self.last_image = rgb_image.copy()
 
         convert_to_Qt_format = QImage(rgb_image.data, self.img_width, self.img_height, bytes_per_line,
