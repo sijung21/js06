@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem, QFileDialog
 from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication
 
 from video_thread import VideoThread
@@ -56,6 +56,7 @@ class ND01MainWindow(Ui_MainWindow):
         self.actionRpi_Telephoto_lens.triggered.connect(lambda: self.capture_start("RPI-Telephoto-lens"))
         self.actionRpi_noir.triggered.connect(lambda: self.capture_start("RPI-noir"))
         self.actionupdate.triggered.connect(lambda: self.capture_start(self.camera_name))
+        self.actionImage.triggered.connect(self.read_image)
         self.actionPrint.triggered.connect(self.minprint)
 
     def create_dir(self):
@@ -80,19 +81,19 @@ class ND01MainWindow(Ui_MainWindow):
         # create the video capture thread
         # hanhwa panorama camera start
         if camera_name == "PNM-9030V":
-            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp', "Video")
 
         # hanhwa camera start
         elif camera_name == "QNO-8020R":
-            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.253/profile2/media.smp')
+            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.20/profile2/media.smp', "Video")
 
         # Rasberry Pi Telephoto lens camera start
         elif camera_name == "RPI-Telephoto-lens":
-            self.video_thread = VideoThread('rtsp://192.168.100.33:8554/test')
+            self.video_thread = VideoThread('rtsp://192.168.100.33:8554/test', "Video")
 
         # Rasberry Pi No IR filter camera start
         elif camera_name == "RPI-noir":
-            self.video_thread = VideoThread('rtsp://192.168.100.28:7224/unicast')
+            self.video_thread = VideoThread('rtsp://192.168.100.28:7224/unicast', "Video")
 
         # webcam start
         else:
@@ -102,6 +103,19 @@ class ND01MainWindow(Ui_MainWindow):
         self.video_thread.update_pixmap_signal.connect(self.update_image)
         # start the thread
         self.video_thread.start()
+
+    def read_image(self):
+        self.bgrfilter = True
+        self.camera_name = "Image"
+        if self.video_thread is not None:
+            self.video_thread.stop()
+
+        imagePath, _ = QFileDialog.getOpenFileName()
+        print(imagePath)
+        self.video_thread = VideoThread(imagePath, "Image")
+        self.video_thread.update_pixmap_signal.connect(self.update_image)
+        self.video_thread.start()
+
 
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
@@ -369,20 +383,19 @@ class ND01MainWindow(Ui_MainWindow):
 
     def ae_print(self, ae_r: float = 0.0, ae_g: float = 0.0):
 
-
         r = round(ae_r, 2)
         g = round(ae_g, 2)
-        r_ra = 680
-        g_ra = 550
+        r_wave = 680
+        g_wave = 550
 
         if r != 0 and g != 0:
             l_val = round(g/r, 2)
-            r_val = round(g_ra/r_ra, 2)
-            b_value = round(math.log(r_val, l_val), 2)
+            r_val = round(g_wave/r_wave, 2)
+            ae_value = round(math.log(r_val, l_val), 2)
         else:
-            b_value = 0
+            ae_value = 0
 
-        self.ae_label_value.setText(str(b_value))
+        self.ae_label_value.setText(str(ae_value))
 
     def save_target(self):
         """Save the target information for each camera."""

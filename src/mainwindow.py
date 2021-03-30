@@ -269,8 +269,10 @@ class Ui_MainWindow(object):
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setEnabled(True)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1920, 21))
+        self.menubar.setContextMenuPolicy(QtCore.Qt.DefaultContextMenu)
         self.menubar.setAutoFillBackground(False)
         self.menubar.setStyleSheet("")
+        self.menubar.setDefaultUp(False)
         self.menubar.setNativeMenuBar(False)
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
@@ -305,6 +307,9 @@ class Ui_MainWindow(object):
         self.actionRpi_Telephoto_lens.setObjectName("actionRpi_Telephoto_lens")
         self.actionRpi_noir = QtWidgets.QAction(MainWindow)
         self.actionRpi_noir.setObjectName("actionRpi_noir")
+        self.actionImage = QtWidgets.QAction(MainWindow)
+        self.actionImage.setEnabled(True)
+        self.actionImage.setObjectName("actionImage")
         self.menustart.addSeparator()
         self.menustart.addAction(self.actionPNM_9030V)
         self.menustart.addAction(self.actionQNO_8020R)
@@ -312,6 +317,7 @@ class Ui_MainWindow(object):
         self.menustart.addAction(self.actionRpi_Telephoto_lens)
         self.menustart.addAction(self.actionRpi_noir)
         self.menuFile.addAction(self.menustart.menuAction())
+        self.menuFile.addAction(self.actionImage)
         self.menuFile.addAction(self.actionupdate)
         self.menuMethod.addAction(self.actionPrint)
         self.menubar.addAction(self.menuFile.menuAction())
@@ -351,6 +357,7 @@ class Ui_MainWindow(object):
         self.actionPrint.setText(_translate("MainWindow", "Print"))
         self.actionRpi_Telephoto_lens.setText(_translate("MainWindow", "Rpi-Telephoto-lens"))
         self.actionRpi_noir.setText(_translate("MainWindow", "Rpi-Noir"))
+        self.actionImage.setText(_translate("MainWindow", "Image"))
 
 
 if __name__ == "__main__":

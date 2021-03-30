@@ -71,7 +71,7 @@ class CurvedThread(QtCore.QThread):
         except Exception as e:
             pass
 
-        plt.figure(figsize=(13,8))
+        plt.figure(figsize=(13, 8))
         plt.plot(self.hanhwa_dist, self.hanhwa_r, '.', c='red')
         plt.plot(self.hanhwa_dist, self.hanhwa_g, '.', c='green')
         plt.plot(self.hanhwa_dist, self.hanhwa_b, '.', c='blue')

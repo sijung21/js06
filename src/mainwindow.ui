@@ -767,11 +767,17 @@
      <height>21</height>
     </rect>
    </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::DefaultContextMenu</enum>
+   </property>
    <property name="autoFillBackground">
     <bool>false</bool>
    </property>
    <property name="styleSheet">
     <string notr="true"/>
+   </property>
+   <property name="defaultUp">
+    <bool>false</bool>
    </property>
    <property name="nativeMenuBar">
     <bool>false</bool>
@@ -812,6 +818,7 @@
      <addaction name="actionRpi_noir"/>
     </widget>
     <addaction name="menustart"/>
+    <addaction name="actionImage"/>
     <addaction name="actionupdate"/>
    </widget>
    <widget class="QMenu" name="menuMethod">
@@ -870,6 +877,14 @@
   <action name="actionRpi_noir">
    <property name="text">
     <string>Rpi-Noir</string>
+   </property>
+  </action>
+  <action name="actionImage">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Image</string>
    </property>
   </action>
  </widget>
