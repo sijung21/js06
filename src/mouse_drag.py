@@ -107,6 +107,8 @@ class ND01MainWindow(Ui_MainWindow):
     def read_image(self):
         self.bgrfilter = True
         self.camera_name = "Image"
+        self.get_target(self.camera_name)
+
         if self.video_thread is not None:
             self.video_thread.stop()
 
@@ -368,17 +370,17 @@ class ND01MainWindow(Ui_MainWindow):
 
     def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0]):
 
-        self.r_c1_textbox.setPlainText(f"{c1_list[0]:.2f}")
-        self.g_c1_textbox.setPlainText(f"{c1_list[1]:.2f}")
-        self.b_c1_textbox.setPlainText(f"{c1_list[2]:.2f}")
+        self.r_c1_textbox.setPlainText(f"{c1_list[0]:.6f}")
+        self.g_c1_textbox.setPlainText(f"{c1_list[1]:.6f}")
+        self.b_c1_textbox.setPlainText(f"{c1_list[2]:.6f}")
 
-        self.r_c2_textbox.setPlainText(f"{c2_list[0]:.2f}")
-        self.g_c2_textbox.setPlainText(f"{c2_list[1]:.2f}")
-        self.b_c2_textbox.setPlainText(f"{c2_list[2]:.2f}")
+        self.r_c2_textbox.setPlainText(f"{c2_list[0]:.6f}")
+        self.g_c2_textbox.setPlainText(f"{c2_list[1]:.6f}")
+        self.b_c2_textbox.setPlainText(f"{c2_list[2]:.6f}")
 
-        self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.2f}")
-        self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.2f}")
-        self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.2f}")
+        self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.6f}")
+        self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
+        self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
         self.ae_print(alp_list[0], alp_list[1])
 
     def ae_print(self, ae_r: float = 0.0, ae_g: float = 0.0):
