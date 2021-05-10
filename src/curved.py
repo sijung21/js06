@@ -24,16 +24,31 @@ class CurvedThread(QtCore.QThread):
     def run(self):
 
         hanhwa = pd.read_csv(f"{self.rgbsavedir}/{self.epoch}.csv")
+        hanhwa = hanhwa.sort_values(by=['distance'])
         self.hanhwa_dist = hanhwa[['distance']].squeeze().to_numpy()
+        print(self.hanhwa_dist[0], ", ", self.hanhwa_dist[-1])
         self.hanhwa_x = np.linspace(self.hanhwa_dist[0], self.hanhwa_dist[-1], 100, endpoint=True)
+        self.hanhwa_x.sort()
+        print(self.hanhwa_x)
         self.hanhwa_r = hanhwa[['r']].squeeze().to_numpy()
         self.hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
         self.hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
+                 
+        r1_init = self.hanhwa_r[0] * 0.7
+        g1_init = self.hanhwa_g[0] * 0.7
+        b1_init = self.hanhwa_b[0] * 0.7
 
+        r2_init = self.hanhwa_r[-1] * 1.3
+        g2_init = self.hanhwa_g[-1] * 1.3
+        b2_init = self.hanhwa_b[-1] * 1.3
+        
+        r_ext_init = [r1_init, r2_init, 1]
+        g_ext_init = [g1_init, g2_init, 1]
+        b_ext_init = [b1_init, b2_init, 1]
         try:
-            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r, maxfev=5000)
-            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g, maxfev=5000)
-            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b, maxfev=5000)
+            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r, p0=r_ext_init, maxfev=5000)
+            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g, p0=g_ext_init, maxfev=5000)
+            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b, p0=b_ext_init, maxfev=5000)
 
         except Exception as e:
             print("error msg: ", e)

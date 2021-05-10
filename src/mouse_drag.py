@@ -7,7 +7,8 @@ import math
 import cv2
 import numpy as np
 import pandas as pd
-
+# import PyQt5
+# print(PyQt5.__version__)
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem, QFileDialog
 from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication
@@ -15,6 +16,8 @@ from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication
 from video_thread import VideoThread
 from curved import CurvedThread
 from mainwindow import Ui_MainWindow
+
+print(pd.__version__)
 
 class ND01MainWindow(Ui_MainWindow):
     def __init__(self):
@@ -384,7 +387,7 @@ class ND01MainWindow(Ui_MainWindow):
         self.ae_print(alp_list[0], alp_list[1])
 
     def ae_print(self, ae_r: float = 0.0, ae_g: float = 0.0):
-
+        ae_value = 0
         r = round(ae_r, 2)
         g = round(ae_g, 2)
         r_wave = 680
