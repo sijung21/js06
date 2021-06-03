@@ -210,6 +210,7 @@ class ND01MainWindow(Ui_MainWindow):
                 self.save_target()
                 self.rightflag = True
             self.leftflag = False
+            # self.minprint()
 
     def mouseMoveEvent(self, event):
         """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
@@ -234,6 +235,7 @@ class ND01MainWindow(Ui_MainWindow):
                 self.target_name.append("target_" + str(len(self.left_range)))
                 self.save_target()
                 self.update_image(self.last_image)
+                # self.minprint()
 
         if self.rightflag:
             self.update_image(self.last_image)
@@ -388,15 +390,19 @@ class ND01MainWindow(Ui_MainWindow):
 
     def ae_print(self, ae_r: float = 0.0, ae_g: float = 0.0):
         ae_value = 0
-        r = round(ae_r, 2)
-        g = round(ae_g, 2)
+        r = round(ae_r, 6)
+        g = round(ae_g, 6)
         r_wave = 680
         g_wave = 550
 
         if r != 0 and g != 0:
-            l_val = round(g/r, 2)
-            r_val = round(g_wave/r_wave, 2)
-            ae_value = round(math.log(r_val, l_val), 2)
+            l_val = round(g/r, 6)
+            r_val = round(g_wave/r_wave, 6)
+            try:
+                print("l_val=", l_val, ", r_val=", r_val)
+                ae_value = round(math.log(r_val, l_val), 6)
+            except Exception as e:
+                pass
         else:
             ae_value = 0
 
