@@ -1,6 +1,9 @@
+import itertools
 import os
+
 import numpy as np
 import pandas as pd
+
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 from PyQt5 import QtWidgets, QtGui, QtCore
@@ -21,8 +24,39 @@ class CurvedThread(QtCore.QThread):
         self.epoch = epoch
         self.rgbsavedir = os.path.join(f"rgb/{self.cam_name}")
         self.extsavedir = os.path.join(f"extinction/{self.cam_name}")
-    def run(self):
+    
+    @staticmethod
+    def inlier_fit(func, x, y, min_samples=3):
+        """
+        Parameters:
+            func: callable
+                The model function
+            x: array_like
+                The independent variable where the data is measured.
+            y: array_like
+                The dependent data
+            min_samples: int
+                Minimum number of data points required to estimate model parameters.
+        """
+        best_opt = []
+        min_err = [np.inf] * 3
+        best_cov = []
+        for subseq in range(min_samples, len(x) + 1):
+            for sel in itertools.combinations(range(len(x)), r=subseq):
+                x_sel = np.take(x, sel)
+                y_sel = np.take(y, sel)
+                try:
+                    opt, cov = curve_fit(func, x_sel, y_sel)
+                except RuntimeError:
+                    continue
+                err = np.sqrt(np.diag(cov))
+                if np.sum(min_err) > np.sum(err):
+                    min_err = err
+                    best_opt = opt
+                    best_cov = cov
+        return best_opt, best_cov
 
+    def run(self):
         hanhwa = pd.read_csv(f"{self.rgbsavedir}/{self.epoch}.csv")
         hanhwa = hanhwa.sort_values(by=['distance'])
         self.hanhwa_dist = hanhwa[['distance']].squeeze().to_numpy()
@@ -32,21 +66,10 @@ class CurvedThread(QtCore.QThread):
         self.hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
         self.hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
                  
-        r1_init = self.hanhwa_r[0] * 0.7
-        g1_init = self.hanhwa_g[0] * 0.7
-        b1_init = self.hanhwa_b[0] * 0.7
-
-        r2_init = self.hanhwa_r[-1] * 1.3
-        g2_init = self.hanhwa_g[-1] * 1.3
-        b2_init = self.hanhwa_b[-1] * 1.3
-        
-        r_ext_init = [r1_init, r2_init, 1]
-        g_ext_init = [g1_init, g2_init, 1]
-        b_ext_init = [b1_init, b2_init, 1]
         try:
-            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r, maxfev=5000)
-            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g, maxfev=5000)
-            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b, maxfev=5000)
+            hanhwa_opt_r, hanhwa_cov_r = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_r)
+            hanhwa_opt_g, hanhwa_cov_g = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_g)
+            hanhwa_opt_b, hanhwa_cov_b = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_b)
 
         except Exception as e:
             print("error msg: ", e)
@@ -98,7 +121,8 @@ class CurvedThread(QtCore.QThread):
         plt.grid(True)
         plt.savefig(f'{self.extsavedir}/{self.epoch}.png', dpi=300)
 
-    def func(self, x, c1, c2, a):
+    @staticmethod
+    def func(x, c1, c2, a):
         return c2 + (c1 - c2) * np.exp(-a * x)
 
     def print_result(self, opt_r, opt_g, opt_b, err_r, err_g, err_b):
@@ -117,9 +141,3 @@ class CurvedThread(QtCore.QThread):
 
     def extcoeff_to_vis(self, optimal, error, coeff=3.291):
         return coeff / (optimal + np.array((1, 0, -1)) * error)
-
-
-
-
-
-
