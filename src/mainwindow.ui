@@ -68,7 +68,7 @@
       <x>0</x>
       <y>0</y>
       <width>1919</width>
-      <height>549</height>
+      <height>540</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -79,45 +79,6 @@
     </property>
     <property name="scaledContents">
      <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QLabel" name="capture_label">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>620</y>
-      <width>640</width>
-      <height>411</height>
-     </rect>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>16777215</width>
-      <height>16777215</height>
-     </size>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>30</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">border: 1px solid black;
-</string>
-    </property>
-    <property name="lineWidth">
-     <number>0</number>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="scaledContents">
-     <bool>false</bool>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="graph_label">
@@ -156,7 +117,7 @@
    <widget class="QListWidget" name="imagelist">
     <property name="geometry">
      <rect>
-      <x>1280</x>
+      <x>0</x>
       <y>620</y>
       <width>640</width>
       <height>201</height>
@@ -223,7 +184,7 @@
    <widget class="QGroupBox" name="extiction_groupbox">
     <property name="geometry">
      <rect>
-      <x>1280</x>
+      <x>0</x>
       <y>830</y>
       <width>640</width>
       <height>201</height>
@@ -299,6 +260,14 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>
@@ -335,6 +304,14 @@
        <width>81</width>
        <height>31</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
      </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -373,6 +350,14 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>
@@ -409,6 +394,14 @@
        <width>81</width>
        <height>31</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
      </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -447,6 +440,14 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>
@@ -483,6 +484,14 @@
        <width>81</width>
        <height>31</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
      </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -521,6 +530,14 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>
@@ -536,6 +553,14 @@
        <width>81</width>
        <height>31</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
      </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -616,6 +641,14 @@
        <height>31</height>
       </rect>
      </property>
+     <property name="font">
+      <font>
+       <family>Agency FB</family>
+       <pointsize>10</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+      </font>
+     </property>
      <property name="verticalScrollBarPolicy">
       <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>
@@ -623,32 +656,6 @@
       <enum>Qt::ScrollBarAlwaysOff</enum>
      </property>
     </widget>
-   </widget>
-   <widget class="QLabel" name="capture_label_name">
-    <property name="geometry">
-     <rect>
-      <x>240</x>
-      <y>570</y>
-      <width>161</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>15</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-    <property name="text">
-     <string>Capture Image</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
    </widget>
    <widget class="QLabel" name="graph_label_name">
     <property name="geometry">
@@ -679,7 +686,7 @@
    <widget class="QLabel" name="targetlist_label_name">
     <property name="geometry">
      <rect>
-      <x>1250</x>
+      <x>240</x>
       <y>570</y>
       <width>171</width>
       <height>20</height>
@@ -702,7 +709,7 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="ae_label_name">
+   <widget class="QLabel" name="time_label_name">
     <property name="geometry">
      <rect>
       <x>1560</x>
@@ -722,24 +729,106 @@
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Angstrong Exponent</string>
+     <string>Time</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="ae_label_value">
+   <widget class="QLabel" name="visibility_label_name">
     <property name="geometry">
      <rect>
-      <x>1780</x>
-      <y>570</y>
-      <width>121</width>
-      <height>20</height>
+      <x>1300</x>
+      <y>630</y>
+      <width>211</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>15</pointsize>
+      <family>Arial</family>
+      <pointsize>26</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>Visibility</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="visibility_value">
+    <property name="geometry">
+     <rect>
+      <x>1430</x>
+      <y>700</y>
+      <width>301</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>48</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>0 km</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="pm25_label_name">
+    <property name="geometry">
+     <rect>
+      <x>1300</x>
+      <y>850</y>
+      <width>211</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>26</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>PM2.5</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="pm25_value">
+    <property name="geometry">
+     <rect>
+      <x>1430</x>
+      <y>900</y>
+      <width>301</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>48</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
