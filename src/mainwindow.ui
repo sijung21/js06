@@ -262,8 +262,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -307,8 +307,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -352,8 +352,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -397,8 +397,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -442,8 +442,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -487,8 +487,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -532,8 +532,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -556,8 +556,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>
@@ -643,8 +643,8 @@
      </property>
      <property name="font">
       <font>
-       <family>Agency FB</family>
-       <pointsize>10</pointsize>
+       <family>Arial</family>
+       <pointsize>11</pointsize>
        <weight>50</weight>
        <bold>false</bold>
       </font>

@@ -359,13 +359,13 @@ class ND01MainWindow(Ui_MainWindow):
 
     def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0]):
 
-        self.r_c1_textbox.setPlainText(f"{c1_list[0]:.6f}")
-        self.g_c1_textbox.setPlainText(f"{c1_list[1]:.6f}")
-        self.b_c1_textbox.setPlainText(f"{c1_list[2]:.6f}")
+        self.r_c1_textbox.setPlainText(f"{c1_list[0]:.4f}")
+        self.g_c1_textbox.setPlainText(f"{c1_list[1]:.4f}")
+        self.b_c1_textbox.setPlainText(f"{c1_list[2]:.4f}")
 
-        self.r_c2_textbox.setPlainText(f"{c2_list[0]:.6f}")
-        self.g_c2_textbox.setPlainText(f"{c2_list[1]:.6f}")
-        self.b_c2_textbox.setPlainText(f"{c2_list[2]:.6f}")
+        self.r_c2_textbox.setPlainText(f"{c2_list[0]:.4f}")
+        self.g_c2_textbox.setPlainText(f"{c2_list[1]:.4f}")
+        self.b_c2_textbox.setPlainText(f"{c2_list[2]:.4f}")
 
         self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.6f}")
         self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
