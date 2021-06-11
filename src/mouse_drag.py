@@ -252,27 +252,7 @@ class ND01MainWindow(Ui_MainWindow):
         if e.key() == Qt.Key_Escape:
             sys.exit()
 
-    def back_capture(self, epoch):
-        """소산계수를 구한 시점의 영상을 캡쳐해 레이블에 출력하는 함수"""
-
-        try:
-            save_path = os.path.join(f"image/{self.camera_name}")
-            os.mkdir(save_path)
-        except Exception as e:
-            pass
-        write_image = cv2.cvtColor(self.cp_image, cv2.COLOR_RGB2BGR)
-        cv2.imwrite(f"{save_path}/{epoch}.png", write_image)
-
-        img_height, img_width, ch = self.cp_image.shape
-        bytes_per_line = ch * img_width
-
-        convert_to_Qt_format = QImage(self.cp_image.data, img_width, img_height, bytes_per_line,
-                                    QImage.Format_RGB888)
-
-        p = convert_to_Qt_format.scaled(self.capture_label.width(), self.capture_label.height(), Qt.IgnoreAspectRatio,
-                                        Qt.SmoothTransformation)
-        self.capture_label.setPixmap(QPixmap.fromImage(p))
-        print("전체 캡쳐")
+    
 
     def minprint(self):
         """지정한 구역들에서 소산계수 산출용 픽셀을 출력하는 함수"""
@@ -297,7 +277,6 @@ class ND01MainWindow(Ui_MainWindow):
         self.curved_thread.update_extinc_signal.connect(self.extinc_print)
         self.curved_thread.run()
 
-        self.back_capture(epoch)
         self.list_test()
 
         graph_dir = os.path.join(f"extinction/{self.camera_name}")
@@ -391,27 +370,15 @@ class ND01MainWindow(Ui_MainWindow):
         self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.6f}")
         self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
         self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
-        self.ae_print(alp_list[0], alp_list[1])
+        self.visibility_print(alp_list[1])
 
-    def ae_print(self, ae_r: float = 0.0, ae_g: float = 0.0):
-        ae_value = 0
-        r = round(ae_r, 6)
-        g = round(ae_g, 6)
-        r_wave = 680
-        g_wave = 550
+    def visibility_print(self, ext_g: float = 0.0):
+        vis_value = 0
 
-        if r != 0 and g != 0:
-            l_val = round(g/r, 6)
-            r_val = round(g_wave/r_wave, 6)
-            try:
-                print("l_val=", l_val, ", r_val=", r_val)
-                ae_value = round(math.log(r_val, l_val), 6)
-            except Exception as e:
-                pass
-        else:
-            ae_value = 0
-
-        self.ae_label_value.setText(str(ae_value))
+        vis_value = (3/ext_g)*2.2
+        
+        vis_value_str = str(vis_value) + " km"
+        self.visibility_value.setText(vis_value_str)
 
     def save_target(self):
         """Save the target information for each camera."""
