@@ -712,24 +712,25 @@
    <widget class="QLabel" name="time_label_name">
     <property name="geometry">
      <rect>
-      <x>1560</x>
+      <x>1630</x>
       <y>570</y>
-      <width>211</width>
-      <height>20</height>
+      <width>281</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>15</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
+      <family>Arial</family>
+      <pointsize>20</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
      </font>
     </property>
     <property name="styleSheet">
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Time</string>
+     <string/>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -753,7 +754,8 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true"/>
+     <string notr="true">
+</string>
     </property>
     <property name="title">
      <string>Visibility</string>

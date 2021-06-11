@@ -1,4 +1,5 @@
 
+import datetime
 import sys
 import os
 import time
@@ -11,7 +12,7 @@ import pandas as pd
 # print(PyQt5.__version__)
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem, QFileDialog
-from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication
+from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication, pyqtSlot, QTimer
 
 from video_thread import VideoThread
 from curved import CurvedThread
@@ -44,6 +45,8 @@ class ND01MainWindow(Ui_MainWindow):
         self.rightflag = False
         self.create_dir()
 
+        
+
     def setupUi(self, MainWindow: QMainWindow):
         super().setupUi(MainWindow)
         MainWindow.setWindowFlag(Qt.FramelessWindowHint)
@@ -60,7 +63,10 @@ class ND01MainWindow(Ui_MainWindow):
         self.actionRpi_noir.triggered.connect(lambda: self.capture_start("RPI-noir"))
         self.actionupdate.triggered.connect(lambda: self.capture_start(self.camera_name))
         self.actionImage.triggered.connect(self.read_image)
-        self.actionPrint.triggered.connect(self.minprint)
+        self.actionPrint.triggered.connect(self.minprint)  
+        self.timer = QTimer(MainWindow)
+        self.timer.start(1000)
+        self.timer.timeout.connect(self.timeout_run)     
 
     def create_dir(self):
         """정보를 저장할 폴더(경로)들을 만든다."""
@@ -445,10 +451,15 @@ class ND01MainWindow(Ui_MainWindow):
         convert_to_Qt_format = QImage(image.data.tobytes(), img_width, img_height,
                                     QImage.Format_RGB888)
 
-        p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.IgnoreAspectRatio,
+        p = convert_to_Qt_format.scaled(self.cp_image.shape[1], self.cp_image.shape[0], Qt.IgnoreAspectRatio,
                                         Qt.SmoothTransformation)
 
         return QPixmap.fromImage(p)
+
+    def timeout_run(self):
+        current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
+        # current_time = datetime.datetime.now()
+        self.time_label_name.setText(current_time)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
