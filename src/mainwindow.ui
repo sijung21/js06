@@ -264,8 +264,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -309,8 +309,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -354,8 +354,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -399,8 +399,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -444,8 +444,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -489,8 +489,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -534,8 +534,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -558,8 +558,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -645,8 +645,8 @@
       <font>
        <family>Arial</family>
        <pointsize>11</pointsize>
-       <weight>50</weight>
-       <bold>false</bold>
+       <weight>75</weight>
+       <bold>true</bold>
       </font>
      </property>
      <property name="verticalScrollBarPolicy">
@@ -735,19 +735,19 @@
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
-   <widget class="QLabel" name="visibility_label_name">
+   <widget class="QGroupBox" name="visibility_groupbox">
     <property name="geometry">
      <rect>
-      <x>1300</x>
-      <y>630</y>
-      <width>211</width>
-      <height>51</height>
+      <x>1280</x>
+      <y>620</y>
+      <width>640</width>
+      <height>201</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>Arial</family>
-      <pointsize>26</pointsize>
+      <pointsize>24</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -755,26 +755,50 @@
     <property name="styleSheet">
      <string notr="true"/>
     </property>
-    <property name="text">
+    <property name="title">
      <string>Visibility</string>
     </property>
-    <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-    </property>
+    <widget class="QLabel" name="visibility_value">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>50</y>
+       <width>301</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>48</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>0 km</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </widget>
-   <widget class="QLabel" name="visibility_value">
+   <widget class="QGroupBox" name="pm25_groupbox">
     <property name="geometry">
      <rect>
-      <x>1430</x>
-      <y>700</y>
-      <width>301</width>
-      <height>111</height>
+      <x>1280</x>
+      <y>830</y>
+      <width>640</width>
+      <height>201</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <family>Arial</family>
-      <pointsize>48</pointsize>
+      <pointsize>24</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -782,66 +806,36 @@
     <property name="styleSheet">
      <string notr="true"/>
     </property>
-    <property name="text">
-     <string>0 km</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="pm25_label_name">
-    <property name="geometry">
-     <rect>
-      <x>1300</x>
-      <y>850</y>
-      <width>211</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Arial</family>
-      <pointsize>26</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-    <property name="text">
+    <property name="title">
      <string>PM2.5</string>
     </property>
-    <property name="alignment">
-     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="pm25_value">
-    <property name="geometry">
-     <rect>
-      <x>1430</x>
-      <y>900</y>
-      <width>301</width>
-      <height>111</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Arial</family>
-      <pointsize>48</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
+    <widget class="QLabel" name="pm25_value">
+     <property name="geometry">
+      <rect>
+       <x>170</x>
+       <y>50</y>
+       <width>301</width>
+       <height>111</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Arial</family>
+       <pointsize>48</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>0</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
