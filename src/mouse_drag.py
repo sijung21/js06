@@ -377,7 +377,7 @@ class ND01MainWindow(Ui_MainWindow):
 
         vis_value = (3/ext_g)*2.2
         
-        vis_value_str = str(vis_value) + " km"
+        vis_value_str = f"{vis_value:.2f}" + " km"
         self.visibility_value.setText(vis_value_str)
 
     def save_target(self):
@@ -445,7 +445,7 @@ class ND01MainWindow(Ui_MainWindow):
         convert_to_Qt_format = QImage(image.data.tobytes(), img_width, img_height,
                                     QImage.Format_RGB888)
 
-        p = convert_to_Qt_format.scaled(self.capture_label.width(), self.capture_label.height(), Qt.IgnoreAspectRatio,
+        p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.IgnoreAspectRatio,
                                         Qt.SmoothTransformation)
 
         return QPixmap.fromImage(p)
