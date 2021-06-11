@@ -116,10 +116,15 @@ class ND01MainWindow(Ui_MainWindow):
             self.video_thread.stop()
 
         imagePath, _ = QFileDialog.getOpenFileName()
+        
         print(imagePath)
-        self.video_thread = VideoThread(imagePath, "Image")
-        self.video_thread.update_pixmap_signal.connect(self.update_image)
-        self.video_thread.start()
+        if imagePath:
+            self.video_thread = VideoThread(imagePath, "Image")
+            self.video_thread.update_pixmap_signal.connect(self.update_image)
+            self.video_thread.start()
+        else:
+            return
+
 
 
     def update_image(self, cv_img):
