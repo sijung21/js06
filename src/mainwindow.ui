@@ -663,7 +663,7 @@
       <x>860</x>
       <y>570</y>
       <width>171</width>
-      <height>20</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="font">
@@ -689,7 +689,7 @@
       <x>240</x>
       <y>570</y>
       <width>171</width>
-      <height>20</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="font">

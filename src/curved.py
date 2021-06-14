@@ -114,10 +114,10 @@ class CurvedThread(QtCore.QThread):
         plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_r), label='Red', c='red')
         plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_g), label='Green', c='green')
         plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_b), label='Blue', c='blue')
-        plt.xlabel('Distance (km)')
-        plt.ylabel('Amplitude')
+        plt.xlabel('Distance (km)', fontsize=20)
+        plt.ylabel('Amplitude', fontsize=20)
         plt.legend(prop={'size': 20})
-        plt.title(self.cam_name)
+        plt.title(self.cam_name, fontsize=20)
         plt.grid(True)
         plt.savefig(f'{self.extsavedir}/{self.epoch}.png', dpi=300)
 
