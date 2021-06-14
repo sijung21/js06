@@ -377,6 +377,7 @@ class ND01MainWindow(Ui_MainWindow):
         self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
         self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
         self.visibility_print(alp_list[1])
+        self.pm_print(alp_list)
 
     def visibility_print(self, ext_g: float = 0.0):
         vis_value = 0
@@ -385,6 +386,19 @@ class ND01MainWindow(Ui_MainWindow):
         
         vis_value_str = f"{vis_value:.2f}" + " km"
         self.visibility_value.setText(vis_value_str)
+
+    def pm_print(self, ext_list: list):
+
+        r_ext_pm = ext_list[0]*1000/4/2.5
+        g_ext_pm = ext_list[1]*1000/4/2.5
+        b_ext_pm = ext_list[2]*1000/4/2.5
+
+        pm_value = (r_ext_pm + g_ext_pm + b_ext_pm)/3
+        pm_value_str = f"{pm_value:.2f}" + " u/m"
+
+        self.pm25_value.setText(pm_value_str)
+
+
 
     def save_target(self):
         """Save the target information for each camera."""
