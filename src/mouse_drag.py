@@ -121,7 +121,7 @@ class ND01MainWindow(Ui_MainWindow):
         if self.video_thread is not None:
             self.video_thread.stop()
 
-        imagePath, _ = QFileDialog.getOpenFileName()
+        imagePath, _ = QFileDialog.getOpenFileName(directory="D:/Extinction_coefficient/image/commax_date_west")
         
         print(imagePath)
         if imagePath:
