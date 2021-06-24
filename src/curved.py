@@ -4,7 +4,9 @@ import os
 import numpy as np
 import pandas as pd
 
+import scipy
 from scipy.optimize import curve_fit
+import matplotlib
 import matplotlib.pyplot as plt
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -26,7 +28,7 @@ class CurvedThread(QtCore.QThread):
         self.extsavedir = os.path.join(f"extinction/{self.cam_name}")
     
     @staticmethod
-    def inlier_fit(func, x, y, min_samples=3):
+    def inlier_fit(func, x, y, min_samples=7):
         """
         Parameters:
             func: callable
@@ -45,6 +47,7 @@ class CurvedThread(QtCore.QThread):
             for sel in itertools.combinations(range(len(x)), r=subseq):
                 x_sel = np.take(x, sel)
                 y_sel = np.take(y, sel)
+                print("후보 target 거리 리스트: " , x_sel)
                 try:
                     opt, cov = curve_fit(func, x_sel, y_sel)
                 except RuntimeError:
@@ -54,6 +57,11 @@ class CurvedThread(QtCore.QThread):
                     min_err = err
                     best_opt = opt
                     best_cov = cov
+
+                    result_x_sel = x_sel
+                    result_y_sel = y_sel
+        
+        print("선택된 target 거리 리스트: " , result_x_sel)
         return best_opt, best_cov
 
     def run(self):
