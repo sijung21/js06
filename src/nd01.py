@@ -382,7 +382,7 @@ class ND01MainWindow(Ui_MainWindow):
     def visibility_print(self, ext_g: float = 0.0):
         vis_value = 0
 
-        vis_value = (3/ext_g)*2.2
+        vis_value = (3.912/ext_g)
         
         vis_value_str = f"{vis_value:.2f}" + " km"
         self.visibility_value.setText(vis_value_str)

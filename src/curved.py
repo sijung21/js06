@@ -26,43 +26,44 @@ class CurvedThread(QtCore.QThread):
         self.epoch = epoch
         self.rgbsavedir = os.path.join(f"rgb/{self.cam_name}")
         self.extsavedir = os.path.join(f"extinction/{self.cam_name}")
-    
-    @staticmethod
-    def inlier_fit(func, x, y, min_samples=7):
-        """
-        Parameters:
-            func: callable
-                The model function
-            x: array_like
-                The independent variable where the data is measured.
-            y: array_like
-                The dependent data
-            min_samples: int
-                Minimum number of data points required to estimate model parameters.
-        """
-        best_opt = []
-        min_err = [np.inf] * 3
-        best_cov = []
-        for subseq in range(min_samples, len(x) + 1):
-            for sel in itertools.combinations(range(len(x)), r=subseq):
-                x_sel = np.take(x, sel)
-                y_sel = np.take(y, sel)
-                print("후보 target 거리 리스트: " , x_sel)
-                try:
-                    opt, cov = curve_fit(func, x_sel, y_sel)
-                except RuntimeError:
-                    continue
-                err = np.sqrt(np.diag(cov))
-                if np.sum(min_err) > np.sum(err):
-                    min_err = err
-                    best_opt = opt
-                    best_cov = cov
 
-                    result_x_sel = x_sel
-                    result_y_sel = y_sel
+
+    # @staticmethod
+    # def inlier_fit(func, x, y, min_samples=3):
+    #     """
+    #     Parameters:
+    #         func: callable
+    #             The model function
+    #         x: array_like
+    #             The independent variable where the data is measured.
+    #         y: array_like
+    #             The dependent data
+    #         min_samples: int
+    #             Minimum number of data points required to estimate model parameters.
+    #     """
+    #     best_opt = []
+    #     min_err = [np.inf] * 3
+    #     best_cov = []
+    #     for subseq in range(min_samples, len(x) + 1):
+    #         for sel in itertools.combinations(range(len(x)), r=subseq):
+    #             x_sel = np.take(x, sel)
+    #             y_sel = np.take(y, sel)
+    #             # print("후보 target 거리 리스트: " , x_sel)
+    #             try:
+    #                 opt, cov = curve_fit(func, x_sel, y_sel)
+    #             except RuntimeError:
+    #                 continue
+    #             err = np.sqrt(np.diag(cov))
+    #             if np.sum(min_err) > np.sum(err):
+    #                 min_err = err
+    #                 best_opt = opt
+    #                 best_cov = cov
+
+    #                 result_x_sel = x_sel
+    #                 result_y_sel = y_sel
         
-        print("선택된 target 거리 리스트: " , result_x_sel)
-        return best_opt, best_cov
+    #     print("선택된 target 거리 리스트: " , result_x_sel)
+    #     return best_opt, best_cov
 
     def run(self):
         hanhwa = pd.read_csv(f"{self.rgbsavedir}/{self.epoch}.csv")
@@ -73,11 +74,26 @@ class CurvedThread(QtCore.QThread):
         self.hanhwa_r = hanhwa[['r']].squeeze().to_numpy()
         self.hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
         self.hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
-                 
+
+        r1_init = self.hanhwa_r[0] * 0.7
+        g1_init = self.hanhwa_g[0] * 0.7
+        b1_init = self.hanhwa_b[0] * 0.7
+
+        r2_init = self.hanhwa_r[-1] * 1.3
+        g2_init = self.hanhwa_g[-1] * 1.3
+        b2_init = self.hanhwa_b[-1] * 1.3
+
+        r_ext_init = [r1_init, r2_init, 1]
+        g_ext_init = [g1_init, g2_init, 1]
+        b_ext_init = [b1_init, b2_init, 1]
+
         try:
-            hanhwa_opt_r, hanhwa_cov_r = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_r)
-            hanhwa_opt_g, hanhwa_cov_g = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_g)
-            hanhwa_opt_b, hanhwa_cov_b = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_b)
+            # hanhwa_opt_r, hanhwa_cov_r = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_r)
+            # hanhwa_opt_g, hanhwa_cov_g = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_g)
+            # hanhwa_opt_b, hanhwa_cov_b = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_b)
+            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r, p0=r_ext_init, maxfev=5000)
+            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g, p0=g_ext_init, maxfev=5000)
+            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b, p0=b_ext_init, maxfev=5000)
 
         except Exception as e:
             print("error msg: ", e)
