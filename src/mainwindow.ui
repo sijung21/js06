@@ -44,24 +44,6 @@
    <property name="styleSheet">
     <string notr="true"/>
    </property>
-   <widget class="QWidget" name="gridLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>1921</width>
-      <height>551</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
-     <property name="spacing">
-      <number>0</number>
-     </property>
-    </layout>
-   </widget>
    <widget class="QLabel" name="image_label">
     <property name="geometry">
      <rect>
@@ -754,8 +736,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">
-</string>
+     <string notr="true"/>
     </property>
     <property name="title">
      <string>Visibility</string>
@@ -839,6 +820,17 @@
      </property>
     </widget>
    </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1921</width>
+      <height>561</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticallayout"/>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="enabled">
@@ -912,8 +904,17 @@
     </property>
     <addaction name="actionPrint"/>
    </widget>
+   <widget class="QMenu" name="menuTest">
+    <property name="title">
+     <string>Test</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionTC5"/>
+    <addaction name="actionTC7"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMethod"/>
+   <addaction name="menuTest"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="enabled">
@@ -970,6 +971,16 @@
    </property>
    <property name="text">
     <string>Image</string>
+   </property>
+  </action>
+  <action name="actionTC5">
+   <property name="text">
+    <string>TC5</string>
+   </property>
+  </action>
+  <action name="actionTC7">
+   <property name="text">
+    <string>TC7</string>
    </property>
   </action>
  </widget>

@@ -75,6 +75,10 @@ class CurvedThread(QtCore.QThread):
         self.hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
         self.hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
 
+        # self.hanhwa_g[-1] = self.hanhwa_g[-1] * 1.2
+        # self.hanhwa_g[-2] = self.hanhwa_g[-2] * 1.2
+        # self.hanhwa_g[-3] = self.hanhwa_g[-3] * 1.2
+
         r1_init = self.hanhwa_r[0] * 0.7
         g1_init = self.hanhwa_g[0] * 0.7
         b1_init = self.hanhwa_b[0] * 0.7
