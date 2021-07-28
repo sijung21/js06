@@ -55,6 +55,7 @@ class ND01MainWindow(QMainWindow):
         self.rightflag = False
         self.create_dir()        
 
+        self.filepath = os.path.join(os.getcwd())
         # MainWindow.setWindowFlag(Qt.FramelessWindowHint)
         MainWindow.keyPressEvent = self.keyPressEvent
         # self.image_label.paintEvent = self.paintEvent
@@ -85,7 +86,7 @@ class ND01MainWindow(QMainWindow):
   
         VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:3554/profile2/media.smp"
 
-        self.actionQNO_8020R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3)))
+        self.actionQNO_8080R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, "QNO_8080R", "Video")))
 
         # self.actionImage.triggered.connect(self.read_image)
         # self.actionPrint.triggered.connect(self.minprint)
@@ -94,25 +95,41 @@ class ND01MainWindow(QMainWindow):
         self.timer.timeout.connect(self.timeout_run)
 
     @pyqtSlot(str)
-    def onCameraChange(self, url):
+    def onCameraChange(self, url, camera_name, src_type):
         print("비디오 실행")
+        self.camera_name = camera_name
         self._player.setMedia(QMediaContent(QUrl(url)))
         self.video_graphicsview.fitInView(self.video_item)
         self._player.play()
 
+        self.video_thread = VideoThread(url, src_type)
+        self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
+        self.video_thread.start()
 
     def timeout_run(self):
         current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
-        # current_time = datetime.datetime.now()
         self.time_label_name.setText(current_time)
         self.video_graphicsview.fitInView(self.video_item)
-        # self.graphicView.fitInView(self.video_item)
 
     def convert_cv_qt(self, cv_img):
-        rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        # self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
-        # if self.epoch[-2:] == "00":
-            # self.save_frame(cv_img, self.epoch)
+        # rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+        self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        if self.epoch[-2:] == "00":
+            self.save_frame(cv_img, self.epoch)
+    
+    def save_frame(self, image: np.ndarray, epoch: str):
+        image_path = os.path.join(self.filepath, "image", f"{self.camera_name}")
+        file_name = f"{epoch}"
+        if not os.path.isdir(image_path):
+            os.makedirs(image_path)
+
+        if not os.path.isfile(f"{image_path}/{file_name}.jpg"):
+            cv2.imwrite(f"{image_path}/{file_name}.jpg", image)
+            del image
+            del image_path
+            cv2.destroyAllWindows()
+            print(file_name , " 이미지가 저장되었습니다.")
+            return
 
     # def setupUi(self, MainWindow: QMainWindow):
     #     super().setupUi(MainWindow)

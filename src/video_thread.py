@@ -22,6 +22,8 @@ class VideoThread(QtCore.QThread):
         self._run_flag = True
         ## 영상 입력이 카메라일 때
         if self.file_type == "Video":
+            print("비디오 쓰레드 시작")
+
             if self.src == "":
                 cap = cv2.VideoCapture(0)
             # cap = ""
@@ -32,9 +34,9 @@ class VideoThread(QtCore.QThread):
             while self._run_flag:
                 ret, cv_img = cap.read()
             #  cv_img = cv2.imread('image_path/v2.png')
-            #  self.update_pixmap_signal.emit(cv_img)
-            if ret:
-                self.update_pixmap_signal.emit(cv_img)
+                # self.update_pixmap_signal.emit(cv_img)
+                if ret:
+                    self.update_pixmap_signal.emit(cv_img)
             # shut down capture system
             cap.release()
 

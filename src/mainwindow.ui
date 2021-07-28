@@ -869,8 +869,8 @@
     <widget class="QMenu" name="menustart">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>0</y>
+       <x>3876</x>
+       <y>128</y>
        <width>172</width>
        <height>169</height>
       </rect>
@@ -889,7 +889,7 @@
      </property>
      <addaction name="separator"/>
      <addaction name="actionPNM_9030V"/>
-     <addaction name="actionQNO_8020R"/>
+     <addaction name="actionQNO_8080R"/>
      <addaction name="actionWebcam"/>
      <addaction name="actionRpi_Telephoto_lens"/>
      <addaction name="actionRpi_noir"/>
@@ -940,9 +940,12 @@
     <string>PNM-9030V</string>
    </property>
   </action>
-  <action name="actionQNO_8020R">
+  <action name="actionQNO_8080R">
    <property name="text">
-    <string>QNO-8020R</string>
+    <string>QNO-8080R</string>
+   </property>
+   <property name="shortcut">
+    <string>2</string>
    </property>
   </action>
   <action name="actionWebcam">
