@@ -67,6 +67,8 @@ class ND01MainWindow(QMainWindow):
         # self.video_widget = Js06VideoWidget2(self)
         # self.gridLayout.setWidget(self.video_widget)
         # self.setCentralWidget(self.video_widget)
+
+        
         self.scene = QGraphicsScene(self)
         self.video_graphicsview = QGraphicsView(self.scene)
         self.video_graphicsview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -74,23 +76,17 @@ class ND01MainWindow(QMainWindow):
         self.video_item = QGraphicsVideoItem()
         self.scene.addItem(self.video_item)
 
-        verticallayout = QVBoxLayout()
-        verticallayout.setGeometry(QRect(0, 0, 1919, 520))
-        verticallayout.addWidget(self.video_graphicsview)
+        self.verticallayout.addWidget(self.video_graphicsview)
 
         self._player = QMediaPlayer(self, QMediaPlayer.VideoSurface)
         self._player.setVideoOutput(self.video_item)
         self._player.setPosition(0)
 
-
-
+  
         VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:3554/profile2/media.smp"
-        self.actionPNM_9030V.triggered.connect(lambda: self.capture_start("PNM-9030V"))
+
         self.actionQNO_8020R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3)))
-        self.actionWebcam.triggered.connect(lambda: self.capture_start("Webcam"))
-        self.actionRpi_Telephoto_lens.triggered.connect(lambda: self.capture_start("RPI-Telephoto-lens"))
-        self.actionRpi_noir.triggered.connect(lambda: self.capture_start("RPI-noir"))
-        self.actionupdate.triggered.connect(lambda: self.capture_start(self.camera_name))
+
         # self.actionImage.triggered.connect(self.read_image)
         # self.actionPrint.triggered.connect(self.minprint)
         self.timer = QTimer(MainWindow)
@@ -104,20 +100,19 @@ class ND01MainWindow(QMainWindow):
         self.video_graphicsview.fitInView(self.video_item)
         self._player.play()
 
-        self.video_thread = VideoThread(url)
-        self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
-        self.video_thread.start()
 
     def timeout_run(self):
         current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
         # current_time = datetime.datetime.now()
-        # self.time_label_name.setText(current_time)
+        self.time_label_name.setText(current_time)
         self.video_graphicsview.fitInView(self.video_item)
+        # self.graphicView.fitInView(self.video_item)
+
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-        self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
-        if self.epoch[-2:] == "00":
-            self.save_frame(cv_img, self.epoch)
+        # self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        # if self.epoch[-2:] == "00":
+            # self.save_frame(cv_img, self.epoch)
 
     # def setupUi(self, MainWindow: QMainWindow):
     #     super().setupUi(MainWindow)
