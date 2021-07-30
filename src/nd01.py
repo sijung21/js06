@@ -56,6 +56,7 @@ class ND01MainWindow(QMainWindow):
         self.image_width = None
         self.image_height = None
         self.video_flag = False
+        self.cp_image = None
         self.create_dir()        
 
         self.filepath = os.path.join(os.getcwd())
@@ -122,14 +123,15 @@ class ND01MainWindow(QMainWindow):
         self.video_graphicsview.fitInView(self.video_item)
 
     def convert_cv_qt(self, cv_img):
-        # rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        self.cp_image = cv_img.copy()
+        self.cp_image = cv2.cvtColor(self.cp_image, cv2.COLOR_BGR2RGB)
         img_height, img_width, ch = cv_img.shape
         self.image_width = int(img_width)
         self.image_height = int(img_height)
-        # print(self.image_width, "컨버트실행중")
         self.video_flag = True
         if self.epoch[-2:] == "00":
+            self.minprint()
             self.save_frame(cv_img, self.epoch)
     
     def save_frame(self, image: np.ndarray, epoch: str):
@@ -160,17 +162,6 @@ class ND01MainWindow(QMainWindow):
                 corner2_2 = int((corner2[1]-corner1[1])/self.image_height*self.blank_lbl.height())
                 painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
 
-
-            # y1 = painter.drawLine(0, self.horizontal_y1, self.blank_lbl.width(), self.horizontal_y1)
-            # y2 = painter.drawLine(0, self.horizontal_y2, self.blank_lbl.width(), self.horizontal_y2)
-            # y3 = painter.drawLine(0, self.horizontal_y3, self.blank_lbl.width(), self.horizontal_y3)
-        else:
-            x1 = None
-            x2 = None
-            x3 = None
-            y1 = None
-            y2 = None
-            y3 = None
         painter.end()
 
     def create_dir(self):
