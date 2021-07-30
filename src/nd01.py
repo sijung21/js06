@@ -53,6 +53,9 @@ class ND01MainWindow(QMainWindow):
         self.min_xy = ()
         self.leftflag = False
         self.rightflag = False
+        self.image_width = None
+        self.image_height = None
+        self.video_flag = False
         self.create_dir()        
 
         self.filepath = os.path.join(os.getcwd())
@@ -69,24 +72,30 @@ class ND01MainWindow(QMainWindow):
         # self.gridLayout.setWidget(self.video_widget)
         # self.setCentralWidget(self.video_widget)
 
-        
+        # 카메라 영상을 보여줄 QGraphicsView 생성
         self.scene = QGraphicsScene(self)
         self.video_graphicsview = QGraphicsView(self.scene)
         self.video_graphicsview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.video_graphicsview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.video_item = QGraphicsVideoItem()
         self.scene.addItem(self.video_item)
-
+        
         self.verticallayout.addWidget(self.video_graphicsview)
 
+        # 영상을 재생시켜주는 QMediaPlayer 생성
         self._player = QMediaPlayer(self, QMediaPlayer.VideoSurface)
         self._player.setVideoOutput(self.video_item)
         self._player.setPosition(0)
-
   
         VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:3554/profile2/media.smp"
 
-        self.actionQNO_8080R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, "QNO_8080R", "Video")))
+        self.actionQNO_8080R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, "QNO-8080R", "Video")))
+
+
+        # 그림 그리는 Q레이블 생성
+        self.blank_lbl = QLabel(self.video_graphicsview)
+        self.blank_lbl.setGeometry(0, 0, 1919, 520)
+        self.blank_lbl.paintEvent = self.lbl_paintEvent
 
         # self.actionImage.triggered.connect(self.read_image)
         # self.actionPrint.triggered.connect(self.minprint)
@@ -96,11 +105,12 @@ class ND01MainWindow(QMainWindow):
 
     @pyqtSlot(str)
     def onCameraChange(self, url, camera_name, src_type):
-        print("비디오 실행")
         self.camera_name = camera_name
         self._player.setMedia(QMediaContent(QUrl(url)))
         self.video_graphicsview.fitInView(self.video_item)
         self._player.play()
+
+        self.get_target(self.camera_name)
 
         self.video_thread = VideoThread(url, src_type)
         self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
@@ -114,6 +124,11 @@ class ND01MainWindow(QMainWindow):
     def convert_cv_qt(self, cv_img):
         # rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
         self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        img_height, img_width, ch = cv_img.shape
+        self.image_width = int(img_width)
+        self.image_height = int(img_height)
+        # print(self.image_width, "컨버트실행중")
+        self.video_flag = True
         if self.epoch[-2:] == "00":
             self.save_frame(cv_img, self.epoch)
     
@@ -131,26 +146,36 @@ class ND01MainWindow(QMainWindow):
             print(file_name , " 이미지가 저장되었습니다.")
             return
 
-    # def setupUi(self, MainWindow: QMainWindow):
-    #     super().setupUi(MainWindow)
-    #     MainWindow.setWindowFlag(Qt.FramelessWindowHint)
-    #     MainWindow.keyPressEvent = self.keyPressEvent
-    #     self.image_label.paintEvent = self.paintEvent
-    #     self.image_label.mousePressEvent = self.mousePressEvent
-    #     self.image_label.mouseMoveEvent = self.mouseMoveEvent
-    #     self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
+    def lbl_paintEvent(self, event):
+        self.horizontal_flag = True
+        painter = QPainter(self.blank_lbl)
+        if self.horizontal_flag and self.video_flag:
+            for corner1, corner2, in zip(self.left_range, self.right_range):
+                br = QBrush(QColor(100, 10, 10, 40))
+                painter.setBrush(br)
+                painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+                # print(corner1[0], corner1[1])
+                # print(self.image_width)
+                # print(self.blank_lbl.width())
+                # print(int(corner1[0])/self.image_width*self.blank_lbl.width())
+                corner1_1 = int(corner1[0]/self.image_width*self.blank_lbl.width())
+                corner1_2 = int(corner1[1]/self.image_height*self.blank_lbl.height())
+                corner2_1 = int((corner2[0]-corner1[0])/self.image_width*self.blank_lbl.width())
+                corner2_2 = int((corner2[1]-corner1[1])/self.image_height*self.blank_lbl.height())
+                painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
 
-    #     self.actionPNM_9030V.triggered.connect(lambda: self.capture_start("PNM-9030V"))
-    #     self.actionQNO_8020R.triggered.connect(lambda: self.capture_start("QNO-8020R"))
-    #     self.actionWebcam.triggered.connect(lambda: self.capture_start("Webcam"))
-    #     self.actionRpi_Telephoto_lens.triggered.connect(lambda: self.capture_start("RPI-Telephoto-lens"))
-    #     self.actionRpi_noir.triggered.connect(lambda: self.capture_start("RPI-noir"))
-    #     self.actionupdate.triggered.connect(lambda: self.capture_start(self.camera_name))
-    #     # self.actionImage.triggered.connect(self.read_image)
-    #     # self.actionPrint.triggered.connect(self.minprint)  
-    #     self.timer = QTimer(MainWindow)
-    #     self.timer.start(1000)
-    #     self.timer.timeout.connect(self.timeout_run)
+
+            # y1 = painter.drawLine(0, self.horizontal_y1, self.blank_lbl.width(), self.horizontal_y1)
+            # y2 = painter.drawLine(0, self.horizontal_y2, self.blank_lbl.width(), self.horizontal_y2)
+            # y3 = painter.drawLine(0, self.horizontal_y3, self.blank_lbl.width(), self.horizontal_y3)
+        else:
+            x1 = None
+            x2 = None
+            x3 = None
+            y1 = None
+            y2 = None
+            y3 = None
+        painter.end()
 
     def create_dir(self):
         """정보를 저장할 폴더(경로)들을 만든다."""
@@ -509,7 +534,7 @@ class ND01MainWindow(QMainWindow):
         """특정 카메라의 타겟 정보들을 불러온다."""
 
         save_path = os.path.join(f"target/{self.camera_name}")
-
+        print("타겟을 불러옵니다.")
         if os.path.isfile(f"{save_path}/{camera_name}.csv"):
             target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
             self.target_name = target_df["target_name"].tolist()
