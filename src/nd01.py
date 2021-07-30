@@ -145,7 +145,8 @@ class ND01MainWindow(QMainWindow):
                 self.pm_25 = None
     
     def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
-        image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
+        # image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
+        image_path = os.path.join(self.filepath, f"{self.test_name}")
         file_name = f"{epoch}"
         if not os.path.isdir(image_path):
             os.makedirs(image_path)
