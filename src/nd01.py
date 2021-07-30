@@ -94,7 +94,7 @@ class ND01MainWindow(QMainWindow):
 
         # 그림 그리는 Q레이블 생성
         self.blank_lbl = QLabel(self.video_graphicsview)
-        self.blank_lbl.setGeometry(0, 0, 1919, 520)
+        self.blank_lbl.setGeometry(0, 0, 1919, 570)
         self.blank_lbl.paintEvent = self.lbl_paintEvent
 
         # self.actionImage.triggered.connect(self.read_image)
@@ -154,10 +154,6 @@ class ND01MainWindow(QMainWindow):
                 br = QBrush(QColor(100, 10, 10, 40))
                 painter.setBrush(br)
                 painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
-                # print(corner1[0], corner1[1])
-                # print(self.image_width)
-                # print(self.blank_lbl.width())
-                # print(int(corner1[0])/self.image_width*self.blank_lbl.width())
                 corner1_1 = int(corner1[0]/self.image_width*self.blank_lbl.width())
                 corner1_2 = int(corner1[1]/self.image_height*self.blank_lbl.height())
                 corner2_1 = int((corner2[0]-corner1[0])/self.image_width*self.blank_lbl.width())
