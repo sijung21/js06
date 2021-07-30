@@ -57,6 +57,9 @@ class ND01MainWindow(QMainWindow):
         self.image_height = None
         self.video_flag = False
         self.cp_image = None
+        self.g_ext = None
+        self.pm_25 = None
+        self.test_name = None
         self.create_dir()        
 
         self.filepath = os.path.join(os.getcwd())
@@ -89,10 +92,14 @@ class ND01MainWindow(QMainWindow):
         self._player.setPosition(0)
   
         VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:3554/profile2/media.smp"
-
-        self.actionQNO_8080R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, "QNO-8080R", "Video")))
-
-
+        
+        CAM_NAME = "QNO-8080R"
+        self.actionQNO_8080R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
+        self.actionQNO_8080R.triggered.connect((lambda: self.test_settings("image")))
+        self.actionTC5.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
+        self.actionTC5.triggered.connect((lambda: self.test_settings("TC5")))
+        self.actionTC7.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
+        self.actionTC7.triggered.connect((lambda: self.test_settings("TC7")))
         # 그림 그리는 Q레이블 생성
         self.blank_lbl = QLabel(self.video_graphicsview)
         self.blank_lbl.setGeometry(0, 0, 1919, 570)
@@ -132,21 +139,34 @@ class ND01MainWindow(QMainWindow):
         self.video_flag = True
         if self.epoch[-2:] == "00":
             self.minprint()
-            self.save_frame(cv_img, self.epoch)
+            if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
+                self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
+                self.g_ext = None
+                self.pm_25 = None
     
-    def save_frame(self, image: np.ndarray, epoch: str):
-        image_path = os.path.join(self.filepath, "image", f"{self.camera_name}")
+    def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
+        image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
         file_name = f"{epoch}"
         if not os.path.isdir(image_path):
             os.makedirs(image_path)
 
-        if not os.path.isfile(f"{image_path}/{file_name}.jpg"):
-            cv2.imwrite(f"{image_path}/{file_name}.jpg", image)
+        g_ext = g_ext / 100
+
+        if not os.path.isfile(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg"):
+            cv2.imwrite(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg", image)
             del image
             del image_path
             cv2.destroyAllWindows()
             print(file_name , " 이미지가 저장되었습니다.")
             return
+
+    def test_settings(self, test_name):
+
+        if self.test_name is not None:
+            self.test_name = None
+
+        if self.test_name is None:
+            self.test_name = test_name
 
     def lbl_paintEvent(self, event):
         self.horizontal_flag = True
@@ -400,6 +420,8 @@ class ND01MainWindow(QMainWindow):
                                             Qt.SmoothTransformation)
 
             self.graph_label.setPixmap(QPixmap.fromImage(p))
+        
+        # return g_ext, pm_25
 
     def minrgb(self, upper_left, lower_right):
         """드래그한 영역의 RGB 최솟값을 추출한다"""
@@ -475,6 +497,7 @@ class ND01MainWindow(QMainWindow):
         self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.6f}")
         self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
         self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
+        self.g_ext = round(alp_list[1], 1)
         self.visibility_print(alp_list[1])
         self.pm_print(alp_list)
 
@@ -494,7 +517,7 @@ class ND01MainWindow(QMainWindow):
 
         pm_value = (r_ext_pm + g_ext_pm + b_ext_pm)/3
         pm_value_str = f"{pm_value:.2f}" + " u/m"
-
+        self.pm_25 = round(pm_value, 2)
         self.pm25_value.setText(pm_value_str)
 
 
