@@ -143,6 +143,7 @@ class ND01MainWindow(QMainWindow):
                 self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
                 self.g_ext = None
                 self.pm_25 = None
+                return
     
     def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
         # image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
@@ -151,7 +152,7 @@ class ND01MainWindow(QMainWindow):
         if not os.path.isdir(image_path):
             os.makedirs(image_path)
 
-        g_ext = g_ext / 100
+        g_ext = round(g_ext / 1000, 4)
 
         if not os.path.isfile(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg"):
             cv2.imwrite(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg", image)
