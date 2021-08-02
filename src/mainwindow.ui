@@ -795,9 +795,9 @@
     <widget class="QLabel" name="pm25_value">
      <property name="geometry">
       <rect>
-       <x>170</x>
+       <x>60</x>
        <y>50</y>
-       <width>301</width>
+       <width>551</width>
        <height>111</height>
       </rect>
      </property>

@@ -516,9 +516,10 @@ class ND01MainWindow(QMainWindow):
         r_ext_pm = ext_list[0]*1000/4/2.5
         g_ext_pm = ext_list[1]*1000/4/2.5
         b_ext_pm = ext_list[2]*1000/4/2.5
+        
 
-        pm_value = (r_ext_pm + g_ext_pm + b_ext_pm)/3
-        pm_value_str = f"{pm_value:.2f}" + " u/m"
+        pm_value = b_ext_pm/(1+5.67*((85/100)**5.8))
+        pm_value_str = f"{pm_value:.2f}" + r" ug/m^3"
         self.pm_25 = round(pm_value, 2)
         self.pm25_value.setText(pm_value_str)
 
