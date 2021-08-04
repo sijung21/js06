@@ -60,15 +60,14 @@ class ND01MainWindow(QMainWindow):
         self.g_ext = None
         self.pm_25 = None
         self.test_name = None
+        self.end_drawing = None
         self.create_dir()        
 
         self.filepath = os.path.join(os.getcwd())
         # MainWindow.setWindowFlag(Qt.FramelessWindowHint)
         MainWindow.keyPressEvent = self.keyPressEvent
         # self.image_label.paintEvent = self.paintEvent
-        # self.image_label.mousePressEvent = self.mousePressEvent
-        # self.image_label.mouseMoveEvent = self.mouseMoveEvent
-        # self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
+
         # self.video_dock = QDockWidget("Video", self)
         # self.video_dock.setFeatures(
             # QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetFloatable)
@@ -104,6 +103,10 @@ class ND01MainWindow(QMainWindow):
         self.blank_lbl = QLabel(self.video_graphicsview)
         self.blank_lbl.setGeometry(0, 0, 1919, 570)
         self.blank_lbl.paintEvent = self.lbl_paintEvent
+
+        self.blank_lbl.mousePressEvent = self.mousePressEvent
+        self.blank_lbl.mouseMoveEvent = self.mouseMoveEvent
+        self.blank_lbl.mouseReleaseEvent = self.mouseReleaseEvent
 
         # self.actionImage.triggered.connect(self.read_image)
         # self.actionPrint.triggered.connect(self.minprint)
@@ -183,6 +186,26 @@ class ND01MainWindow(QMainWindow):
                 corner2_1 = int((corner2[0]-corner1[0])/self.image_width*self.blank_lbl.width())
                 corner2_2 = int((corner2[1]-corner1[1])/self.image_height*self.blank_lbl.height())
                 painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
+
+        
+
+        if self.isDrawing:
+            br = QBrush(QColor(100, 10, 10, 40))
+            painter.setBrush(br)
+            painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+            painter.drawRect(QRect(self.begin, self.end))
+            # 썸네일 만들기
+            th_x, th_y = self.thumbnail_pos(self.end)
+            th_qimage = self.thumbnail(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
+            thumbnail_image = QPixmap.fromImage(th_qimage)
+            painter.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), thumbnail_image)
+
+        if self.end_drawing:
+            print("썸네일 삭제")
+            painter.eraseRect(QRect(self.begin, self.end))
+            painter.eraseRect(QRect(self.end.x(), self.end.y(), 200, 200))
+            self.end_drawing = False
+            self.isDrawing = False
 
         painter.end()
 
@@ -306,8 +329,8 @@ class ND01MainWindow(QMainWindow):
     #         qp.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), thumbnail_image)
 
     def thumbnail_pos(self, end_pos):
-        x = int((end_pos.x()/self.label_width)*self.img_width)
-        y = int((end_pos.y()/self.label_height)*self.img_height)
+        x = int((end_pos.x()/self.blank_lbl.width())*self.image_width)
+        y = int((end_pos.y()/self.blank_lbl.height())*self.image_height)
         return x, y
 
     def thumbnail(self, image):
@@ -316,58 +339,60 @@ class ND01MainWindow(QMainWindow):
         qImg = QImage(image.data.tobytes(), width, height, bytesPerLine, QImage.Format_RGB888)
         return qImg
 
-    # def mousePressEvent(self, event):
-    #     """마우스 클릭시 발생하는 이벤트, QLabel method overriding"""
+    def mousePressEvent(self, event):
+        """마우스 클릭시 발생하는 이벤트, QLabel method overriding"""
 
-    #     # 좌 클릭시 실행
-    #     if event.buttons() == Qt.LeftButton:
-    #         self.isDrawing = True
-    #         self.begin = event.pos()
-    #         self.end = event.pos()
-    #         self.upper_left = (int((self.begin.x()/self.label_width)*self.img_width),
-    #                            int((self.begin.y()/self.label_height)*self.img_height))
-    #         self.image_label.update()
+        # 좌 클릭시 실행
+        if event.buttons() == Qt.LeftButton:
+            self.isDrawing = True
+            self.begin = event.pos()
+            self.end = event.pos()
+            self.upper_left = (int((self.begin.x()/self.blank_lbl.width())*self.image_width),
+                               int((self.begin.y()/self.blank_lbl.height())*self.image_height))
+            self.blank_lbl.update()
 
-    #         self.leftflag = True
-    #         self.rightflag = False
+            self.leftflag = True
+            self.rightflag = False
 
-    #     # 우 클릭시 실행
-    #     elif event.buttons() == Qt.RightButton:
-    #         self.isDrawing = False
-    #         if len(self.left_range) > 0:
-    #             del self.distance[-1]
-    #             del self.target_name[-1]
-    #             del self.left_range[-1]
-    #             del self.right_range[-1]
-    #             self.save_target()
-    #             self.rightflag = True
-    #         self.leftflag = False
-    #         # self.minprint()
+        # 우 클릭시 실행
+        elif event.buttons() == Qt.RightButton:
+            self.isDrawing = False
+            if len(self.left_range) > 0:
+                del self.distance[-1]
+                del self.target_name[-1]
+                del self.left_range[-1]
+                del self.right_range[-1]
+                self.save_target()
+                self.rightflag = True
+            self.leftflag = False
+            # self.minprint()
 
-    # def mouseMoveEvent(self, event):
-    #     """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
-    #     if event.buttons() == Qt.LeftButton:
-    #         self.end = event.pos()
-    #         self.image_label.update()
-    #         self.isDrawing = True
+    def mouseMoveEvent(self, event):
+        """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
+        if event.buttons() == Qt.LeftButton:
+            self.end = event.pos()
+            self.blank_lbl.update()
+            self.isDrawing = True
 
-    # def mouseReleaseEvent(self, event):
-    #     """마우스 클릭이 떼질 때 발생하는 이벤트, QLabel method overriding"""
-    #     if self.leftflag == True:
-    #         self.end = event.pos()
-    #         self.image_label.update()
-    #         self.lower_right = (int((self.end.x()/self.label_width)*self.img_width),
-    #                             int((self.end.y()/self.label_height)*self.img_height))
-    #         text, ok = QInputDialog.getText(self.centralwidget, '거리 입력', '거리(km)')
-    #         if ok:
-    #             self.left_range.append(self.upper_left)
-    #             self.right_range.append(self.lower_right)
-    #             self.distance.append(text)
-    #             self.min_xy = self.minrgb(self.upper_left, self.lower_right)
-    #             self.target_name.append("target_" + str(len(self.left_range)))
-    #             self.save_target()
-    #             self.update_image(self.last_image)
-    #             # self.minprint()
+    def mouseReleaseEvent(self, event):
+        """마우스 클릭이 떼질 때 발생하는 이벤트, QLabel method overriding"""
+        if self.leftflag == True:
+            self.end = event.pos()
+            self.blank_lbl.update()
+            self.lower_right = (int((self.end.x()/self.blank_lbl.width())*self.image_width),
+                                int((self.end.y()/self.blank_lbl.height())*self.image_height))
+            text, ok = QInputDialog.getText(self.centralwidget, '거리 입력', '거리(km)')
+            if ok:
+                self.left_range.append(self.upper_left)
+                self.right_range.append(self.lower_right)
+                self.distance.append(text)
+                self.min_xy = self.minrgb(self.upper_left, self.lower_right)
+                self.target_name.append("target_" + str(len(self.left_range)))
+                self.save_target()
+                self.isDrawing = False
+                self.end_drawing = True
+                # self.update_image(self.last_image)
+                # self.minprint()
 
     #     if self.rightflag:
     #         self.update_image(self.last_image)
