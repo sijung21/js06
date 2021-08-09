@@ -104,9 +104,9 @@ class ND01MainWindow(QMainWindow):
         self.blank_lbl.setGeometry(0, 0, 1919, 570)
         self.blank_lbl.paintEvent = self.lbl_paintEvent
 
-        self.blank_lbl.mousePressEvent = self.mousePressEvent
-        self.blank_lbl.mouseMoveEvent = self.mouseMoveEvent
-        self.blank_lbl.mouseReleaseEvent = self.mouseReleaseEvent
+        self.blank_lbl.mousePressEvent = self.lbl_mousePressEvent
+        self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
+        self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
 
         # self.actionImage.triggered.connect(self.read_image)
         # self.actionPrint.triggered.connect(self.minprint)
@@ -339,7 +339,7 @@ class ND01MainWindow(QMainWindow):
         qImg = QImage(image.data.tobytes(), width, height, bytesPerLine, QImage.Format_RGB888)
         return qImg
 
-    def mousePressEvent(self, event):
+    def lbl_mousePressEvent(self, event):
         """마우스 클릭시 발생하는 이벤트, QLabel method overriding"""
 
         # 좌 클릭시 실행
@@ -367,14 +367,14 @@ class ND01MainWindow(QMainWindow):
             self.leftflag = False
             # self.minprint()
 
-    def mouseMoveEvent(self, event):
+    def lbl_mouseMoveEvent(self, event):
         """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
         if event.buttons() == Qt.LeftButton:
             self.end = event.pos()
             self.blank_lbl.update()
             self.isDrawing = True
 
-    def mouseReleaseEvent(self, event):
+    def lbl_mouseReleaseEvent(self, event):
         """마우스 클릭이 떼질 때 발생하는 이벤트, QLabel method overriding"""
         if self.leftflag == True:
             self.end = event.pos()
@@ -391,6 +391,9 @@ class ND01MainWindow(QMainWindow):
                 self.save_target()
                 self.isDrawing = False
                 self.end_drawing = True
+            else:
+                self.isDrawing = False
+                self.blank_lbl.update()
                 # self.update_image(self.last_image)
                 # self.minprint()
 
