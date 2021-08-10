@@ -100,6 +100,7 @@ class ND01MainWindow(QMainWindow):
         self.actionTC7.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
         self.actionTC7.triggered.connect((lambda: self.test_settings("TC7")))
         self.actionImage.triggered.connect(self.read_image)
+        self.actionPrint.triggered.connect(self.minprint)
         # 그림 그리는 Q레이블 생성
         self.blank_lbl = QLabel(self.video_graphicsview)
         self.blank_lbl.setGeometry(0, 0, 1919, 570)
@@ -109,13 +110,6 @@ class ND01MainWindow(QMainWindow):
         self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
         self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
 
-        # 이미지 레이블 테스트
-        # self.test_label = QLabel(self)
-        # self.test_label.setGeometry(0, 0, 1919, 570)
-        # self.test_label.paintEvent = self.test_paintEvent
-
-        # self.actionImage.triggered.connect(self.read_image)
-        # self.actionPrint.triggered.connect(self.minprint)
         self.timer = QTimer(MainWindow)
         self.timer.start(1000)
         self.timer.timeout.connect(self.timeout_run)
@@ -188,12 +182,6 @@ class ND01MainWindow(QMainWindow):
         if self.test_name is None:
             self.test_name = test_name
 
-    def test_paintEvent(self, event):
-        p1 = QPainter(self.blank_lbl)
-        if self.camera_name == "Image" and self.video_flag:
-            back_ground_image =  self.thumbnail(self.cp_image)
-            bk_image = QPixmap.fromImage(back_ground_image)
-            p1.drawPixmap(QRect(0, 0, 1919, 570), bk_image)
 
     def lbl_paintEvent(self, event):
         self.horizontal_flag = True
@@ -358,7 +346,6 @@ class ND01MainWindow(QMainWindow):
                 self.rightflag = True
             self.leftflag = False
             self.blank_lbl.update()
-            # self.minprint()
 
     def lbl_mouseMoveEvent(self, event):
         """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
