@@ -102,12 +102,17 @@ class ND01MainWindow(QMainWindow):
         self.actionImage.triggered.connect(self.read_image)
         # 그림 그리는 Q레이블 생성
         self.blank_lbl = QLabel(self.video_graphicsview)
-        self.blank_lbl.setGeometry(0, 0, 1919, 540)
+        self.blank_lbl.setGeometry(0, 0, 1919, 570)
         self.blank_lbl.paintEvent = self.lbl_paintEvent
 
         self.blank_lbl.mousePressEvent = self.lbl_mousePressEvent
         self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
         self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
+
+        # 이미지 레이블 테스트
+        # self.test_label = QLabel(self)
+        # self.test_label.setGeometry(0, 0, 1919, 570)
+        # self.test_label.paintEvent = self.test_paintEvent
 
         # self.actionImage.triggered.connect(self.read_image)
         # self.actionPrint.triggered.connect(self.minprint)
@@ -183,9 +188,22 @@ class ND01MainWindow(QMainWindow):
         if self.test_name is None:
             self.test_name = test_name
 
+    def test_paintEvent(self, event):
+        p1 = QPainter(self.blank_lbl)
+        if self.camera_name == "Image" and self.video_flag:
+            back_ground_image =  self.thumbnail(self.cp_image)
+            bk_image = QPixmap.fromImage(back_ground_image)
+            p1.drawPixmap(QRect(0, 0, 1919, 570), bk_image)
+
     def lbl_paintEvent(self, event):
         self.horizontal_flag = True
         painter = QPainter(self.blank_lbl)
+
+        if self.camera_name == "Image" and self.video_flag:
+            back_ground_image =  self.thumbnail(self.cp_image)
+            bk_image = QPixmap.fromImage(back_ground_image)
+            painter.drawPixmap(QRect(0, 0, 1919, 570), bk_image)
+
         if self.horizontal_flag and self.video_flag:
             for corner1, corner2, in zip(self.left_range, self.right_range):
                 br = QBrush(QColor(100, 10, 10, 40))
@@ -196,8 +214,6 @@ class ND01MainWindow(QMainWindow):
                 corner2_1 = int((corner2[0]-corner1[0])/self.image_width*self.blank_lbl.width())
                 corner2_2 = int((corner2[1]-corner1[1])/self.image_height*self.blank_lbl.height())
                 painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
-
-        
 
         if self.isDrawing:
             br = QBrush(QColor(100, 10, 10, 40))
@@ -253,6 +269,7 @@ class ND01MainWindow(QMainWindow):
 
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
+        
         self.qt_img = self.convert_cv_qt(cv_img)
         self.blank_lbl.setPixmap(self.qt_img)
         print("이미지 업데이트")
@@ -340,6 +357,7 @@ class ND01MainWindow(QMainWindow):
                 self.save_target()
                 self.rightflag = True
             self.leftflag = False
+            self.blank_lbl.update()
             # self.minprint()
 
     def lbl_mouseMoveEvent(self, event):
