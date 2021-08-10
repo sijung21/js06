@@ -41,13 +41,9 @@ class VideoThread(QtCore.QThread):
             cap.release()
 
         elif self.file_type == "Image":
+            print("이미지 전송")
             cv_img = cv2.imread(self.src, cv2.IMREAD_COLOR)
             self.update_pixmap_signal.emit(cv_img)
-
-
-
-
-
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""

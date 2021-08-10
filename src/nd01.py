@@ -64,7 +64,7 @@ class ND01MainWindow(QMainWindow):
         self.create_dir()        
 
         self.filepath = os.path.join(os.getcwd())
-        # MainWindow.setWindowFlag(Qt.FramelessWindowHint)
+        MainWindow.setWindowFlag(Qt.FramelessWindowHint)
         MainWindow.keyPressEvent = self.keyPressEvent
         # self.image_label.paintEvent = self.paintEvent
 
@@ -99,9 +99,10 @@ class ND01MainWindow(QMainWindow):
         self.actionTC5.triggered.connect((lambda: self.test_settings("TC5")))
         self.actionTC7.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
         self.actionTC7.triggered.connect((lambda: self.test_settings("TC7")))
+        self.actionImage.triggered.connect(self.read_image)
         # 그림 그리는 Q레이블 생성
         self.blank_lbl = QLabel(self.video_graphicsview)
-        self.blank_lbl.setGeometry(0, 0, 1919, 570)
+        self.blank_lbl.setGeometry(0, 0, 1919, 540)
         self.blank_lbl.paintEvent = self.lbl_paintEvent
 
         self.blank_lbl.mousePressEvent = self.lbl_mousePressEvent
@@ -140,6 +141,8 @@ class ND01MainWindow(QMainWindow):
         self.image_width = int(img_width)
         self.image_height = int(img_height)
         self.video_flag = True
+        bytes_per_line = ch * img_width
+
         if self.epoch[-2:] == "00":
             self.minprint()
             if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
@@ -147,6 +150,13 @@ class ND01MainWindow(QMainWindow):
                 self.g_ext = None
                 self.pm_25 = None
                 return
+        
+        if self.camera_name == "Image":
+            convert_to_Qt_format = QImage(cv_img.data, img_width, img_height, bytes_per_line,
+                                            QImage.Format_RGB888)
+            p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.KeepAspectRatio,
+                                        Qt.SmoothTransformation)
+            return QPixmap.fromImage(p)
     
     def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
         # image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
@@ -220,67 +230,32 @@ class ND01MainWindow(QMainWindow):
             except Exception as e:
                 pass
 
-    def capture_start(self, camera_name: str):
+    def read_image(self):
+        self.bgrfilter = True
+        self.camera_name = "Image"
+        print("read_Image 실행")
+        self.get_target(self.camera_name)
+
         if self.video_thread is not None:
             self.video_thread.stop()
 
-        # self.bgrfilter = True
-        # self.camera_name = camera_name
-        # self.get_target(self.camera_name)
-
-
-        # create the video capture thread
-        # hanhwa panorama camera start
-        if camera_name == "PNM-9030V":
-            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp', "Video")
-
-        # hanhwa camera start
-        elif camera_name == "QNO-8020R":
-            # self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.20/profile2/media.smp', "Video")
-            self.video_thread = Js06VideoWidget2()
-
-        # Rasberry Pi Telephoto lens camera start
-        elif camera_name == "RPI-Telephoto-lens":
-            self.video_thread = VideoThread('rtsp://192.168.100.33:8554/test', "Video")
-
-        # Rasberry Pi No IR filter camera start
-        elif camera_name == "RPI-noir":
-            self.video_thread = VideoThread('rtsp://192.168.100.28:7224/unicast', "Video")
-
-        # webcam start
-        else:
-            self.video_thread = VideoThread()
-
-        # connect its signal to the update_image slot
-        # self.video_thread.update_pixmap_signal.connect(self.update_image)
-        self.video_thread.onCameraChange('rtsp://admin:sijung5520@192.168.100.20/profile2/media.smp')
-        # start the thread
-        # self.video_thread.start()
-
-    # def read_image(self):
-    #     self.bgrfilter = True
-    #     self.camera_name = "Image"
-    #     self.get_target(self.camera_name)
-
-    #     if self.video_thread is not None:
-    #         self.video_thread.stop()
-
-    #     imagePath, _ = QFileDialog.getOpenFileName(directory="D:/Extinction_coefficient/image/commax_date_west")
+        imagePath, _ = QFileDialog.getOpenFileName(directory="D:/Extinction_coefficient/image/commax_date_west")
         
-    #     print(imagePath)
-    #     if imagePath:
-    #         self.video_thread = VideoThread(imagePath, "Image")
-    #         self.video_thread.update_pixmap_signal.connect(self.update_image)
-    #         self.video_thread.start()
-    #     else:
-    #         return
+        print(imagePath)
+        if imagePath:
+            self.video_thread = VideoThread(imagePath, "Image")
+            self.video_thread.update_pixmap_signal.connect(self.update_image)
+            self.video_thread.start()
+        else:
+            return
 
 
 
-    # def update_image(self, cv_img):
-    #     """Updates the image_label with a new opencv image"""
-    #     self.qt_img = self.convert_cv_qt(cv_img)
-    #     self.image_label.setPixmap(self.qt_img)
+    def update_image(self, cv_img):
+        """Updates the image_label with a new opencv image"""
+        self.qt_img = self.convert_cv_qt(cv_img)
+        self.blank_lbl.setPixmap(self.qt_img)
+        print("이미지 업데이트")
 
     # def convert_cv_qt(self, cv_img):
     #     """Convert from an opencv image to QPixmap"""
