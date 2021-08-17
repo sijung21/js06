@@ -752,10 +752,10 @@
      </property>
      <property name="font">
       <font>
-       <family>Arial</family>
+       <family>NanumGothic</family>
        <pointsize>48</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
+       <weight>50</weight>
+       <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
@@ -803,10 +803,10 @@
      </property>
      <property name="font">
       <font>
-       <family>Arial</family>
+       <family>NanumGothic</family>
        <pointsize>48</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
+       <weight>50</weight>
+       <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
@@ -870,7 +870,7 @@
      <property name="geometry">
       <rect>
        <x>3876</x>
-       <y>128</y>
+       <y>127</y>
        <width>172</width>
        <height>169</height>
       </rect>
@@ -956,6 +956,9 @@
   <action name="actionPrint">
    <property name="text">
     <string>Print</string>
+   </property>
+   <property name="shortcut">
+    <string>3</string>
    </property>
   </action>
   <action name="actionRpi_Telephoto_lens">
