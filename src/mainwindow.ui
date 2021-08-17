@@ -44,24 +44,6 @@
    <property name="styleSheet">
     <string notr="true"/>
    </property>
-   <widget class="QWidget" name="gridLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>1921</width>
-      <height>551</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
-     </property>
-     <property name="spacing">
-      <number>0</number>
-     </property>
-    </layout>
-   </widget>
    <widget class="QLabel" name="image_label">
     <property name="geometry">
      <rect>
@@ -754,8 +736,7 @@
      </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">
-</string>
+     <string notr="true"/>
     </property>
     <property name="title">
      <string>Visibility</string>
@@ -771,10 +752,10 @@
      </property>
      <property name="font">
       <font>
-       <family>Arial</family>
+       <family>NanumGothic</family>
        <pointsize>48</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
+       <weight>50</weight>
+       <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
@@ -814,18 +795,18 @@
     <widget class="QLabel" name="pm25_value">
      <property name="geometry">
       <rect>
-       <x>170</x>
+       <x>60</x>
        <y>50</y>
-       <width>301</width>
+       <width>551</width>
        <height>111</height>
       </rect>
      </property>
      <property name="font">
       <font>
-       <family>Arial</family>
+       <family>NanumGothic</family>
        <pointsize>48</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
+       <weight>50</weight>
+       <bold>false</bold>
       </font>
      </property>
      <property name="styleSheet">
@@ -838,6 +819,17 @@
       <set>Qt::AlignCenter</set>
      </property>
     </widget>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1921</width>
+      <height>561</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticallayout"/>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -877,8 +869,8 @@
     <widget class="QMenu" name="menustart">
      <property name="geometry">
       <rect>
-       <x>0</x>
-       <y>0</y>
+       <x>3876</x>
+       <y>127</y>
        <width>172</width>
        <height>169</height>
       </rect>
@@ -897,7 +889,7 @@
      </property>
      <addaction name="separator"/>
      <addaction name="actionPNM_9030V"/>
-     <addaction name="actionQNO_8020R"/>
+     <addaction name="actionQNO_8080R"/>
      <addaction name="actionWebcam"/>
      <addaction name="actionRpi_Telephoto_lens"/>
      <addaction name="actionRpi_noir"/>
@@ -912,8 +904,17 @@
     </property>
     <addaction name="actionPrint"/>
    </widget>
+   <widget class="QMenu" name="menuTest">
+    <property name="title">
+     <string>Test</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionTC5"/>
+    <addaction name="actionTC7"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuMethod"/>
+   <addaction name="menuTest"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="enabled">
@@ -939,9 +940,12 @@
     <string>PNM-9030V</string>
    </property>
   </action>
-  <action name="actionQNO_8020R">
+  <action name="actionQNO_8080R">
    <property name="text">
-    <string>QNO-8020R</string>
+    <string>QNO-8080R</string>
+   </property>
+   <property name="shortcut">
+    <string>2</string>
    </property>
   </action>
   <action name="actionWebcam">
@@ -952,6 +956,9 @@
   <action name="actionPrint">
    <property name="text">
     <string>Print</string>
+   </property>
+   <property name="shortcut">
+    <string>3</string>
    </property>
   </action>
   <action name="actionRpi_Telephoto_lens">
@@ -970,6 +977,16 @@
    </property>
    <property name="text">
     <string>Image</string>
+   </property>
+  </action>
+  <action name="actionTC5">
+   <property name="text">
+    <string>TC5</string>
+   </property>
+  </action>
+  <action name="actionTC7">
+   <property name="text">
+    <string>TC7</string>
    </property>
   </action>
  </widget>

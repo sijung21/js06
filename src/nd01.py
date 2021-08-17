@@ -11,18 +11,28 @@ import pandas as pd
 # import PyQt5
 # print(PyQt5.__version__)
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem, QFileDialog
-from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication, pyqtSlot, QTimer
+from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem, QFileDialog, QDockWidget, QGraphicsScene, QGraphicsView
+from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication, pyqtSlot, QTimer, QUrl
+from PyQt5 import uic
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 
 from video_thread import VideoThread
 from curved import CurvedThread
 from mainwindow import Ui_MainWindow
+from video_test import Js06VideoWidget2
 
 print(pd.__version__)
 
-class ND01MainWindow(Ui_MainWindow):
-    def __init__(self):
-        super().__init__()
+class ND01MainWindow(QMainWindow):
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
+        ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                               "mainwindow.ui")
+        uic.loadUi(ui_path, self)
+
         self.camera_name = ""
         self.video_thread = None
         # self.ipcam_start()
@@ -43,30 +53,175 @@ class ND01MainWindow(Ui_MainWindow):
         self.min_xy = ()
         self.leftflag = False
         self.rightflag = False
-        self.create_dir()
+        self.image_width = None
+        self.image_height = None
+        self.video_flag = False
+        self.cp_image = None
+        self.g_ext = None
+        self.pm_25 = None
+        self.test_name = None
+        self.end_drawing = None
+        self.create_dir()        
 
-        
-
-    def setupUi(self, MainWindow: QMainWindow):
-        super().setupUi(MainWindow)
+        self.filepath = os.path.join(os.getcwd())
         MainWindow.setWindowFlag(Qt.FramelessWindowHint)
         MainWindow.keyPressEvent = self.keyPressEvent
-        self.image_label.paintEvent = self.paintEvent
-        self.image_label.mousePressEvent = self.mousePressEvent
-        self.image_label.mouseMoveEvent = self.mouseMoveEvent
-        self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
+        # self.image_label.paintEvent = self.paintEvent
 
-        self.actionPNM_9030V.triggered.connect(lambda: self.capture_start("PNM-9030V"))
-        self.actionQNO_8020R.triggered.connect(lambda: self.capture_start("QNO-8020R"))
-        self.actionWebcam.triggered.connect(lambda: self.capture_start("Webcam"))
-        self.actionRpi_Telephoto_lens.triggered.connect(lambda: self.capture_start("RPI-Telephoto-lens"))
-        self.actionRpi_noir.triggered.connect(lambda: self.capture_start("RPI-noir"))
-        self.actionupdate.triggered.connect(lambda: self.capture_start(self.camera_name))
+        # self.video_dock = QDockWidget("Video", self)
+        # self.video_dock.setFeatures(
+            # QDockWidget.DockWidgetClosable | QDockWidget.DockWidgetFloatable)
+        # self.video_widget = Js06VideoWidget2(self)
+        # self.gridLayout.setWidget(self.video_widget)
+        # self.setCentralWidget(self.video_widget)
+
+        # 카메라 영상을 보여줄 QGraphicsView 생성
+        self.scene = QGraphicsScene(self)
+        self.video_graphicsview = QGraphicsView(self.scene)
+        self.video_graphicsview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.video_graphicsview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.video_item = QGraphicsVideoItem()
+        self.scene.addItem(self.video_item)
+        
+        self.verticallayout.addWidget(self.video_graphicsview)
+
+        # 영상을 재생시켜주는 QMediaPlayer 생성
+        self._player = QMediaPlayer(self, QMediaPlayer.VideoSurface)
+        self._player.setVideoOutput(self.video_item)
+        self._player.setPosition(0)
+  
+        VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:3554/profile2/media.smp"
+        
+        CAM_NAME = "QNO-8080R"
+        self.actionQNO_8080R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
+        self.actionQNO_8080R.triggered.connect((lambda: self.test_settings("image")))
+        self.actionTC5.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
+        self.actionTC5.triggered.connect((lambda: self.test_settings("TC5")))
+        self.actionTC7.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
+        self.actionTC7.triggered.connect((lambda: self.test_settings("TC7")))
         self.actionImage.triggered.connect(self.read_image)
-        self.actionPrint.triggered.connect(self.minprint)  
+        self.actionPrint.triggered.connect(self.minprint)
+        # 그림 그리는 Q레이블 생성
+        self.blank_lbl = QLabel(self.video_graphicsview)
+        self.blank_lbl.setGeometry(0, 0, 1919, 570)
+        self.blank_lbl.paintEvent = self.lbl_paintEvent
+
+        self.blank_lbl.mousePressEvent = self.lbl_mousePressEvent
+        self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
+        self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
+
         self.timer = QTimer(MainWindow)
         self.timer.start(1000)
-        self.timer.timeout.connect(self.timeout_run)     
+        self.timer.timeout.connect(self.timeout_run)
+
+    @pyqtSlot(str)
+    def onCameraChange(self, url, camera_name, src_type):
+        self.camera_name = camera_name
+        self._player.setMedia(QMediaContent(QUrl(url)))
+        self.video_graphicsview.fitInView(self.video_item)
+        self._player.play()
+
+        self.get_target(self.camera_name)
+
+        self.video_thread = VideoThread(url, src_type)
+        self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
+        self.video_thread.start()
+
+    def timeout_run(self):
+        current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
+        self.time_label_name.setText(current_time)
+        self.video_graphicsview.fitInView(self.video_item)
+
+    def convert_cv_qt(self, cv_img):
+        self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        self.cp_image = cv_img.copy()
+        self.cp_image = cv2.cvtColor(self.cp_image, cv2.COLOR_BGR2RGB)
+        img_height, img_width, ch = cv_img.shape
+        self.image_width = int(img_width)
+        self.image_height = int(img_height)
+        self.video_flag = True
+        bytes_per_line = ch * img_width
+
+        if self.epoch[-2:] == "00":
+            self.minprint()
+            if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
+                self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
+                self.g_ext = None
+                self.pm_25 = None
+                return
+        
+        if self.camera_name == "Image":
+            convert_to_Qt_format = QImage(cv_img.data, img_width, img_height, bytes_per_line,
+                                            QImage.Format_RGB888)
+            p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.KeepAspectRatio,
+                                        Qt.SmoothTransformation)
+            return QPixmap.fromImage(p)
+    
+    def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
+        # image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
+        image_path = os.path.join(self.filepath, f"{self.test_name}")
+        file_name = f"{epoch}"
+        if not os.path.isdir(image_path):
+            os.makedirs(image_path)
+
+        g_ext = round(g_ext / 1000, 4)
+
+        if not os.path.isfile(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg"):
+            cv2.imwrite(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg", image)
+            del image
+            del image_path
+            cv2.destroyAllWindows()
+            print(file_name , " 이미지가 저장되었습니다.")
+            return
+
+    def test_settings(self, test_name):
+
+        if self.test_name is not None:
+            self.test_name = None
+
+        if self.test_name is None:
+            self.test_name = test_name
+
+
+    def lbl_paintEvent(self, event):
+        self.horizontal_flag = True
+        painter = QPainter(self.blank_lbl)
+
+        if self.camera_name == "Image" and self.video_flag:
+            back_ground_image =  self.thumbnail(self.cp_image)
+            bk_image = QPixmap.fromImage(back_ground_image)
+            painter.drawPixmap(QRect(0, 0, 1919, 570), bk_image)
+
+        if self.horizontal_flag and self.video_flag:
+            for corner1, corner2, in zip(self.left_range, self.right_range):
+                br = QBrush(QColor(100, 10, 10, 40))
+                painter.setBrush(br)
+                painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+                corner1_1 = int(corner1[0]/self.image_width*self.blank_lbl.width())
+                corner1_2 = int(corner1[1]/self.image_height*self.blank_lbl.height())
+                corner2_1 = int((corner2[0]-corner1[0])/self.image_width*self.blank_lbl.width())
+                corner2_2 = int((corner2[1]-corner1[1])/self.image_height*self.blank_lbl.height())
+                painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
+
+        if self.isDrawing:
+            br = QBrush(QColor(100, 10, 10, 40))
+            painter.setBrush(br)
+            painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+            painter.drawRect(QRect(self.begin, self.end))
+            # 썸네일 만들기
+            th_x, th_y = self.thumbnail_pos(self.end)
+            th_qimage = self.thumbnail(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
+            thumbnail_image = QPixmap.fromImage(th_qimage)
+            painter.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), thumbnail_image)
+
+        if self.end_drawing:
+            print("썸네일 삭제")
+            painter.eraseRect(QRect(self.begin, self.end))
+            painter.eraseRect(QRect(self.end.x(), self.end.y(), 200, 200))
+            self.end_drawing = False
+            self.isDrawing = False
+
+        painter.end()
 
     def create_dir(self):
         """정보를 저장할 폴더(경로)들을 만든다."""
@@ -79,49 +234,16 @@ class ND01MainWindow(Ui_MainWindow):
             except Exception as e:
                 pass
 
-    def capture_start(self, camera_name: str):
-        if self.video_thread is not None:
-            self.video_thread.stop()
-
-        self.bgrfilter = True
-        self.camera_name = camera_name
-        self.get_target(self.camera_name)
-
-        # create the video capture thread
-        # hanhwa panorama camera start
-        if camera_name == "PNM-9030V":
-            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp', "Video")
-
-        # hanhwa camera start
-        elif camera_name == "QNO-8020R":
-            self.video_thread = VideoThread('rtsp://admin:sijung5520@192.168.100.20/profile2/media.smp', "Video")
-
-        # Rasberry Pi Telephoto lens camera start
-        elif camera_name == "RPI-Telephoto-lens":
-            self.video_thread = VideoThread('rtsp://192.168.100.33:8554/test', "Video")
-
-        # Rasberry Pi No IR filter camera start
-        elif camera_name == "RPI-noir":
-            self.video_thread = VideoThread('rtsp://192.168.100.28:7224/unicast', "Video")
-
-        # webcam start
-        else:
-            self.video_thread = VideoThread()
-
-        # connect its signal to the update_image slot
-        self.video_thread.update_pixmap_signal.connect(self.update_image)
-        # start the thread
-        self.video_thread.start()
-
     def read_image(self):
         self.bgrfilter = True
         self.camera_name = "Image"
+        print("read_Image 실행")
         self.get_target(self.camera_name)
 
         if self.video_thread is not None:
             self.video_thread.stop()
 
-        imagePath, _ = QFileDialog.getOpenFileName(directory="D:/Extinction_coefficient/image/commax_date_west")
+        imagePath, _ = QFileDialog.getOpenFileName(directory="D:/kriss/vis_20km/name_modify_vis20/p01")
         
         print(imagePath)
         if imagePath:
@@ -135,58 +257,60 @@ class ND01MainWindow(Ui_MainWindow):
 
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
+        
         self.qt_img = self.convert_cv_qt(cv_img)
-        self.image_label.setPixmap(self.qt_img)
+        self.blank_lbl.setPixmap(self.qt_img)
+        print("이미지 업데이트")
 
-    def convert_cv_qt(self, cv_img):
-        """Convert from an opencv image to QPixmap"""
-        if self.bgrfilter:
-            rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
-            self.cp_image = rgb_image.copy()
-        else:
-            rgb_image = self.cp_image.copy()
+    # def convert_cv_qt(self, cv_img):
+    #     """Convert from an opencv image to QPixmap"""
+    #     if self.bgrfilter:
+    #         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+    #         self.cp_image = rgb_image.copy()
+    #     else:
+    #         rgb_image = self.cp_image.copy()
 
-        self.img_height, self.img_width, ch = rgb_image.shape
-        self.label_width = self.image_label.width()
-        self.label_height = self.image_label.height()
-        bytes_per_line = ch * self.img_width
+    #     self.img_height, self.img_width, ch = rgb_image.shape
+    #     self.label_width = self.image_label.width()
+    #     self.label_height = self.image_label.height()
+    #     bytes_per_line = ch * self.img_width
 
-        rec_color = (139, 0, 255)
-        tar_color = (0, 255, 0)
+    #     rec_color = (139, 0, 255)
+    #     tar_color = (0, 255, 0)
 
-        for corner1, corner2 in zip(self.left_range, self.right_range):
-            cv2.rectangle(rgb_image, corner1, corner2, rec_color, 6)
-        if len(self.min_xy) > 0:
-            cv2.rectangle(rgb_image, (self.min_xy[0]-10, self.min_xy[1]-10), (self.min_xy[0]+10, self.min_xy[1]+10), tar_color, 4)
-        self.last_image = rgb_image.copy()
+    #     for corner1, corner2 in zip(self.left_range, self.right_range):
+    #         cv2.rectangle(rgb_image, corner1, corner2, rec_color, 6)
+    #     if len(self.min_xy) > 0:
+    #         cv2.rectangle(rgb_image, (self.min_xy[0]-10, self.min_xy[1]-10), (self.min_xy[0]+10, self.min_xy[1]+10), tar_color, 4)
+    #     self.last_image = rgb_image.copy()
 
-        convert_to_Qt_format = QImage(rgb_image.data, self.img_width, self.img_height, bytes_per_line,
-                                            QImage.Format_RGB888)
-        p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.KeepAspectRatio,
-                                        Qt.SmoothTransformation)
-        self.bgrfilter = False
+    #     convert_to_Qt_format = QImage(rgb_image.data, self.img_width, self.img_height, bytes_per_line,
+    #                                         QImage.Format_RGB888)
+    #     p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.KeepAspectRatio,
+    #                                     Qt.SmoothTransformation)
+    #     self.bgrfilter = False
 
-        return QPixmap.fromImage(p)
+    #     return QPixmap.fromImage(p)
 
-    def paintEvent(self, event):
-        """레이블 위에 그림을 그리는 함수, QLabel method overriding"""
-        qp = QPainter(self.image_label)
-        qp.drawPixmap(self.image_label.rect(), self.qt_img)
+    # def paintEvent(self, event):
+    #     """레이블 위에 그림을 그리는 함수, QLabel method overriding"""
+    #     qp = QPainter(self.image_label)
+    #     qp.drawPixmap(self.image_label.rect(), self.qt_img)
 
-        if self.isDrawing:
-            br = QBrush(QColor(100, 10, 10, 40))
-            qp.setBrush(br)
-            qp.setPen(QPen(Qt.red, 2, Qt.SolidLine))
-            qp.drawRect(QRect(self.begin, self.end))
-            # 썸네일 만들기
-            th_x, th_y = self.thumbnail_pos(self.end)
-            th_qimage = self.thumbnail(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
-            thumbnail_image = QPixmap.fromImage(th_qimage)
-            qp.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), thumbnail_image)
+    #     if self.isDrawing:
+    #         br = QBrush(QColor(100, 10, 10, 40))
+    #         qp.setBrush(br)
+    #         qp.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+    #         qp.drawRect(QRect(self.begin, self.end))
+    #         # 썸네일 만들기
+    #         th_x, th_y = self.thumbnail_pos(self.end)
+    #         th_qimage = self.thumbnail(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
+    #         thumbnail_image = QPixmap.fromImage(th_qimage)
+    #         qp.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), thumbnail_image)
 
     def thumbnail_pos(self, end_pos):
-        x = int((end_pos.x()/self.label_width)*self.img_width)
-        y = int((end_pos.y()/self.label_height)*self.img_height)
+        x = int((end_pos.x()/self.blank_lbl.width())*self.image_width)
+        y = int((end_pos.y()/self.blank_lbl.height())*self.image_height)
         return x, y
 
     def thumbnail(self, image):
@@ -195,7 +319,7 @@ class ND01MainWindow(Ui_MainWindow):
         qImg = QImage(image.data.tobytes(), width, height, bytesPerLine, QImage.Format_RGB888)
         return qImg
 
-    def mousePressEvent(self, event):
+    def lbl_mousePressEvent(self, event):
         """마우스 클릭시 발생하는 이벤트, QLabel method overriding"""
 
         # 좌 클릭시 실행
@@ -203,9 +327,9 @@ class ND01MainWindow(Ui_MainWindow):
             self.isDrawing = True
             self.begin = event.pos()
             self.end = event.pos()
-            self.upper_left = (int((self.begin.x()/self.label_width)*self.img_width),
-                               int((self.begin.y()/self.label_height)*self.img_height))
-            self.image_label.update()
+            self.upper_left = (int((self.begin.x()/self.blank_lbl.width())*self.image_width),
+                               int((self.begin.y()/self.blank_lbl.height())*self.image_height))
+            self.blank_lbl.update()
 
             self.leftflag = True
             self.rightflag = False
@@ -221,22 +345,22 @@ class ND01MainWindow(Ui_MainWindow):
                 self.save_target()
                 self.rightflag = True
             self.leftflag = False
-            # self.minprint()
+            self.blank_lbl.update()
 
-    def mouseMoveEvent(self, event):
+    def lbl_mouseMoveEvent(self, event):
         """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
         if event.buttons() == Qt.LeftButton:
             self.end = event.pos()
-            self.image_label.update()
+            self.blank_lbl.update()
             self.isDrawing = True
 
-    def mouseReleaseEvent(self, event):
+    def lbl_mouseReleaseEvent(self, event):
         """마우스 클릭이 떼질 때 발생하는 이벤트, QLabel method overriding"""
         if self.leftflag == True:
             self.end = event.pos()
-            self.image_label.update()
-            self.lower_right = (int((self.end.x()/self.label_width)*self.img_width),
-                                int((self.end.y()/self.label_height)*self.img_height))
+            self.blank_lbl.update()
+            self.lower_right = (int((self.end.x()/self.blank_lbl.width())*self.image_width),
+                                int((self.end.y()/self.blank_lbl.height())*self.image_height))
             text, ok = QInputDialog.getText(self.centralwidget, '거리 입력', '거리(km)')
             if ok:
                 self.left_range.append(self.upper_left)
@@ -245,13 +369,18 @@ class ND01MainWindow(Ui_MainWindow):
                 self.min_xy = self.minrgb(self.upper_left, self.lower_right)
                 self.target_name.append("target_" + str(len(self.left_range)))
                 self.save_target()
-                self.update_image(self.last_image)
+                self.isDrawing = False
+                self.end_drawing = True
+            else:
+                self.isDrawing = False
+                self.blank_lbl.update()
+                # self.update_image(self.last_image)
                 # self.minprint()
 
-        if self.rightflag:
-            self.update_image(self.last_image)
+    #     if self.rightflag:
+    #         self.update_image(self.last_image)
 
-        self.isDrawing = False
+    #     self.isDrawing = False
 
     def keyPressEvent(self, e):
         """키 입력할 때 동작하는 함수 QMainwindow KeyPressEvent를 오버라이딩"""
@@ -301,6 +430,8 @@ class ND01MainWindow(Ui_MainWindow):
                                             Qt.SmoothTransformation)
 
             self.graph_label.setPixmap(QPixmap.fromImage(p))
+        
+        # return g_ext, pm_25
 
     def minrgb(self, upper_left, lower_right):
         """드래그한 영역의 RGB 최솟값을 추출한다"""
@@ -376,6 +507,7 @@ class ND01MainWindow(Ui_MainWindow):
         self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.6f}")
         self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
         self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
+        self.g_ext = round(alp_list[1], 1)
         self.visibility_print(alp_list[1])
         self.pm_print(alp_list)
 
@@ -392,10 +524,11 @@ class ND01MainWindow(Ui_MainWindow):
         r_ext_pm = ext_list[0]*1000/4/2.5
         g_ext_pm = ext_list[1]*1000/4/2.5
         b_ext_pm = ext_list[2]*1000/4/2.5
+        
 
-        pm_value = (r_ext_pm + g_ext_pm + b_ext_pm)/3
-        pm_value_str = f"{pm_value:.2f}" + " u/m"
-
+        pm_value = b_ext_pm/(1+5.67*((85/100)**5.8))
+        pm_value_str = f"{pm_value:.2f}" + r" ug/m^3"
+        self.pm_25 = round(pm_value, 2)
         self.pm25_value.setText(pm_value_str)
 
 
@@ -422,7 +555,7 @@ class ND01MainWindow(Ui_MainWindow):
         """특정 카메라의 타겟 정보들을 불러온다."""
 
         save_path = os.path.join(f"target/{self.camera_name}")
-
+        print("타겟을 불러옵니다.")
         if os.path.isfile(f"{save_path}/{camera_name}.csv"):
             target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
             self.target_name = target_df["target_name"].tolist()
@@ -470,15 +603,12 @@ class ND01MainWindow(Ui_MainWindow):
 
         return QPixmap.fromImage(p)
 
-    def timeout_run(self):
-        current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
-        # current_time = datetime.datetime.now()
-        self.time_label_name.setText(current_time)
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     MainWindow = QMainWindow()
     ui = ND01MainWindow()
-    ui.setupUi(MainWindow)
-    MainWindow.show()
+    # ui.setupUi(MainWindow)
+    ui.show()
     sys.exit(app.exec_())
