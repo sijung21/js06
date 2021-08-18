@@ -20,7 +20,6 @@ from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 from video_thread import VideoThread
 from curved import CurvedThread
 from mainwindow import Ui_MainWindow
-from video_thread import Js06VideoWidget2
 
 print(pd.__version__)
 
