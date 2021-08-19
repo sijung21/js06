@@ -493,7 +493,7 @@ class ND01MainWindow(QMainWindow):
             result["distance"] = self.distance
             result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
 
-    def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0]):
+    def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
 
         self.r_c1_textbox.setPlainText(f"{c1_list[0]:.4f}")
         self.g_c1_textbox.setPlainText(f"{c1_list[1]:.4f}")
@@ -507,7 +507,13 @@ class ND01MainWindow(QMainWindow):
         self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
         self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
         self.g_ext = round(alp_list[1], 1)
-        self.visibility_print(alp_list[1])
+
+        if select_color == "red" : 
+            self.visibility_print(alp_list[0])
+        elif select_color == "green" : 
+            self.visibility_print(alp_list[1])
+        else:
+            self.visibility_print(alp_list[2])
         self.pm_print(alp_list)
 
     def visibility_print(self, ext_g: float = 0.0):

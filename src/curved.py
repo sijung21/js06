@@ -12,7 +12,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 class CurvedThread(QtCore.QThread):
     # update_extinc_signal = QtCore.pyqtSignal(float, float)
-    update_extinc_signal = QtCore.pyqtSignal(list, list, list)
+    update_extinc_signal = QtCore.pyqtSignal(list, list, list, str)
 
     def __init__(self, cam_name: str = "", epoch: str = ""):
         super().__init__()
@@ -45,9 +45,11 @@ class CurvedThread(QtCore.QThread):
         min_err = [np.inf] * 3
         best_cov = []
 
+        # 하늘 타겟 추출
         sky_x = x[-1]
         sky_y = y[-1]
 
+        # 타겟 리스트에서 하늘 타겟은 제거
         x = np.delete(x, [-1])
         y = np.delete(y, [-1])
 
@@ -57,6 +59,7 @@ class CurvedThread(QtCore.QThread):
                 y_sel = np.take(y, sel)
                 # print("후보 target 거리 리스트: " , x_sel)
                 try:
+                    # 하늘 타겟을 추출한 리스트에 추가
                     x_sel = np.append(x_sel, [sky_x])
                     y_sel = np.append(y_sel, [sky_y])
                     opt, cov = curve_fit(func, x_sel, y_sel)
@@ -73,6 +76,21 @@ class CurvedThread(QtCore.QThread):
         
         print("선택된 target 거리 리스트: " , result_x_sel)
         return best_opt, best_cov
+    
+    def select_max_rgb(self, r, g, b):
+
+        select_color = ""
+        c_list = [r, g, b]
+
+        c_index = c_list.index(max(c_list))
+
+        if c_index == 0:
+            select_color = "red"
+        elif c_index == 1:
+            select_color = "green"
+        else :
+            select_color = "blue"
+        return select_color
 
     def run(self):
         hanhwa = pd.read_csv(f"{self.rgbsavedir}/{self.epoch}.csv")
@@ -95,7 +113,9 @@ class CurvedThread(QtCore.QThread):
         r2_init = self.hanhwa_r[-1] * 1.3
         g2_init = self.hanhwa_g[-1] * 1.3
         b2_init = self.hanhwa_b[-1] * 1.3
-
+        
+        select_color = self.select_max_rgb(r2_init, g2_init, b2_init)
+        
         r_ext_init = [r1_init, r2_init, 1]
         g_ext_init = [g1_init, g2_init, 1]
         b_ext_init = [b1_init, b2_init, 1]
@@ -137,7 +157,7 @@ class CurvedThread(QtCore.QThread):
         print(f"Green channel: {self.extcoeff_to_vis(hanhwa_opt_g[2], hanhwa_err_g[2], 3)} km")
         print(f"Blue channel: {self.extcoeff_to_vis(hanhwa_opt_b[2], hanhwa_err_b[2], 3)} km")
 
-        self.update_extinc_signal.emit(list1, list2, list3)
+        self.update_extinc_signal.emit(list1, list2, list3, select_color)
 
         try:
             os.mkdir(self.extsavedir)
