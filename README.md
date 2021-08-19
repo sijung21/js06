@@ -1,2 +1,3 @@
-# targets_manually
-Finding targets manually
+# nd01
+영상에서 소산계수를 산출해 시정과 미세먼지를 출력하는 프로그램이다.
+
