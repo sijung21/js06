@@ -80,7 +80,7 @@ class ND01MainWindow(QWidget):
         self._player.setVideoOutput(self.video_item)
         self._player.setPosition(0)
   
-        VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:3554/profile2/media.smp"
+        VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:1554/profile2/media.smp"
         
         CAM_NAME = "QNO-8080R"
         self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")
@@ -113,10 +113,9 @@ class ND01MainWindow(QWidget):
     @pyqtSlot()
     def btn_test(self):
         self._player.stop()
-        # app = QApplication(sys.argv)
         dlg = ND01_Setting_Widget()
-        dlg.show()
-        # sys.exit(app.exec_())
+        dlg.setWindowModality(Qt.ApplicationModal)
+        dlg.exec_()
 
     @pyqtSlot(str)
     def onCameraChange(self, url, camera_name, src_type):
