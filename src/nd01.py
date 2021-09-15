@@ -17,6 +17,8 @@ from PyQt5 import uic
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 
+import influx_test
+
 from video_thread import VideoThread
 from curved import CurvedThread
 from mainwindow import Ui_MainWindow
@@ -242,7 +244,11 @@ class ND01MainWindow(QMainWindow):
         if self.video_thread is not None:
             self.video_thread.stop()
 
-        imagePath, _ = QFileDialog.getOpenFileName(directory="D:/kriss/vis_20km/name_modify_vis20/p01")
+        # kriss 이미지 경로
+        imagePath, _ = QFileDialog.getOpenFileName(directory="D:/kriss/vis_75km/name_modify_vis75/p01")
+
+        # 대전지방기상청 이미지 경로
+        # imagePath, _ = QFileDialog.getOpenFileName(directory="D:/Extinction_coefficient/image/commax_date_west")
         
         print(imagePath)
         if imagePath:
@@ -251,8 +257,6 @@ class ND01MainWindow(QMainWindow):
             self.video_thread.start()
         else:
             return
-
-
 
     def update_image(self, cv_img):
         """Updates the image_label with a new opencv image"""
@@ -509,12 +513,15 @@ class ND01MainWindow(QMainWindow):
         self.g_ext = round(alp_list[1], 1)
 
         if select_color == "red" : 
-            self.visibility_print(alp_list[0])
+            vis_data = self.visibility_print(alp_list[0])
         elif select_color == "green" : 
-            self.visibility_print(alp_list[1])
+            vis_data = self.visibility_print(alp_list[1])
         else:
-            self.visibility_print(alp_list[2])
-        self.pm_print(alp_list)
+            vis_data = self.visibility_print(alp_list[2])
+        pm25_data = self.pm_print(alp_list)
+
+        self.data_save(vis_data, pm25_data)
+        
 
     def visibility_print(self, ext_g: float = 0.0):
         vis_value = 0
@@ -524,18 +531,19 @@ class ND01MainWindow(QMainWindow):
         vis_value_str = f"{vis_value:.2f}" + " km"
         self.visibility_value.setText(vis_value_str)
 
+        return float(vis_value)
+
     def pm_print(self, ext_list: list):
 
         r_ext_pm = ext_list[0]*1000/4/2.5
         g_ext_pm = ext_list[1]*1000/4/2.5
         b_ext_pm = ext_list[2]*1000/4/2.5
         
-
         pm_value = b_ext_pm/(1+5.67*((85/100)**5.8))
         pm_value_str = f"{pm_value:.2f}" + r" ug/m^3"
         self.pm_25 = round(pm_value, 2)
         self.pm25_value.setText(pm_value_str)
-
+        return float(pm_value)
 
 
     def save_target(self):
@@ -607,6 +615,14 @@ class ND01MainWindow(QMainWindow):
                                         Qt.SmoothTransformation)
 
         return QPixmap.fromImage(p)
+    
+    def data_save(self, vis_data, pm_data):
+        """Database에 시정과 미세먼지 값을 저장한다."""
+
+        influx_test.SaveDB(vis_data, pm_data)
+        print("Data Save!")
+
+
 
 
 
