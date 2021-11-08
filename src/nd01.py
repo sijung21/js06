@@ -124,34 +124,35 @@ class ND01MainWindow(QWidget):
         self.video_graphicsview.fitInView(self.video_item)
         self._player.play()
 
-        # self.get_target(self.camera_name)
+        self.get_target(self.camera_name)
 
-        # self.video_thread = VideoThread(url, src_type)
-        # self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
-        # self.video_thread.start()
+        self.video_thread = VideoThread(url, src_type)
+        self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
+        self.video_thread.start()
 
     def timeout_run(self):
         current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
         self.real_time_label.setText(current_time)
         self.video_graphicsview.fitInView(self.video_item)
 
-    # def convert_cv_qt(self, cv_img):
-    #     self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
-    #     self.cp_image = cv_img.copy()
-    #     self.cp_image = cv2.cvtColor(self.cp_image, cv2.COLOR_BGR2RGB)
-    #     img_height, img_width, ch = cv_img.shape
-    #     self.image_width = int(img_width)
-    #     self.image_height = int(img_height)
-    #     self.video_flag = True
-    #     bytes_per_line = ch * img_width
+    def convert_cv_qt(self, cv_img):
+        self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        self.cp_image = cv_img.copy()
+        self.cp_image = cv2.cvtColor(self.cp_image, cv2.COLOR_BGR2RGB)
+        img_height, img_width, ch = cv_img.shape
+        self.image_width = int(img_width)
+        self.image_height = int(img_height)
+        self.video_flag = True
+        bytes_per_line = ch * img_width
 
-    #     if self.epoch[-2:] == "00":
-    #         self.minprint()
-    #         if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
-    #             self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
-    #             self.g_ext = None
-    #             self.pm_25 = None
-    #             return
+        if self.epoch[-2:] == "00":
+            self.minprint()
+            if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
+                self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
+                self.g_ext = None
+                self.pm_25 = None
+                return
+            return
         
     #     if self.camera_name == "Image":
     #         convert_to_Qt_format = QImage(cv_img.data, img_width, img_height, bytes_per_line,
@@ -160,22 +161,22 @@ class ND01MainWindow(QWidget):
     #                                     Qt.SmoothTransformation)
     #         return QPixmap.fromImage(p)
     
-    # def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
-    #     # image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
-    #     image_path = os.path.join(self.filepath, f"{self.test_name}")
-    #     file_name = f"{epoch}"
-    #     if not os.path.isdir(image_path):
-    #         os.makedirs(image_path)
+    def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
+        # image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
+        image_path = os.path.join(self.filepath, f"{self.test_name}")
+        file_name = f"{epoch}"
+        if not os.path.isdir(image_path):
+            os.makedirs(image_path)
 
-    #     g_ext = round(g_ext / 1000, 4)
+        g_ext = round(g_ext / 1000, 4)
 
-    #     if not os.path.isfile(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg"):
-    #         cv2.imwrite(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg", image)
-    #         del image
-    #         del image_path
-    #         cv2.destroyAllWindows()
-    #         print(file_name , " 이미지가 저장되었습니다.")
-    #         return
+        if not os.path.isfile(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg"):
+            cv2.imwrite(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg", image)
+            del image
+            del image_path
+            cv2.destroyAllWindows()
+            print(file_name , " 이미지가 저장되었습니다.")
+            return
 
     # def test_settings(self, test_name):
 
@@ -346,141 +347,141 @@ class ND01MainWindow(QWidget):
 
     
 
-    # def minprint(self):
-    #     """지정한 구역들에서 소산계수 산출용 픽셀을 출력하는 함수"""
+    def minprint(self):
+        """지정한 구역들에서 소산계수 산출용 픽셀을 출력하는 함수"""
 
-    #     epoch = time.strftime("%Y%m%d%H%M", time.localtime(time.time()))
-    #     print("소산계수 좌표 출력")
-    #     result = ()
-    #     cnt = 1
-    #     self.min_x = []
-    #     self.min_y = []
+        epoch = time.strftime("%Y%m%d%H%M", time.localtime(time.time()))
+        print("소산계수 좌표 출력")
+        result = ()
+        cnt = 1
+        self.min_x = []
+        self.min_y = []
 
-    #     for upper_left, lower_right in zip(self.left_range, self.right_range):
-    #         result = self.minrgb(upper_left, lower_right)
-    #         print(f"target{cnt}의 소산계수 검출용 픽셀위치 =  ", result)
-    #         self.min_x.append(result[0])
-    #         self.min_y.append(result[1])
-    #         cnt += 1
+        for upper_left, lower_right in zip(self.left_range, self.right_range):
+            result = self.minrgb(upper_left, lower_right)
+            print(f"target{cnt}의 소산계수 검출용 픽셀위치 =  ", result)
+            self.min_x.append(result[0])
+            self.min_y.append(result[1])
+            cnt += 1
 
-    #     self.get_rgb(epoch)
+        self.get_rgb(epoch)
 
-    #     self.curved_thread = CurvedThread(self.camera_name, epoch)
-    #     self.curved_thread.update_extinc_signal.connect(self.extinc_print)
-    #     self.curved_thread.run()
+        self.curved_thread = CurvedThread(self.camera_name, epoch)
+        self.curved_thread.update_extinc_signal.connect(self.extinc_print)
+        self.curved_thread.run()
 
-    #     self.list_test()
+        # self.list_test()
 
-    #     graph_dir = os.path.join(f"extinction/{self.camera_name}")
+        # graph_dir = os.path.join(f"extinction/{self.camera_name}")
 
-    #     if os.path.isfile(f"{graph_dir}/{epoch}.png"):
-    #         graph_image = cv2.imread(f"{graph_dir}/{epoch}.png")
-    #         graph_image = cv2.cvtColor(graph_image, cv2.COLOR_BGR2RGB)
+        # if os.path.isfile(f"{graph_dir}/{epoch}.png"):
+        #     graph_image = cv2.imread(f"{graph_dir}/{epoch}.png")
+        #     graph_image = cv2.cvtColor(graph_image, cv2.COLOR_BGR2RGB)
 
-    #         img_height, img_width, ch = graph_image.shape
-    #         bytes_per_line = ch * img_width
+        #     img_height, img_width, ch = graph_image.shape
+        #     bytes_per_line = ch * img_width
 
-    #         convert_to_Qt_format = QImage(graph_image.data, img_width, img_height, bytes_per_line,
-    #                                     QImage.Format_RGB888)
+        #     convert_to_Qt_format = QImage(graph_image.data, img_width, img_height, bytes_per_line,
+        #                                 QImage.Format_RGB888)
 
-    #         p = convert_to_Qt_format.scaled(self.graph_label.width(), self.graph_label.height(), Qt.IgnoreAspectRatio,
-    #                                         Qt.SmoothTransformation)
+        #     p = convert_to_Qt_format.scaled(self.graph_label.width(), self.graph_label.height(), Qt.IgnoreAspectRatio,
+        #                                     Qt.SmoothTransformation)
 
-    #         self.graph_label.setPixmap(QPixmap.fromImage(p))
+        #     self.graph_label.setPixmap(QPixmap.fromImage(p))
         
-    #     # return g_ext, pm_25
+        # return g_ext, pm_25
 
-    # def minrgb(self, upper_left, lower_right):
-    #     """드래그한 영역의 RGB 최솟값을 추출한다"""
+    def minrgb(self, upper_left, lower_right):
+        """드래그한 영역의 RGB 최솟값을 추출한다"""
 
-    #     up_y = min(upper_left[1], lower_right[1])
-    #     down_y = max(upper_left[1], lower_right[1])
+        up_y = min(upper_left[1], lower_right[1])
+        down_y = max(upper_left[1], lower_right[1])
 
-    #     left_x = min(upper_left[0], lower_right[0])
-    #     right_x = max(upper_left[0], lower_right[0])
+        left_x = min(upper_left[0], lower_right[0])
+        right_x = max(upper_left[0], lower_right[0])
 
-    #     test = self.cp_image[up_y:down_y, left_x:right_x, :]
+        test = self.cp_image[up_y:down_y, left_x:right_x, :]
 
-    #     # 드래그한 영역의 RGB 값을 각각 추출한다.
-    #     r = test[:, :, 0]
-    #     g = test[:, :, 1]
-    #     b = test[:, :, 2]
+        # 드래그한 영역의 RGB 값을 각각 추출한다.
+        r = test[:, :, 0]
+        g = test[:, :, 1]
+        b = test[:, :, 2]
 
-    #     # RGB값을 각 위치별로 모두 더한다.
-    #     # RGB 최댓값이 255로 정해져있어 값을 초과하면 0부터 시작된다. numpy의 clip 함수를 이용해 array의 최댓값을 수정한다.
-    #     r = np.clip(r, 0, 765)
-    #     sum_rgb = r + g + b
+        # RGB값을 각 위치별로 모두 더한다.
+        # RGB 최댓값이 255로 정해져있어 값을 초과하면 0부터 시작된다. numpy의 clip 함수를 이용해 array의 최댓값을 수정한다.
+        r = np.clip(r, 0, 765)
+        sum_rgb = r + g + b
 
-    #     # RGB 값을 합한 뒤 가장 최솟값의 index를 추출한다.
-    #     t_idx = np.where(sum_rgb == np.min(sum_rgb))
+        # RGB 값을 합한 뒤 가장 최솟값의 index를 추출한다.
+        t_idx = np.where(sum_rgb == np.min(sum_rgb))
 
-    #     show_min_y = t_idx[0][0] + up_y
-    #     show_min_x = t_idx[1][0] + left_x
+        show_min_y = t_idx[0][0] + up_y
+        show_min_x = t_idx[1][0] + left_x
 
-    #     return (show_min_x, show_min_y)
+        return (show_min_x, show_min_y)
 
-    # def get_rgb(self, epoch: str):
-    #     r_list = []
-    #     g_list = []
-    #     b_list = []
+    def get_rgb(self, epoch: str):
+        r_list = []
+        g_list = []
+        b_list = []
 
-    #     for x, y in zip(self.min_x, self.min_y):
+        for x, y in zip(self.min_x, self.min_y):
 
-    #         r_list.append(self.cp_image[y, x, 0])
-    #         g_list.append(self.cp_image[y, x, 1])
-    #         b_list.append(self.cp_image[y, x, 2])
+            r_list.append(self.cp_image[y, x, 0])
+            g_list.append(self.cp_image[y, x, 1])
+            b_list.append(self.cp_image[y, x, 2])
 
-    #     self.save_rgb(r_list, g_list, b_list, epoch)
+        self.save_rgb(r_list, g_list, b_list, epoch)
 
-    # def save_rgb(self, r_list, g_list, b_list, epoch):
-    #     """Save the rgb information for each target."""
-    #     try:
-    #         save_path = os.path.join(f"rgb/{self.camera_name}")
-    #         os.mkdir(save_path)
+    def save_rgb(self, r_list, g_list, b_list, epoch):
+        """Save the rgb information for each target."""
+        try:
+            save_path = os.path.join(f"rgb/{self.camera_name}")
+            os.mkdir(save_path)
 
-    #     except Exception as e:
-    #         pass
+        except Exception as e:
+            pass
 
-    #     if r_list:
-    #         col = ["target_name", "r", "g", "b", "distance"]
-    #         result = pd.DataFrame(columns=col)
-    #         result["target_name"] = self.target_name
-    #         result["r"] = r_list
-    #         result["g"] = g_list
-    #         result["b"] = b_list
-    #         result["distance"] = self.distance
-    #         result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
+        if r_list:
+            col = ["target_name", "r", "g", "b", "distance"]
+            result = pd.DataFrame(columns=col)
+            result["target_name"] = self.target_name
+            result["r"] = r_list
+            result["g"] = g_list
+            result["b"] = b_list
+            result["distance"] = self.distance
+            result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
 
-    # def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
+    def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
 
-    #     self.r_c1_textbox.setPlainText(f"{c1_list[0]:.4f}")
-    #     self.g_c1_textbox.setPlainText(f"{c1_list[1]:.4f}")
-    #     self.b_c1_textbox.setPlainText(f"{c1_list[2]:.4f}")
+        # self.r_c1_textbox.setPlainText(f"{c1_list[0]:.4f}")
+        # self.g_c1_textbox.setPlainText(f"{c1_list[1]:.4f}")
+        # self.b_c1_textbox.setPlainText(f"{c1_list[2]:.4f}")
 
-    #     self.r_c2_textbox.setPlainText(f"{c2_list[0]:.4f}")
-    #     self.g_c2_textbox.setPlainText(f"{c2_list[1]:.4f}")
-    #     self.b_c2_textbox.setPlainText(f"{c2_list[2]:.4f}")
+        # self.r_c2_textbox.setPlainText(f"{c2_list[0]:.4f}")
+        # self.g_c2_textbox.setPlainText(f"{c2_list[1]:.4f}")
+        # self.b_c2_textbox.setPlainText(f"{c2_list[2]:.4f}")
 
-    #     self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.6f}")
-    #     self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
-    #     self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
-    #     self.g_ext = round(alp_list[1], 1)
+        # self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.6f}")
+        # self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
+        # self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
+        self.g_ext = round(alp_list[1], 1)
 
-    #     if select_color == "red" : 
-    #         self.visibility_print(alp_list[0])
-    #     elif select_color == "green" : 
-    #         self.visibility_print(alp_list[1])
-    #     else:
-    #         self.visibility_print(alp_list[2])
-    #     self.pm_print(alp_list)
+        if select_color == "red" : 
+            self.visibility_print(alp_list[0])
+        elif select_color == "green" : 
+            self.visibility_print(alp_list[1])
+        else:
+            self.visibility_print(alp_list[2])
+        # self.pm_print(alp_list)
 
-    # def visibility_print(self, ext_g: float = 0.0):
-    #     vis_value = 0
+    def visibility_print(self, ext_g: float = 0.0):
+        vis_value = 0
 
-    #     vis_value = (3.912/ext_g)
+        vis_value = (3.912/ext_g)
         
-    #     vis_value_str = f"{vis_value:.2f}" + " km"
-    #     self.visibility_value.setText(vis_value_str)
+        vis_value_str = f"{vis_value:.2f}" + " km"
+        self.c_vis_label.setText(vis_value_str)
 
     # def pm_print(self, ext_list: list):
 
@@ -489,50 +490,50 @@ class ND01MainWindow(QWidget):
     #     b_ext_pm = ext_list[2]*1000/4/2.5
         
 
-    #     pm_value = b_ext_pm/(1+5.67*((85/100)**5.8))
-    #     pm_value_str = f"{pm_value:.2f}" + r" ug/m^3"
-    #     self.pm_25 = round(pm_value, 2)
-    #     self.pm25_value.setText(pm_value_str)
+        # pm_value = b_ext_pm/(1+5.67*((85/100)**5.8))
+        # pm_value_str = f"{pm_value:.2f}" + r" ug/m^3"
+        # self.pm_25 = round(pm_value, 2)
+        # self.pm25_value.setText(pm_value_str)
 
 
 
-    # def save_target(self):
-    #     """Save the target information for each camera."""
-    #     try:
-    #         save_path = os.path.join(f"target/{self.camera_name}")
-    #         os.mkdir(save_path)
+    def save_target(self):
+        """Save the target information for each camera."""
+        try:
+            save_path = os.path.join(f"target/{self.camera_name}")
+            os.mkdir(save_path)
 
-    #     except Exception as e:
-    #         pass
+        except Exception as e:
+            pass
 
-    #     if self.left_range:
-    #         col = ["target_name", "left_range", "right_range", "distance"]
-    #         result = pd.DataFrame(columns=col)
-    #         result["target_name"] = self.target_name
-    #         result["left_range"] = self.left_range
-    #         result["right_range"] = self.right_range
-    #         result["distance"] = self.distance
-    #         result.to_csv(f"{save_path}/{self.camera_name}.csv", mode="w", index=False)
+        if self.left_range:
+            col = ["target_name", "left_range", "right_range", "distance"]
+            result = pd.DataFrame(columns=col)
+            result["target_name"] = self.target_name
+            result["left_range"] = self.left_range
+            result["right_range"] = self.right_range
+            result["distance"] = self.distance
+            result.to_csv(f"{save_path}/{self.camera_name}.csv", mode="w", index=False)
 
-    # def get_target(self, camera_name: str):
-    #     """특정 카메라의 타겟 정보들을 불러온다."""
+    def get_target(self, camera_name: str):
+        """특정 카메라의 타겟 정보들을 불러온다."""
 
-    #     save_path = os.path.join(f"target/{self.camera_name}")
-    #     print("타겟을 불러옵니다.")
-    #     if os.path.isfile(f"{save_path}/{camera_name}.csv"):
-    #         target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
-    #         self.target_name = target_df["target_name"].tolist()
-    #         self.left_range = target_df["left_range"].tolist()
-    #         self.left_range = self.str_to_tuple(self.left_range)
-    #         self.right_range = target_df["right_range"].tolist()
-    #         self.right_range = self.str_to_tuple(self.right_range)
-    #         self.distance = target_df["distance"].tolist()
+        save_path = os.path.join(f"target/{self.camera_name}")
+        print("타겟을 불러옵니다.")
+        if os.path.isfile(f"{save_path}/{camera_name}.csv"):
+            target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
+            self.target_name = target_df["target_name"].tolist()
+            self.left_range = target_df["left_range"].tolist()
+            self.left_range = self.str_to_tuple(self.left_range)
+            self.right_range = target_df["right_range"].tolist()
+            self.right_range = self.str_to_tuple(self.right_range)
+            self.distance = target_df["distance"].tolist()
 
-    # def str_to_tuple(self, before_list):
-    #     """저장된 타겟들의 위치정보인 튜플 리스트가 문자열로 바뀌어 다시 튜플형태로 변환하는 함수"""
-    #     tuple_list = [i.split(',') for i in before_list]
-    #     tuple_list = [(int(i[0][1:]), int(i[1][:-1])) for i in tuple_list]
-    #     return tuple_list
+    def str_to_tuple(self, before_list):
+        """저장된 타겟들의 위치정보인 튜플 리스트가 문자열로 바뀌어 다시 튜플형태로 변환하는 함수"""
+        tuple_list = [i.split(',') for i in before_list]
+        tuple_list = [(int(i[0][1:]), int(i[1][:-1])) for i in tuple_list]
+        return tuple_list
 
     # def list_test(self):
     #     """소산계수 검출용 이미지들을 리스트뷰에 보여주는 함수"""
