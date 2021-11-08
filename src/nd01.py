@@ -472,6 +472,11 @@ class ND01MainWindow(QMainWindow):
             g_list.append(self.cp_image[y, x, 1])
             b_list.append(self.cp_image[y, x, 2])
 
+            print("red : ", self.cp_image[y, x, 0])
+            print("green : ", self.cp_image[y, x, 1])
+            print("blue: ", self.cp_image[y, x, 2])
+
+
         self.save_rgb(r_list, g_list, b_list, epoch)
 
     def save_rgb(self, r_list, g_list, b_list, epoch):
@@ -484,6 +489,11 @@ class ND01MainWindow(QMainWindow):
             pass
 
         if r_list:
+            r_list = list(map(int, r_list))
+            g_list = list(map(int, g_list))
+            b_list = list(map(int, b_list))
+            print(b_list)
+            
             col = ["target_name", "r", "g", "b", "distance"]
             result = pd.DataFrame(columns=col)
             result["target_name"] = self.target_name
@@ -491,6 +501,7 @@ class ND01MainWindow(QMainWindow):
             result["g"] = g_list
             result["b"] = b_list
             result["distance"] = self.distance
+            print(result.head(10))
             result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
 
     def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
