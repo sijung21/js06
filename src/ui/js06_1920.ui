@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>JS06</string>
   </property>
   <property name="styleSheet">
    <string notr="true">#js06_1920
@@ -63,17 +63,17 @@
     <string notr="true">
 #settings_button
 {
-	background-image: url(C:/Users/user/Desktop/settings.png);
+	background-image: url(&quot;ui/icon/settings.png&quot;);
 	border:0px;
 }
 #settings_button:pressed
 {
-	background-image: url(C:/Users/user/Desktop/settings_on.png);
+	background-image: url(&quot;ui/icon/settings_on.png&quot;);
 	background-color:rgb(27,49,70);
 }
 #settings_button:hover
 {
-	background-image: url(C:/Users/user/Desktop/settings_on.png);
+	background-image: url(&quot;ui/icon/settings_on.png&quot;);
 	background-color:rgb(27,49,70);
 }</string>
    </property>
@@ -177,7 +177,7 @@
     <string notr="true">
 #graph_pushButton
 {
-	background-image: url(C:/Users/user/Desktop/graph.png);
+	background-image: url(&quot;ui/icon/graph.png&quot;);
 	border:0px;
 }
 </string>
@@ -242,7 +242,7 @@
     <string notr="true">
 #clock_pushButton
 {
-	background-image: url(C:/Users/user/Desktop/clock.png);
+	background-image: url(&quot;ui/icon/clock.png&quot;);
 	border:0px;
 }
 </string>
@@ -375,7 +375,7 @@
     <string notr="true">
 #vis_pushButton
 {
-	background-image: url(C:/Users/user/Desktop/vis.png);
+	background-image: url(&quot;ui/icon/vis.png&quot;);
 	border:0px;
 }
 </string>
