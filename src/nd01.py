@@ -89,9 +89,11 @@ class ND01MainWindow(QMainWindow):
         self._player.setVideoOutput(self.video_item)
         self._player.setPosition(0)
   
-        VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:3554/profile2/media.smp"
+        VIDEO_SRC3 = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
         
-        CAM_NAME = "QNO-8080R"
+        CAM_NAME = "PNM_9030V"
+        self.actionPNM_9030V.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
+        self.actionPNM_9030V.triggered.connect((lambda: self.test_settings("image")))
         self.actionQNO_8080R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
         self.actionQNO_8080R.triggered.connect((lambda: self.test_settings("image")))
         self.actionTC5.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
