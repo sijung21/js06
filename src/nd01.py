@@ -9,7 +9,7 @@ import math
 import cv2
 import numpy as np
 import pandas as pd
-# import PyQt5
+
 # print(PyQt5.__version__)
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem, QFileDialog, QDockWidget, QGraphicsScene, QGraphicsView
@@ -18,9 +18,17 @@ from PyQt5 import uic
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 
+from PyQt5 import QtWebEngineWidgets
+from PyQt5 import QtWebEngineCore
+from PyQt5.QtWebEngineWidgets import QWebEngineSettings
+
+
 from video_thread import VideoThread
 from curved import CurvedThread
 from ui.widget import Ui_js06_1920
+
+import save_db
+
 print(pd.__version__)
 
 class ND01MainWindow(QWidget):
@@ -75,6 +83,12 @@ class ND01MainWindow(QWidget):
         
         self.verticallayout.addWidget(self.video_graphicsview)
 
+        self.webview = QtWebEngineWidgets.QWebEngineView()
+        self.webview.setUrl(QUrl("http://localhost:3000/d/GXA3xPS7z/new-dashboard-copy?orgId=1&refresh=30s&from=now-30m&to=now&kiosk"))
+        # QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ShowScrollBars(False))
+        self.webview.setZoomFactor(1)
+        self.web_verticalLayout.addWidget(self.webview)
+
         # 영상을 재생시켜주는 QMediaPlayer 생성
         self._player = QMediaPlayer(self, QMediaPlayer.VideoSurface)
         self._player.setVideoOutput(self.video_item)
@@ -84,38 +98,11 @@ class ND01MainWindow(QWidget):
         
         CAM_NAME = "QNO-8080R"
         self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")
-        self.settings_button.clicked.connect(self.btn_test)
-    
 
-
-    #     self.actionQNO_8080R.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
-    #     self.actionQNO_8080R.triggered.connect((lambda: self.test_settings("image")))
-    #     self.actionTC5.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
-    #     self.actionTC5.triggered.connect((lambda: self.test_settings("TC5")))
-    #     self.actionTC7.triggered.connect((lambda: self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")))
-    #     self.actionTC7.triggered.connect((lambda: self.test_settings("TC7")))
-    #     self.actionImage.triggered.connect(self.read_image)
-    #     self.actionPrint.triggered.connect(self.minprint)
-
-        # 그림 그리는 Q레이블 생성
-        # self.blank_lbl = QLabel(self.video_graphicsview)
-        # self.blank_lbl.setGeometry(0, 0, 1919, 570)
-        # self.blank_lbl.paintEvent = self.lbl_paintEvent
-
-        # self.blank_lbl.mousePressEvent = self.lbl_mousePressEvent
-        # self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
-        # self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
 
         self.timer = QTimer()
         self.timer.start(1000)
         self.timer.timeout.connect(self.timeout_run)
-
-    @pyqtSlot()
-    def btn_test(self):
-        self._player.stop()
-        dlg = ND01_Setting_Widget()
-        dlg.setWindowModality(Qt.ApplicationModal)
-        dlg.exec_()
 
     @pyqtSlot(str)
     def onCameraChange(self, url, camera_name, src_type):
@@ -153,16 +140,8 @@ class ND01MainWindow(QWidget):
                 self.pm_25 = None
                 return
             return
-        
-    #     if self.camera_name == "Image":
-    #         convert_to_Qt_format = QImage(cv_img.data, img_width, img_height, bytes_per_line,
-    #                                         QImage.Format_RGB888)
-    #         p = convert_to_Qt_format.scaled(self.image_label.width(), self.image_label.height(), Qt.KeepAspectRatio,
-    #                                     Qt.SmoothTransformation)
-    #         return QPixmap.fromImage(p)
     
     def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
-        # image_path = os.path.join(self.filepath, f"{self.test_name}", f"{self.camera_name}")
         image_path = os.path.join(self.filepath, f"{self.test_name}")
         file_name = f"{epoch}"
         if not os.path.isdir(image_path):
@@ -178,180 +157,17 @@ class ND01MainWindow(QWidget):
             print(file_name , " 이미지가 저장되었습니다.")
             return
 
-    # def test_settings(self, test_name):
-
-    #     if self.test_name is not None:
-    #         self.test_name = None
-
-    #     if self.test_name is None:
-    #         self.test_name = test_name
-
-
-    # def lbl_paintEvent(self, event):
-    #     self.horizontal_flag = True
-    #     painter = QPainter(self.blank_lbl)
-
-    #     if self.camera_name == "Image" and self.video_flag:
-    #         back_ground_image =  self.thumbnail(self.cp_image)
-    #         bk_image = QPixmap.fromImage(back_ground_image)
-    #         painter.drawPixmap(QRect(0, 0, 1919, 570), bk_image)
-
-    #     if self.horizontal_flag and self.video_flag:
-    #         for corner1, corner2, in zip(self.left_range, self.right_range):
-    #             br = QBrush(QColor(100, 10, 10, 40))
-    #             painter.setBrush(br)
-    #             painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
-    #             corner1_1 = int(corner1[0]/self.image_width*self.blank_lbl.width())
-    #             corner1_2 = int(corner1[1]/self.image_height*self.blank_lbl.height())
-    #             corner2_1 = int((corner2[0]-corner1[0])/self.image_width*self.blank_lbl.width())
-    #             corner2_2 = int((corner2[1]-corner1[1])/self.image_height*self.blank_lbl.height())
-    #             painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
-
-    #     if self.isDrawing:
-    #         br = QBrush(QColor(100, 10, 10, 40))
-    #         painter.setBrush(br)
-    #         painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
-    #         painter.drawRect(QRect(self.begin, self.end))
-    #         # 썸네일 만들기
-    #         th_x, th_y = self.thumbnail_pos(self.end)
-    #         th_qimage = self.thumbnail(self.cp_image[th_y - 50 :th_y + 50, th_x - 50 :th_x + 50, :])
-    #         thumbnail_image = QPixmap.fromImage(th_qimage)
-    #         painter.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), thumbnail_image)
-
-    #     if self.end_drawing:
-    #         print("썸네일 삭제")
-    #         painter.eraseRect(QRect(self.begin, self.end))
-    #         painter.eraseRect(QRect(self.end.x(), self.end.y(), 200, 200))
-    #         self.end_drawing = False
-    #         self.isDrawing = False
-
-    #     painter.end()
-
-    # def create_dir(self):
-    #     """정보를 저장할 폴더(경로)들을 만든다."""
-    #     folder_name = ["target", "image", "extinction", "rgb"]
-
-    #     for f_name in folder_name:
-    #         try:
-    #             os.mkdir(f_name)
-    #             print(f"{f_name} 폴더를 생성했습니다.")
-    #         except Exception as e:
-    #             pass
-
-    # def read_image(self):
-    #     self.bgrfilter = True
-    #     self.camera_name = "Image"
-    #     print("read_Image 실행")
-    #     self.get_target(self.camera_name)
-
-    #     if self.video_thread is not None:
-    #         self.video_thread.stop()
-
-    #     imagePath, _ = QFileDialog.getOpenFileName(directory="D:/kriss/vis_20km/name_modify_vis20/p01")
-        
-    #     print(imagePath)
-    #     if imagePath:
-    #         self.video_thread = VideoThread(imagePath, "Image")
-    #         self.video_thread.update_pixmap_signal.connect(self.update_image)
-    #         self.video_thread.start()
-    #     else:
-    #         return
-
-    # def update_image(self, cv_img):
-    #     """Updates the image_label with a new opencv image"""
-        
-    #     self.qt_img = self.convert_cv_qt(cv_img)
-    #     self.blank_lbl.setPixmap(self.qt_img)
-    #     print("이미지 업데이트")
-
-    # def thumbnail_pos(self, end_pos):
-    #     x = int((end_pos.x()/self.blank_lbl.width())*self.image_width)
-    #     y = int((end_pos.y()/self.blank_lbl.height())*self.image_height)
-    #     return x, y
-
-    # def thumbnail(self, image):
-    #     height, width, channel = image.shape
-    #     bytesPerLine = channel * width
-    #     qImg = QImage(image.data.tobytes(), width, height, bytesPerLine, QImage.Format_RGB888)
-    #     return qImg
-
-    # def lbl_mousePressEvent(self, event):
-    #     """마우스 클릭시 발생하는 이벤트, QLabel method overriding"""
-
-    #     # 좌 클릭시 실행
-    #     if event.buttons() == Qt.LeftButton:
-    #         self.isDrawing = True
-    #         self.begin = event.pos()
-    #         self.end = event.pos()
-    #         self.upper_left = (int((self.begin.x()/self.blank_lbl.width())*self.image_width),
-    #                            int((self.begin.y()/self.blank_lbl.height())*self.image_height))
-    #         self.blank_lbl.update()
-
-    #         self.leftflag = True
-    #         self.rightflag = False
-
-    #     # 우 클릭시 실행
-    #     elif event.buttons() == Qt.RightButton:
-    #         self.isDrawing = False
-    #         if len(self.left_range) > 0:
-    #             del self.distance[-1]
-    #             del self.target_name[-1]
-    #             del self.left_range[-1]
-    #             del self.right_range[-1]
-    #             self.save_target()
-    #             self.rightflag = True
-    #         self.leftflag = False
-    #         self.blank_lbl.update()
-
-    # def lbl_mouseMoveEvent(self, event):
-    #     """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
-    #     if event.buttons() == Qt.LeftButton:
-    #         self.end = event.pos()
-    #         self.blank_lbl.update()
-    #         self.isDrawing = True
-
-    # def lbl_mouseReleaseEvent(self, event):
-    #     """마우스 클릭이 떼질 때 발생하는 이벤트, QLabel method overriding"""
-    #     if self.leftflag == True:
-    #         self.end = event.pos()
-    #         self.blank_lbl.update()
-    #         self.lower_right = (int((self.end.x()/self.blank_lbl.width())*self.image_width),
-    #                             int((self.end.y()/self.blank_lbl.height())*self.image_height))
-    #         text, ok = QInputDialog.getText(self.centralwidget, '거리 입력', '거리(km)')
-    #         if ok:
-    #             self.left_range.append(self.upper_left)
-    #             self.right_range.append(self.lower_right)
-    #             self.distance.append(text)
-    #             self.min_xy = self.minrgb(self.upper_left, self.lower_right)
-    #             self.target_name.append("target_" + str(len(self.left_range)))
-    #             self.save_target()
-    #             self.isDrawing = False
-    #             self.end_drawing = True
-    #         else:
-    #             self.isDrawing = False
-    #             self.blank_lbl.update()
-    #             # self.update_image(self.last_image)
-    #             # self.minprint()
-
-    # #     if self.rightflag:
-    # #         self.update_image(self.last_image)
-
-    # #     self.isDrawing = False
-
     def keyPressEvent(self, e):
         """키 입력할 때 동작하는 함수 QMainwindow KeyPressEvent를 오버라이딩"""
         if e.key() == Qt.Key_Escape:
             sys.exit()
         if e.key() == Qt.Key_F:
-            self.showFullScreen()
-
-    
+            self.showFullScreen()    
 
     def minprint(self):
         """지정한 구역들에서 소산계수 산출용 픽셀을 출력하는 함수"""
 
         epoch = time.strftime("%Y%m%d%H%M", time.localtime(time.time()))
-        print("소산계수 좌표 출력")
         result = ()
         cnt = 1
         self.min_x = []
@@ -359,7 +175,6 @@ class ND01MainWindow(QWidget):
 
         for upper_left, lower_right in zip(self.left_range, self.right_range):
             result = self.minrgb(upper_left, lower_right)
-            print(f"target{cnt}의 소산계수 검출용 픽셀위치 =  ", result)
             self.min_x.append(result[0])
             self.min_y.append(result[1])
             cnt += 1
@@ -369,27 +184,6 @@ class ND01MainWindow(QWidget):
         self.curved_thread = CurvedThread(self.camera_name, epoch)
         self.curved_thread.update_extinc_signal.connect(self.extinc_print)
         self.curved_thread.run()
-
-        # self.list_test()
-
-        # graph_dir = os.path.join(f"extinction/{self.camera_name}")
-
-        # if os.path.isfile(f"{graph_dir}/{epoch}.png"):
-        #     graph_image = cv2.imread(f"{graph_dir}/{epoch}.png")
-        #     graph_image = cv2.cvtColor(graph_image, cv2.COLOR_BGR2RGB)
-
-        #     img_height, img_width, ch = graph_image.shape
-        #     bytes_per_line = ch * img_width
-
-        #     convert_to_Qt_format = QImage(graph_image.data, img_width, img_height, bytes_per_line,
-        #                                 QImage.Format_RGB888)
-
-        #     p = convert_to_Qt_format.scaled(self.graph_label.width(), self.graph_label.height(), Qt.IgnoreAspectRatio,
-        #                                     Qt.SmoothTransformation)
-
-        #     self.graph_label.setPixmap(QPixmap.fromImage(p))
-        
-        # return g_ext, pm_25
 
     def minrgb(self, upper_left, lower_right):
         """드래그한 영역의 RGB 최솟값을 추출한다"""
@@ -454,17 +248,6 @@ class ND01MainWindow(QWidget):
 
     def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
 
-        # self.r_c1_textbox.setPlainText(f"{c1_list[0]:.4f}")
-        # self.g_c1_textbox.setPlainText(f"{c1_list[1]:.4f}")
-        # self.b_c1_textbox.setPlainText(f"{c1_list[2]:.4f}")
-
-        # self.r_c2_textbox.setPlainText(f"{c2_list[0]:.4f}")
-        # self.g_c2_textbox.setPlainText(f"{c2_list[1]:.4f}")
-        # self.b_c2_textbox.setPlainText(f"{c2_list[2]:.4f}")
-
-        # self.r_alpha_textbox.setPlainText(f"{alp_list[0]:.6f}")
-        # self.g_alpha_textbox.setPlainText(f"{alp_list[1]:.6f}")
-        # self.b_alpha_textbox.setPlainText(f"{alp_list[2]:.6f}")
         self.g_ext = round(alp_list[1], 1)
 
         if select_color == "red" : 
@@ -475,25 +258,27 @@ class ND01MainWindow(QWidget):
             self.visibility_print(alp_list[2])
         # self.pm_print(alp_list)
 
+        
+
     def visibility_print(self, ext_g: float = 0.0):
         vis_value = 0
 
         vis_value = (3.912/ext_g)
-        
+        if vis_value > 20:
+            vis_value = 20
+        elif vis_value < 0.01:
+            vis_value = 0.01
+
+        self.data_save(vis_value)
         vis_value_str = f"{vis_value:.2f}" + " km"
         self.c_vis_label.setText(vis_value_str)
-
-    # def pm_print(self, ext_list: list):
-
-    #     r_ext_pm = ext_list[0]*1000/4/2.5
-    #     g_ext_pm = ext_list[1]*1000/4/2.5
-    #     b_ext_pm = ext_list[2]*1000/4/2.5
         
 
-        # pm_value = b_ext_pm/(1+5.67*((85/100)**5.8))
-        # pm_value_str = f"{pm_value:.2f}" + r" ug/m^3"
-        # self.pm_25 = round(pm_value, 2)
-        # self.pm25_value.setText(pm_value_str)
+    def data_save(self, vis_data):
+        """Database에 시정과 미세먼지 값을 저장한다."""
+
+        save_db.SaveDB(vis_data)
+        print("Data Save!")
 
 
 
@@ -516,10 +301,10 @@ class ND01MainWindow(QWidget):
             result.to_csv(f"{save_path}/{self.camera_name}.csv", mode="w", index=False)
 
     def get_target(self, camera_name: str):
-        """특정 카메라의 타겟 정보들을 불러온다."""
+        """Retrieves target information of a specific camera."""
 
         save_path = os.path.join(f"target/{self.camera_name}")
-        print("타겟을 불러옵니다.")
+        print("Get target information")
         if os.path.isfile(f"{save_path}/{camera_name}.csv"):
             target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
             self.target_name = target_df["target_name"].tolist()
@@ -534,40 +319,6 @@ class ND01MainWindow(QWidget):
         tuple_list = [i.split(',') for i in before_list]
         tuple_list = [(int(i[0][1:]), int(i[1][:-1])) for i in tuple_list]
         return tuple_list
-
-    # def list_test(self):
-    #     """소산계수 검출용 이미지들을 리스트뷰에 보여주는 함수"""
-    #     self.imagelist.clear()
-    #     cnt = 0
-    #     for x, y in zip(self.min_x, self.min_y):
-
-    #         image = self.cp_image[y-50:y+50, x-50:x+50, :].copy()
-    #         cv2.rectangle(image, (40, 40), (60, 60), (255, 0, 0), 2)
-
-    #         image = self.cvt_cv_qpixamp(image)
-    #         icon_image = QIcon(image)
-    #         item_image = QListWidgetItem(icon_image, "target")
-    #         item_image.setSizeHint(QSize(200, 110))
-    #         item_image.setTextAlignment(Qt.AlignTop)
-
-    #         self.imagelist.addItem(item_image)
-    #         # self.imagelist.setItem(1, cnt, item_image)
-    #         cnt += 1
-
-    # def cvt_cv_qpixamp(self, image: np.ndarray):
-    #     """cv 이미지를 qpixmap으로 변환하는 함수"""
-    #     img_height, img_width, ch = image.shape
-    #     bytes_per_line = ch * img_width
-
-    #     convert_to_Qt_format = QImage(image.data.tobytes(), img_width, img_height,
-    #                                 QImage.Format_RGB888)
-
-    #     p = convert_to_Qt_format.scaled(self.cp_image.shape[1], self.cp_image.shape[0], Qt.IgnoreAspectRatio,
-    #                                     Qt.SmoothTransformation)
-
-    #     return QPixmap.fromImage(p)
-
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

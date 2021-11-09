@@ -135,7 +135,7 @@
 }</string>
    </property>
    <property name="text">
-    <string>   Visibility</string>
+    <string>   Time series</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -403,6 +403,17 @@
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticallayout"/>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>620</y>
+     <width>1291</width>
+     <height>441</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="web_verticalLayout"/>
   </widget>
  </widget>
  <resources/>
