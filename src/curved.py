@@ -45,11 +45,11 @@ class CurvedThread(QtCore.QThread):
         min_err = [np.inf] * 3
         best_cov = []
 
-        # 하늘 타겟 추출
+        
         sky_x = x[-1]
         sky_y = y[-1]
 
-        # 타겟 리스트에서 하늘 타겟은 제거
+        
         x = np.delete(x, [-1])
         y = np.delete(y, [-1])
 
@@ -57,9 +57,9 @@ class CurvedThread(QtCore.QThread):
             for sel in itertools.combinations(range(len(x)), r=subseq):
                 x_sel = np.take(x, sel)
                 y_sel = np.take(y, sel)
-                # print("후보 target 거리 리스트: " , x_sel)
+               
                 try:
-                    # 하늘 타겟을 추출한 리스트에 추가
+                    
                     x_sel = np.append(x_sel, [sky_x])
                     y_sel = np.append(y_sel, [sky_y])
                     opt, cov = curve_fit(func, x_sel, y_sel)
@@ -74,7 +74,6 @@ class CurvedThread(QtCore.QThread):
                     result_x_sel = x_sel
                     result_y_sel = y_sel
         
-        print("선택된 target 거리 리스트: " , result_x_sel)
         return best_opt, best_cov
     
     def select_max_rgb(self, r, g, b):
@@ -102,10 +101,6 @@ class CurvedThread(QtCore.QThread):
         self.hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
         self.hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
 
-        # self.hanhwa_g[-1] = self.hanhwa_g[-1] * 1.2
-        # self.hanhwa_g[-2] = self.hanhwa_g[-2] * 1.2
-        # self.hanhwa_g[-3] = self.hanhwa_g[-3] * 1.2
-
         r1_init = self.hanhwa_r[0] * 0.7
         g1_init = self.hanhwa_g[0] * 0.7
         b1_init = self.hanhwa_b[0] * 0.7
@@ -121,9 +116,7 @@ class CurvedThread(QtCore.QThread):
         b_ext_init = [b1_init, b2_init, 1]
 
         try:
-            # hanhwa_opt_r, hanhwa_cov_r = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_r)
-            # hanhwa_opt_g, hanhwa_cov_g = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_g)
-            # hanhwa_opt_b, hanhwa_cov_b = CurvedThread.inlier_fit(CurvedThread.func, self.hanhwa_dist, self.hanhwa_b)
+
             hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_r, p0=r_ext_init, maxfev=5000)
             hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_g, p0=g_ext_init, maxfev=5000)
             hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b, p0=b_ext_init, maxfev=5000)
