@@ -6,8 +6,6 @@ import pandas as pd
 
 import scipy
 from scipy.optimize import curve_fit
-import matplotlib
-import matplotlib.pyplot as plt
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 class CurvedThread(QtCore.QThread):
@@ -156,20 +154,6 @@ class CurvedThread(QtCore.QThread):
             os.mkdir(self.extsavedir)
         except Exception as e:
             pass
-
-        plt.figure(figsize=(13, 8))
-        plt.plot(self.hanhwa_dist, self.hanhwa_r, '.', c='red')
-        plt.plot(self.hanhwa_dist, self.hanhwa_g, '.', c='green')
-        plt.plot(self.hanhwa_dist, self.hanhwa_b, '.', c='blue')
-        plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_r), label='Red', c='red')
-        plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_g), label='Green', c='green')
-        plt.plot(self.hanhwa_x, self.func(self.hanhwa_x, *hanhwa_opt_b), label='Blue', c='blue')
-        plt.xlabel('Distance (km)', fontsize=20)
-        plt.ylabel('Amplitude', fontsize=20)
-        plt.legend(prop={'size': 20})
-        plt.title(self.cam_name, fontsize=20)
-        plt.grid(True)
-        plt.savefig(f'{self.extsavedir}/{self.epoch}.png', dpi=300)
 
     @staticmethod
     def func(x, c1, c2, a):

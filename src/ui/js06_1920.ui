@@ -63,17 +63,17 @@
     <string notr="true">
 #settings_button
 {
-	background-image: url(&quot;ui/icon/settings.png&quot;);
+	background-image: url(&quot;ui/settings.png&quot;);
 	border:0px;
 }
 #settings_button:pressed
 {
-	background-image: url(&quot;ui/icon/settings_on.png&quot;);
+	background-image: url(&quot;ui/settings_on.png&quot;);
 	background-color:rgb(27,49,70);
 }
 #settings_button:hover
 {
-	background-image: url(&quot;ui/icon/settings_on.png&quot;);
+	background-image: url(&quot;ui/settings_on.png&quot;);
 	background-color:rgb(27,49,70);
 }</string>
    </property>
@@ -177,7 +177,7 @@
     <string notr="true">
 #graph_pushButton
 {
-	background-image: url(&quot;ui/icon/graph.png&quot;);
+	background-image: url(&quot;ui/graph.png&quot;);
 	border:0px;
 }
 </string>
@@ -242,7 +242,7 @@
     <string notr="true">
 #clock_pushButton
 {
-	background-image: url(&quot;ui/icon/clock.png&quot;);
+	background-image: url(&quot;ui/clock.png&quot;);
 	border:0px;
 }
 </string>
@@ -375,7 +375,7 @@
     <string notr="true">
 #vis_pushButton
 {
-	background-image: url(&quot;ui/icon/vis.png&quot;);
+	background-image: url(&quot;ui/vis.png&quot;);
 	border:0px;
 }
 </string>

@@ -94,7 +94,7 @@ class ND01MainWindow(QWidget):
         self._player.setVideoOutput(self.video_item)
         self._player.setPosition(0)
   
-        VIDEO_SRC3 = "rtsp://admin:sijung5520@d617.asuscomm.com:1554/profile2/media.smp"
+        VIDEO_SRC3 = "rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp"
         
         CAM_NAME = "QNO-8080R"
         self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")
