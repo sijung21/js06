@@ -84,7 +84,7 @@ class ND01MainWindow(QWidget):
         self.verticallayout.addWidget(self.video_graphicsview)
 
         self.webview = QtWebEngineWidgets.QWebEngineView()
-        self.webview.setUrl(QUrl("http://localhost:3000/d/GXA3xPS7z/new-dashboard-copy?orgId=1&refresh=30s&from=now-30m&to=now&kiosk"))
+        self.webview.setUrl(QUrl("http://localhost:3000/d/GXA3xPS7z/new-dashboard-copy?orgId=1&refresh=30s"))
         # QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ShowScrollBars(False))
         self.webview.setZoomFactor(1)
         self.web_verticalLayout.addWidget(self.webview)
@@ -94,11 +94,10 @@ class ND01MainWindow(QWidget):
         self._player.setVideoOutput(self.video_item)
         self._player.setPosition(0)
   
-        VIDEO_SRC3 = "rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp"
+        VIDEO_SRC3 = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
         
         CAM_NAME = "QNO-8080R"
         self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")
-
 
         self.timer = QTimer()
         self.timer.start(1000)
@@ -257,9 +256,7 @@ class ND01MainWindow(QWidget):
             self.visibility_print(alp_list[1])
         else:
             self.visibility_print(alp_list[2])
-        # self.pm_print(alp_list)
-
-        
+        # self.pm_print(alp_list)        
 
     def visibility_print(self, ext_g: float = 0.0):
         """Print the visibility"""
@@ -275,14 +272,11 @@ class ND01MainWindow(QWidget):
         vis_value_str = f"{vis_value:.2f}" + " km"
         self.c_vis_label.setText(vis_value_str)
         
-
     def data_storage(self, vis_data):
         """Store visibility and fine dust values ​​in the database."""
 
         save_db.SaveDB(vis_data)
         print("data storage!")
-
-
 
     def save_target(self):
         """Save the target information for each camera."""
