@@ -99,52 +99,70 @@ class ND01MainWindow(QWidget):
         CAM_NAME = "QNO-8080R"
         self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")
 
-        self.timer = QTimer()
-        self.timer.start(1000)
-        self.timer.timeout.connect(self.timeout_run)
+        # self.timer = QTimer()
+        # self.timer.start(1000)
+        # self.timer.timeout.connect(self.timeout_run)
+        
+        self.timer1 = QTimer()
+        self.timer1.start(1000)
+        self.timer1.timeout.connect(self.timeout_run1)
 
     @pyqtSlot(str)
     def onCameraChange(self, url, camera_name, src_type):
         """Connect the IP camera and run the video thread."""
         self.camera_name = camera_name
         self._player.setMedia(QMediaContent(QUrl(url)))
-        self.video_graphicsview.fitInView(self.video_item)
+        # self.video_graphicsview.fitInView(self.video_item)
         self._player.play()
 
         self.get_target(self.camera_name)
-
-        self.video_thread = VideoThread(url, src_type)
-        self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
-        self.video_thread.start()
 
     def timeout_run(self):
         """Print the current time."""
         current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
         self.real_time_label.setText(current_time)
         self.video_graphicsview.fitInView(self.video_item)
+        
+    def timeout_run1(self):
+        """Print the current time."""
+        self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        
+        if self.epoch[-2:] == "00":
+            print("여기 왔니")
+            url = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
+            self.video_thread = VideoThread(url, "Video")
+            self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
+            self.video_thread.start()
+        
+
+            
+        print(self.epoch)
 
     def convert_cv_qt(self, cv_img):
         """Convert CV image to QImage."""
-        self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        # self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         self.cp_image = cv_img.copy()
         self.cp_image = cv2.cvtColor(self.cp_image, cv2.COLOR_BGR2RGB)
-        img_height, img_width, ch = cv_img.shape
-        self.image_width = int(img_width)
-        self.image_height = int(img_height)
-        self.video_flag = True
-        bytes_per_line = ch * img_width
+        # img_height, img_width, ch = cv_img.shape
+        # self.image_width = int(img_width)
+        # self.image_height = int(img_height)
+        # self.video_flag = True
+        # bytes_per_line = ch * img_width
 
-        if self.epoch[-2:] == "00":
-            self.minprint()
-            if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
-                self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
-                self.g_ext = None
-                self.pm_25 = None
-                return
-            return
+        # if self.epoch[-2:] == "00":
+        self.minprint()
+        # if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
+        #     self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
+        #     self.g_ext = None
+        #     self.pm_25 = None
+            # return
+        
+        print("비디오 끝")
+        # return
     
     def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
         """Save the image of the calculation time."""
+        print("save_frame 시작")
         image_path = os.path.join(self.filepath, f"{self.test_name}")
         file_name = f"{epoch}"
         if not os.path.isdir(image_path):
@@ -169,7 +187,7 @@ class ND01MainWindow(QWidget):
 
     def minprint(self):
         """A function that outputs pixels for calculating the dissipation coefficient in the specified areas"""
-
+        print("minprint 시작")
         epoch = time.strftime("%Y%m%d%H%M", time.localtime(time.time()))
         result = ()
         cnt = 1
