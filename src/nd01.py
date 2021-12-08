@@ -9,6 +9,8 @@ import math
 import cv2
 import numpy as np
 import pandas as pd
+from multiprocessing import Process, Queue
+import multiprocessing as mp
 
 # print(PyQt5.__version__)
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
@@ -23,10 +25,11 @@ from PyQt5 import QtWebEngineCore
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 
 
-from video_thread import VideoThread
+# from video_thread import VideoThread
 from curved import CurvedThread
 from ui.widget import Ui_js06_1920
-
+from video_thread_mp import VideoThread
+import video_thread_mp
 import save_db
 
 print(pd.__version__)
@@ -98,15 +101,24 @@ class ND01MainWindow(QWidget):
         
         CAM_NAME = "QNO-8080R"
         self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")
-
-        # self.timer = QTimer()
-        # self.timer.start(1000)
-        # self.timer.timeout.connect(self.timeout_run)
         
-        self.timer1 = QTimer()
-        self.timer1.start(1000)
-        self.timer1.timeout.connect(self.timeout_run1)
+        self.video_thread = VideoThread(VIDEO_SRC3, "Video", q)
+        self.video_thread.update_pixmap_signal.connect(self.print_data)
+        self.video_thread.start()
 
+        self.timer = QTimer()
+        self.timer.start(1000)
+        self.timer.timeout.connect(self.timeout_run)
+        
+        # self.timer1 = QTimer()
+        # self.timer1.start(1000)
+        # self.timer1.timeout.connect(self.timeout_run1)
+    @pyqtSlot(np.ndarray)
+    def print_data(self, cv_img):
+        print("gggg")
+        print()
+        # self.statusBar().showMessage(data)
+        
     @pyqtSlot(str)
     def onCameraChange(self, url, camera_name, src_type):
         """Connect the IP camera and run the video thread."""
@@ -133,9 +145,7 @@ class ND01MainWindow(QWidget):
             self.video_thread = VideoThread(url, "Video")
             self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
             self.video_thread.start()
-        
-
-            
+                        
         print(self.epoch)
 
     def convert_cv_qt(self, cv_img):
@@ -336,6 +346,11 @@ class ND01MainWindow(QWidget):
         return tuple_list
 
 if __name__ == '__main__':
+    
+    q = Queue()
+    p = Process(name="producer", target=video_thread_mp.producer, args=(q, ), daemon=True)
+    p.start()
+    
     app = QApplication(sys.argv)
     MainWindow = QMainWindow()
     ui = ND01MainWindow()

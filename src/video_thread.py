@@ -7,6 +7,8 @@ import cv2
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 
+
+
 class VideoThread(QtCore.QThread):
     update_pixmap_signal = QtCore.pyqtSignal(np.ndarray)
 
