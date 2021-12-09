@@ -25,7 +25,6 @@ from PyQt5 import QtWebEngineCore
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 
 
-from ui.widget import Ui_js06_1920
 from video_thread_mp import VideoThread
 import video_thread_mp
 import save_db
@@ -108,9 +107,6 @@ class ND01MainWindow(QWidget):
         self.timer.start(1000)
         self.timer.timeout.connect(self.timeout_run)
         
-        # self.timer1 = QTimer()
-        # self.timer1.start(1000)
-        # self.timer1.timeout.connect(self.timeout_run1)
     @pyqtSlot(str)
     def print_data(self, visibility):
         print("gggg")
@@ -136,19 +132,6 @@ class ND01MainWindow(QWidget):
         current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
         self.real_time_label.setText(current_time)
         self.video_graphicsview.fitInView(self.video_item)
-        
-    def timeout_run1(self):
-        """Print the current time."""
-        self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
-        
-        if self.epoch[-2:] == "00":
-            print("여기 왔니")
-            url = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
-            self.video_thread = VideoThread(url, "Video")
-            self.video_thread.update_pixmap_signal.connect(self.convert_cv_qt)
-            self.video_thread.start()
-                        
-        print(self.epoch)
 
     def convert_cv_qt(self, cv_img):
         """Convert CV image to QImage."""

@@ -29,8 +29,11 @@ def producer(q):
                 q.put(visibility)
                 time.sleep(1)
             except Exception as e:
+                print(e)
+                cap.release()
+                cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
                 continue
-    cap.release()
+    
     
 def minprint(epoch, left_range, right_range, distance, cv_img):
     """A function that outputs pixels for calculating the dissipation coefficient in the specified areas"""
