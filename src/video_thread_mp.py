@@ -11,7 +11,6 @@ import datetime
 import time
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from curved import CurvedThread
 import curve_save
 
 def producer(q):
@@ -23,11 +22,14 @@ def producer(q):
     while True:
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         if epoch[-2:] == "00":
-            ret, cv_img = cap.read()
-            visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
-            
-            q.put(visibility)
-            time.sleep(1)
+            try:
+                ret, cv_img = cap.read()
+                visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
+                
+                q.put(visibility)
+                time.sleep(1)
+            except Exception as e:
+                continue
     cap.release()
     
 def minprint(epoch, left_range, right_range, distance, cv_img):

@@ -25,8 +25,6 @@ from PyQt5 import QtWebEngineCore
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 
 
-# from video_thread import VideoThread
-from curved import CurvedThread
 from ui.widget import Ui_js06_1920
 from video_thread_mp import VideoThread
 import video_thread_mp
