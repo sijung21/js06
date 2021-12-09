@@ -106,6 +106,11 @@ def save_rgb(r_list, g_list, b_list, epoch, distance):
         pass
 
     if r_list:
+        
+        r_list = list(map(int, r_list))
+        g_list = list(map(int, g_list))
+        b_list = list(map(int, b_list))       
+        
         col = ["target_name", "r", "g", "b", "distance"]
         result = pd.DataFrame(columns=col)
         result["target_name"] = [f"target_{num}" for num in range(1, len(r_list) + 1)]
