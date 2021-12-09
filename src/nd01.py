@@ -87,7 +87,7 @@ class ND01MainWindow(QWidget):
         self.verticallayout.addWidget(self.video_graphicsview)
 
         self.webview = QtWebEngineWidgets.QWebEngineView()
-        self.webview.setUrl(QUrl("http://localhost:3000/d/GXA3xPS7z/new-dashboard-copy?orgId=1&refresh=30s"))
+        self.webview.setUrl(QUrl("http://localhost:3000/d/GXA3xPS7z/new-dashboard-copy?orgId=1&refresh=30s&kiosk&from=now-30m&to=now"))
         # QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ShowScrollBars(False))
         self.webview.setZoomFactor(1)
         self.web_verticalLayout.addWidget(self.webview)
@@ -117,7 +117,10 @@ class ND01MainWindow(QWidget):
     def print_data(self, visibility):
         print("gggg")
         print(visibility)
+        print(float(visibility[:-3]))
+        
         self.c_vis_label.setText(visibility)
+        self.data_storage(float(visibility[:-3]))
         # self.statusBar().showMessage(data)
         
     @pyqtSlot(str)

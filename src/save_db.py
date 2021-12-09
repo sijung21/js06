@@ -26,7 +26,8 @@ def SaveDB(vis_value):
         client.close()
 
         # Save every 1 minute.
-        time.sleep(3)
+        # time.sleep(3)
+        return
 
     except TypeError:
         pass
