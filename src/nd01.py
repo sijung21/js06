@@ -127,7 +127,7 @@ class ND01MainWindow(QWidget):
         # self.video_graphicsview.fitInView(self.video_item)
         self._player.play()
 
-        self.get_target(self.camera_name)
+        # self.get_target(self.camera_name)
 
     def timeout_run(self):
         """Print the current time."""
@@ -160,7 +160,6 @@ class ND01MainWindow(QWidget):
         # bytes_per_line = ch * img_width
 
         # if self.epoch[-2:] == "00":
-        self.minprint()
         # if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
         #     self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
         #     self.g_ext = None
@@ -193,112 +192,7 @@ class ND01MainWindow(QWidget):
         if e.key() == Qt.Key_Escape:
             sys.exit()
         if e.key() == Qt.Key_F:
-            self.showFullScreen()    
-
-    def minprint(self):
-        """A function that outputs pixels for calculating the dissipation coefficient in the specified areas"""
-        print("minprint 시작")
-        epoch = time.strftime("%Y%m%d%H%M", time.localtime(time.time()))
-        result = ()
-        cnt = 1
-        self.min_x = []
-        self.min_y = []
-
-        for upper_left, lower_right in zip(self.left_range, self.right_range):
-            result = self.minrgb(upper_left, lower_right)
-            self.min_x.append(result[0])
-            self.min_y.append(result[1])
-            cnt += 1
-
-        self.get_rgb(epoch)
-
-        self.curved_thread = CurvedThread(self.camera_name, epoch)
-        self.curved_thread.update_extinc_signal.connect(self.extinc_print)
-        self.curved_thread.run()
-
-    def minrgb(self, upper_left, lower_right):
-        """Extracts the minimum RGB value of the dragged area"""
-
-        up_y = min(upper_left[1], lower_right[1])
-        down_y = max(upper_left[1], lower_right[1])
-
-        left_x = min(upper_left[0], lower_right[0])
-        right_x = max(upper_left[0], lower_right[0])
-
-        test = self.cp_image[up_y:down_y, left_x:right_x, :]
-
-        r = test[:, :, 0]
-        g = test[:, :, 1]
-        b = test[:, :, 2]
-
-        r = np.clip(r, 0, 765)
-        sum_rgb = r + g + b
-
-        t_idx = np.where(sum_rgb == np.min(sum_rgb))
-
-        show_min_y = t_idx[0][0] + up_y
-        show_min_x = t_idx[1][0] + left_x
-
-        return (show_min_x, show_min_y)
-
-    def get_rgb(self, epoch: str):
-        """Gets the RGB values ​​of the coordinates."""
-        r_list = []
-        g_list = []
-        b_list = []
-
-        for x, y in zip(self.min_x, self.min_y):
-
-            r_list.append(self.cp_image[y, x, 0])
-            g_list.append(self.cp_image[y, x, 1])
-            b_list.append(self.cp_image[y, x, 2])
-
-        self.save_rgb(r_list, g_list, b_list, epoch)
-
-    def save_rgb(self, r_list, g_list, b_list, epoch):
-        """Save the rgb information for each target."""
-        try:
-            save_path = os.path.join(f"rgb/{self.camera_name}")
-            os.mkdir(save_path)
-
-        except Exception as e:
-            pass
-
-        if r_list:
-            col = ["target_name", "r", "g", "b", "distance"]
-            result = pd.DataFrame(columns=col)
-            result["target_name"] = self.target_name
-            result["r"] = r_list
-            result["g"] = g_list
-            result["b"] = b_list
-            result["distance"] = self.distance
-            result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
-
-    def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
-        """Select an appropriate value among visibility by wavelength."""
-        self.g_ext = round(alp_list[1], 1)
-
-        if select_color == "red" : 
-            self.visibility_print(alp_list[0])
-        elif select_color == "green" : 
-            self.visibility_print(alp_list[1])
-        else:
-            self.visibility_print(alp_list[2])
-        # self.pm_print(alp_list)        
-
-    def visibility_print(self, ext_g: float = 0.0):
-        """Print the visibility"""
-        vis_value = 0
-
-        vis_value = (3.912/ext_g)
-        if vis_value > 20:
-            vis_value = 20
-        elif vis_value < 0.01:
-            vis_value = 0.01
-
-        self.data_storage(vis_value)
-        vis_value_str = f"{vis_value:.2f}" + " km"
-        self.c_vis_label.setText(vis_value_str)
+            self.showFullScreen()
         
     def data_storage(self, vis_data):
         """Store visibility and fine dust values ​​in the database."""
@@ -323,27 +217,6 @@ class ND01MainWindow(QWidget):
             result["right_range"] = self.right_range
             result["distance"] = self.distance
             result.to_csv(f"{save_path}/{self.camera_name}.csv", mode="w", index=False)
-
-    def get_target(self, camera_name: str):
-        """Retrieves target information of a specific camera."""
-
-        save_path = os.path.join(f"target/{self.camera_name}")
-        print("Get target information")
-        if os.path.isfile(f"{save_path}/{camera_name}.csv"):
-            target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
-            self.target_name = target_df["target_name"].tolist()
-            self.left_range = target_df["left_range"].tolist()
-            self.left_range = self.str_to_tuple(self.left_range)
-            self.right_range = target_df["right_range"].tolist()
-            self.right_range = self.str_to_tuple(self.right_range)
-            self.distance = target_df["distance"].tolist()
-
-    def str_to_tuple(self, before_list):
-        """A function that converts the tuple list, which is the location information of the stored targets, 
-        into a string and converts it back into a tuple form."""
-        tuple_list = [i.split(',') for i in before_list]
-        tuple_list = [(int(i[0][1:]), int(i[1][:-1])) for i in tuple_list]
-        return tuple_list
 
 if __name__ == '__main__':
     

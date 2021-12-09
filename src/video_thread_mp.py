@@ -1,6 +1,7 @@
 
 #!/usr/bin/env python3
-
+import os
+import pandas as pd
 import numpy as np
 
 import cv2
@@ -10,22 +11,154 @@ import datetime
 import time
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-
+from curved import CurvedThread
 
 def producer(q):
     proc = mp.current_process()
     print(proc.name)
 
     cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
+    left_range, right_range, distance = get_target("PNM_9030V")
     while True:
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         if epoch[-2:] == "00":
-            ret, cv_img = cap.read()        
+            ret, cv_img = cap.read()
+            minprint(epoch[:-2], left_range, right_range, distance, cv_img)
+            
             q.put(cv_img)
-        time.sleep(30)       
+            time.sleep(1)
     cap.release()
+    
+def minprint(epoch, left_range, right_range, distance, cv_img):
+    """A function that outputs pixels for calculating the dissipation coefficient in the specified areas"""
+    print("minprint 시작")
+    # epoch = time.strftime("%Y%m%d%H%M", time.localtime(time.time()))
+    cp_image = cv_img.copy()
+    result = ()
+    cnt = 1
+    min_x = []
+    min_y = []
+
+    for upper_left, lower_right in zip(left_range, right_range):
+        result = minrgb(upper_left, lower_right, cp_image)
+        min_x.append(result[0])
+        min_y.append(result[1])
+        cnt += 1
+
+    get_rgb(epoch, min_x, min_y, cp_image, distance)    
+
+    # curved_thread = CurvedThread("PNM_9030V", epoch)
+    # curved_thread.update_extinc_signal.connect(extinc_print)
+    # curved_thread.run()
+
+# def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
+#     """Select an appropriate value among visibility by wavelength."""
+#     self.g_ext = round(alp_list[1], 1)
+
+#     if select_color == "red" : 
+#         self.visibility_print(alp_list[0])
+#     elif select_color == "green" : 
+#         self.visibility_print(alp_list[1])
+#     else:
+#         self.visibility_print(alp_list[2])
+#     # self.pm_print(alp_list)        
+
+# def visibility_print(self, ext_g: float = 0.0):
+#     """Print the visibility"""
+#     vis_value = 0
+
+#     vis_value = (3.912/ext_g)
+#     if vis_value > 20:
+#         vis_value = 20
+#     elif vis_value < 0.01:
+#         vis_value = 0.01
+
+#     self.data_storage(vis_value)
+#     vis_value_str = f"{vis_value:.2f}" + " km"
+#     return vis_value_str
+
+def minrgb(upper_left, lower_right, cp_image):
+    """Extracts the minimum RGB value of the dragged area"""
+
+    up_y = min(upper_left[1], lower_right[1])
+    down_y = max(upper_left[1], lower_right[1])
+
+    left_x = min(upper_left[0], lower_right[0])
+    right_x = max(upper_left[0], lower_right[0])
+
+    test = cp_image[up_y:down_y, left_x:right_x, :]
+
+    r = test[:, :, 0]
+    g = test[:, :, 1]
+    b = test[:, :, 2]
+
+    r = np.clip(r, 0, 765)
+    sum_rgb = r + g + b
+
+    t_idx = np.where(sum_rgb == np.min(sum_rgb))
+
+    show_min_y = t_idx[0][0] + up_y
+    show_min_x = t_idx[1][0] + left_x
+
+    return (show_min_x, show_min_y)
+
+def get_rgb(epoch: str, min_x, min_y, cp_image, distance):
+    """Gets the RGB values ​​of the coordinates."""
+    r_list = []
+    g_list = []
+    b_list = []
+
+    for x, y in zip(min_x, min_y):
+
+        r_list.append(cp_image[y, x, 0])
+        g_list.append(cp_image[y, x, 1])
+        b_list.append(cp_image[y, x, 2])
+
+    save_rgb(r_list, g_list, b_list, epoch, distance)
+
+def save_rgb(r_list, g_list, b_list, epoch, distance):
+    """Save the rgb information for each target."""
+    try:
+        save_path = os.path.join(f"rgb/PNM_9030V")
+        os.mkdir(save_path)
+
+    except Exception as e:
+        pass
+
+    if r_list:
+        col = ["target_name", "r", "g", "b", "distance"]
+        result = pd.DataFrame(columns=col)
+        result["target_name"] = [f"target_{num}" for num in range(1, len(r_list) + 1)]
+        result["r"] = r_list
+        result["g"] = g_list
+        result["b"] = b_list
+        result["distance"] = distance
+        result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
+        print("Save rgb") 
         
-        
+def get_target(camera_name: str):
+    """Retrieves target information of a specific camera."""
+
+    save_path = os.path.join(f"target/{camera_name}")
+    print("Get target information")
+    if os.path.isfile(f"{save_path}/{camera_name}.csv"):
+        target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
+        target_name = target_df["target_name"].tolist()
+        left_range = target_df["left_range"].tolist()
+        left_range = str_to_tuple(left_range)
+        right_range = target_df["right_range"].tolist()
+        right_range = str_to_tuple(right_range)
+        distance = target_df["distance"].tolist()
+    return left_range, right_range, distance
+
+def str_to_tuple(before_list):
+    """A function that converts the tuple list, which is the location information of the stored targets, 
+    into a string and converts it back into a tuple form."""
+    tuple_list = [i.split(',') for i in before_list]
+    tuple_list = [(int(i[0][1:]), int(i[1][:-1])) for i in tuple_list]
+    return tuple_list   
+
+
 class VideoThread(QtCore.QThread):
     update_pixmap_signal = QtCore.pyqtSignal(np.ndarray)
 
