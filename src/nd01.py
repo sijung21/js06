@@ -113,10 +113,11 @@ class ND01MainWindow(QWidget):
         # self.timer1 = QTimer()
         # self.timer1.start(1000)
         # self.timer1.timeout.connect(self.timeout_run1)
-    @pyqtSlot(np.ndarray)
-    def print_data(self, cv_img):
+    @pyqtSlot(str)
+    def print_data(self, visibility):
         print("gggg")
-        print()
+        print(visibility)
+        self.c_vis_label.setText(visibility)
         # self.statusBar().showMessage(data)
         
     @pyqtSlot(str)

@@ -9,15 +9,15 @@ from scipy.optimize import curve_fit
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 curved_flag = True
-cam_name = cam_name
+# cam_name = cam_name
 hanhwa_dist = []
 hanhwa_x = []
 hanhwa_r = []
 hanhwa_g = []
 hanhwa_b = []
-epoch = epoch
-rgbsavedir = os.path.join(f"rgb/{cam_name}")
-extsavedir = os.path.join(f"extinction/{cam_name}")
+# epoch = epoch
+# rgbsavedir = os.path.join(f"rgb/{cam_name}")
+# extsavedir = os.path.join(f"extinction/{cam_name}")
 
 def select_max_rgb(r, g, b):
 
@@ -34,8 +34,9 @@ def select_max_rgb(r, g, b):
         select_color = "blue"
     return select_color
 
-def run():
-    hanhwa = pd.read_csv(f"{rgbsavedir}/{epoch}.csv")
+def cal_curve(hanhwa: pd.DataFrame):
+    # hanhwa = pd.read_csv(f"{rgbsavedir}/{epoch}.csv")
+    print(hanhwa)
     hanhwa = hanhwa.sort_values(by=['distance'])
     hanhwa_dist = hanhwa[['distance']].squeeze().to_numpy()
     hanhwa_x = np.linspace(hanhwa_dist[0], hanhwa_dist[-1], 100, endpoint=True)
@@ -93,14 +94,15 @@ def run():
     print(f"Green channel: {extcoeff_to_vis(hanhwa_opt_g[2], hanhwa_err_g[2], 3)} km")
     print(f"Blue channel: {extcoeff_to_vis(hanhwa_opt_b[2], hanhwa_err_b[2], 3)} km")
 
-    update_extinc_signal.emit(list1, list2, list3, select_color)
+    return list1, list2, list3, select_color
+    # update_extinc_signal.emit(list1, list2, list3, select_color)
 
     try:
         os.mkdir(extsavedir)
     except Exception as e:
         pass
 
-@staticmethod
+# @staticmethod
 def func(x, c1, c2, a):
     return c2 + (c1 - c2) * np.exp(-a * x)
 

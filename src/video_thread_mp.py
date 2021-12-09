@@ -12,6 +12,7 @@ import time
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from curved import CurvedThread
+import curve_save
 
 def producer(q):
     proc = mp.current_process()
@@ -23,9 +24,9 @@ def producer(q):
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         if epoch[-2:] == "00":
             ret, cv_img = cap.read()
-            minprint(epoch[:-2], left_range, right_range, distance, cv_img)
+            visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
             
-            q.put(cv_img)
+            q.put(visibility)
             time.sleep(1)
     cap.release()
     
@@ -45,37 +46,8 @@ def minprint(epoch, left_range, right_range, distance, cv_img):
         min_y.append(result[1])
         cnt += 1
 
-    get_rgb(epoch, min_x, min_y, cp_image, distance)    
-
-    # curved_thread = CurvedThread("PNM_9030V", epoch)
-    # curved_thread.update_extinc_signal.connect(extinc_print)
-    # curved_thread.run()
-
-# def extinc_print(self, c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
-#     """Select an appropriate value among visibility by wavelength."""
-#     self.g_ext = round(alp_list[1], 1)
-
-#     if select_color == "red" : 
-#         self.visibility_print(alp_list[0])
-#     elif select_color == "green" : 
-#         self.visibility_print(alp_list[1])
-#     else:
-#         self.visibility_print(alp_list[2])
-#     # self.pm_print(alp_list)        
-
-# def visibility_print(self, ext_g: float = 0.0):
-#     """Print the visibility"""
-#     vis_value = 0
-
-#     vis_value = (3.912/ext_g)
-#     if vis_value > 20:
-#         vis_value = 20
-#     elif vis_value < 0.01:
-#         vis_value = 0.01
-
-#     self.data_storage(vis_value)
-#     vis_value_str = f"{vis_value:.2f}" + " km"
-#     return vis_value_str
+    visibility = get_rgb(epoch, min_x, min_y, cp_image, distance)
+    return visibility
 
 def minrgb(upper_left, lower_right, cp_image):
     """Extracts the minimum RGB value of the dragged area"""
@@ -96,7 +68,10 @@ def minrgb(upper_left, lower_right, cp_image):
     sum_rgb = r + g + b
 
     t_idx = np.where(sum_rgb == np.min(sum_rgb))
-
+    
+    print("red : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,0])
+    print("green : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,1])
+    print("blue : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,2])
     show_min_y = t_idx[0][0] + up_y
     show_min_x = t_idx[1][0] + left_x
 
@@ -113,8 +88,13 @@ def get_rgb(epoch: str, min_x, min_y, cp_image, distance):
         r_list.append(cp_image[y, x, 0])
         g_list.append(cp_image[y, x, 1])
         b_list.append(cp_image[y, x, 2])
+    
+    print("red list : ", r_list)
+    print("green list : ", g_list)
+    print("blue list : ", b_list)
 
-    save_rgb(r_list, g_list, b_list, epoch, distance)
+    visibility = save_rgb(r_list, g_list, b_list, epoch, distance)
+    return visibility
 
 def save_rgb(r_list, g_list, b_list, epoch, distance):
     """Save the rgb information for each target."""
@@ -134,7 +114,39 @@ def save_rgb(r_list, g_list, b_list, epoch, distance):
         result["b"] = b_list
         result["distance"] = distance
         result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
+        list1, list2, list3, select_color = curve_save.cal_curve(result)
+        visibility = extinc_print(list1, list2, list3, select_color)
+        print(result)
         print("Save rgb") 
+    
+    return visibility
+
+def extinc_print(c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0], select_color: str = ""):
+    """Select an appropriate value among visibility by wavelength."""
+    g_ext = round(alp_list[1], 1)
+
+    if select_color == "red" : 
+        visibility = visibility_print(alp_list[0])
+    elif select_color == "green" : 
+        visibility = visibility_print(alp_list[1])
+    else:
+        visibility = visibility_print(alp_list[2])
+
+    return visibility
+
+def visibility_print(ext_g: float = 0.0):
+    """Print the visibility"""
+    vis_value = 0
+
+    vis_value = (3.912/ext_g)
+    if vis_value > 20:
+        vis_value = 20
+    elif vis_value < 0.01:
+        vis_value = 0.01
+
+    # self.data_storage(vis_value)
+    vis_value_str = f"{vis_value:.2f}" + " km"
+    return vis_value_str
         
 def get_target(camera_name: str):
     """Retrieves target information of a specific camera."""
@@ -160,7 +172,7 @@ def str_to_tuple(before_list):
 
 
 class VideoThread(QtCore.QThread):
-    update_pixmap_signal = QtCore.pyqtSignal(np.ndarray)
+    update_pixmap_signal = QtCore.pyqtSignal(str)
 
     def __init__(self, src: str = "", file_type: str = "None", q: Queue = None):
         super().__init__()
