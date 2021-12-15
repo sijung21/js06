@@ -66,13 +66,13 @@
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
   </widget>
-  <widget class="QLabel" name="targert_setting_image_label">
+  <widget class="QLabel" name="target_setting_image_label">
    <property name="geometry">
     <rect>
      <x>20</x>
      <y>90</y>
      <width>1200</width>
-     <height>350</height>
+     <height>500</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -92,7 +92,7 @@
      <x>1240</x>
      <y>20</y>
      <width>291</width>
-     <height>411</height>
+     <height>570</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -111,9 +111,9 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>530</y>
+     <y>670</y>
      <width>531</width>
-     <height>341</height>
+     <height>201</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -132,7 +132,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>460</y>
+     <y>600</y>
      <width>531</width>
      <height>70</height>
     </rect>
@@ -163,9 +163,9 @@
    <property name="geometry">
     <rect>
      <x>570</x>
-     <y>460</y>
+     <y>600</y>
      <width>501</width>
-     <height>411</height>
+     <height>271</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -184,9 +184,9 @@
    <property name="geometry">
     <rect>
      <x>1090</x>
-     <y>530</y>
+     <y>670</y>
      <width>441</width>
-     <height>131</height>
+     <height>201</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -205,7 +205,7 @@
    <property name="geometry">
     <rect>
      <x>1090</x>
-     <y>460</y>
+     <y>600</y>
      <width>441</width>
      <height>70</height>
     </rect>
@@ -230,58 +230,6 @@
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="running_average_label">
-   <property name="geometry">
-    <rect>
-     <x>1090</x>
-     <y>670</y>
-     <width>441</width>
-     <height>70</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>NanumGothic</family>
-     <pointsize>25</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">#running_average_label
-{
-	background-color:rgb(27,49,70);
-	color:rgb(255,255,255);
-}</string>
-   </property>
-   <property name="text">
-    <string>  Running average</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="running_average">
-   <property name="geometry">
-    <rect>
-     <x>1090</x>
-     <y>740</y>
-     <width>441</width>
-     <height>131</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">#running_average
-{
-	background-color:rgb(25,39,52);
-}
-
-</string>
-   </property>
-   <property name="text">
-    <string/>
    </property>
   </widget>
  </widget>
