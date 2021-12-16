@@ -14,16 +14,16 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import curve_save
 
 def producer(q):
-    proc = mp.current_process()
+    proc = mp.current_process()ac
     print(proc.name)
 
     cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
-    left_range, right_range, distance = get_target("PNM_9030V")
     while True:
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         if epoch[-2:] == "00":
             try:
                 ret, cv_img = cap.read()
+                left_range, right_range, distance = get_target("PNM_9030V")
                 visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
                 
                 q.put(visibility)

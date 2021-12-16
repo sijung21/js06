@@ -179,7 +179,6 @@ class ND01_Setting_Widget(QDialog):
             self.isDrawing = True
             self.begin = event.pos()
             self.end = event.pos()
-            print(self.end)
             self.upper_left = (int((self.begin.x()/self.blank_lbl.width())*self.image_width),
                                int((self.begin.y()/self.blank_lbl.height())*self.image_height))
             self.blank_lbl.update()
@@ -214,19 +213,38 @@ class ND01_Setting_Widget(QDialog):
             self.blank_lbl.update()
             self.lower_right = (int((self.end.x()/self.blank_lbl.width())*self.image_width),
                                 int((self.end.y()/self.blank_lbl.height())*self.image_height))
-            # text, ok = QInputDialog.getText(self.setting_dialog, '거리 입력', '거리(km)')
-            # if ok:
-            #     self.left_range.append(self.upper_left)
-            #     self.right_range.append(self.lower_right)
-            #     self.distance.append(text)
-            #     self.min_xy = self.minrgb(self.upper_left, self.lower_right)
-            #     self.target_name.append("target_" + str(len(self.left_range)))
-            #     self.save_target()
-            #     self.isDrawing = False
-            #     self.end_drawing = True
-            # else:
-            #     self.isDrawing = False
-            #     self.blank_lbl.update()
+            text, ok = QInputDialog.getText(self, '거리 입력', '거리(km)')
+            if ok:
+                self.left_range.append(self.upper_left)
+                self.right_range.append(self.lower_right)
+                self.distance.append(text)
+                self.target_name.append("target_" + str(len(self.left_range)))
+                self.save_target()
+                self.isDrawing = False
+                self.end_drawing = True
+            else:
+                self.isDrawing = False
+                self.blank_lbl.update()
+    
+    def save_target(self):
+        """Save the target information for each camera."""
+        try:
+            save_path = os.path.join(f"target/PNM_9030V")
+            os.mkdir(save_path)
+
+        except Exception as e:
+            pass
+
+        if self.left_range:
+            col = ["target_name", "left_range", "right_range", "distance"]
+            result = pd.DataFrame(columns=col)
+            result["target_name"] = self.target_name
+            result["left_range"] = self.left_range
+            result["right_range"] = self.right_range
+            result["distance"] = self.distance
+            result.to_csv(f"{save_path}/PNM_9030V.csv", mode="w", index=False)
+                
+                
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     # MainWindow = QMainWindow()
