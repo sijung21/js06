@@ -14,7 +14,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import curve_save
 
 def producer(q):
-    proc = mp.current_process()ac
+    proc = mp.current_process()
     print(proc.name)
 
     cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
