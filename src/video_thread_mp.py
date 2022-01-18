@@ -183,8 +183,8 @@ def str_to_tuple(before_list):
     return tuple_list   
 
 
-class VideoThread(QtCore.QThread):
-    update_pixmap_signal = QtCore.pyqtSignal(str)
+class CurveThread(QtCore.QThread):
+    update_visibility_signal = QtCore.pyqtSignal(str)
 
     def __init__(self, src: str = "", file_type: str = "None", q: Queue = None):
         super().__init__()
@@ -198,11 +198,12 @@ class VideoThread(QtCore.QThread):
         self._run_flag = True
         ## 영상 입력이 카메라일 때
         if self.file_type == "Video":
-            print("Start video thread")
+            print("Start curve thread")
             while self._run_flag:
                 if not self.q.empty():
-                    cv_img = self.q.get()
-                    self.update_pixmap_signal.emit(cv_img)
+                    visibility = self.q.get()
+                    print("visibility: ", visibility)
+                    self.update_visibility_signal.emit(visibility)
             # shut down capture system
 
     def stop(self):

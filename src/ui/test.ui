@@ -107,27 +107,6 @@
     <string/>
    </property>
   </widget>
-  <widget class="QLabel" name="target_list">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>670</y>
-     <width>531</width>
-     <height>201</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">#target_list
-{
-	background-color:rgb(25,39,52);
-}
-
-</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
   <widget class="QLabel" name="target_list_label">
    <property name="geometry">
     <rect>
@@ -230,6 +209,24 @@
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="tableWidget">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>670</y>
+     <width>531</width>
+     <height>201</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#tableWidget
+{
+	background-color:rgb(25,39,52);
+}
+
+</string>
    </property>
   </widget>
  </widget>

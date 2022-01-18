@@ -25,7 +25,7 @@ from PyQt5 import QtWebEngineCore
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 
 
-from video_thread_mp import VideoThread
+from video_thread_mp import CurveThread
 import video_thread_mp
 import save_db
 
@@ -103,8 +103,8 @@ class ND01MainWindow(QWidget):
         
         self.settings_button.clicked.connect(self.btn_test)
         
-        self.video_thread = VideoThread(VIDEO_SRC3, "Video", q)
-        self.video_thread.update_pixmap_signal.connect(self.print_data)
+        self.video_thread = CurveThread(VIDEO_SRC3, "Video", q)
+        self.video_thread.update_visibility_signal.connect(self.print_data)
         self.video_thread.start()
 
         self.timer = QTimer()
@@ -124,7 +124,6 @@ class ND01MainWindow(QWidget):
                 
     @pyqtSlot(str)
     def print_data(self, visibility):
-        print("gggg")
         print(visibility)
         print(float(visibility[:-3]))
         
