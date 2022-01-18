@@ -219,7 +219,7 @@ class ND01MainWindow(QWidget):
             result.to_csv(f"{save_path}/{self.camera_name}.csv", mode="w", index=False)
 
 if __name__ == '__main__':
-    
+    mp.freeze_support()
     q = Queue()
     p = Process(name="producer", target=video_thread_mp.producer, args=(q, ), daemon=True)
     p.start()

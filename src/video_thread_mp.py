@@ -20,7 +20,9 @@ def producer(q):
     cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
     while True:
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        
         if epoch[-2:] == "00":
+            print(epoch)
             try:
                 ret, cv_img = cap.read()
                 left_range, right_range, distance = get_target("PNM_9030V")
@@ -196,7 +198,7 @@ class VideoThread(QtCore.QThread):
         self._run_flag = True
         ## 영상 입력이 카메라일 때
         if self.file_type == "Video":
-            print("비디오 쓰레드 시작") 
+            print("Start video thread")
             while self._run_flag:
                 if not self.q.empty():
                     cv_img = self.q.get()

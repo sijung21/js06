@@ -63,17 +63,17 @@
     <string notr="true">
 #settings_button
 {
-	background-image: url(ui/icon/settings.png);
+	background-image: url(C:/Users/user/Workspace/target_manually/targets_manually/src/ui/icon/settings.png);
 	border:0px;
 }
 #settings_button:pressed
 {
-	background-image: url(ui/icon/settings_on.png);
+	background-image: url(C:/Users/user/Workspace/target_manually/targets_manually/src/ui/icon/settings_on.png);
 	background-color:rgb(27,49,70);
 }
 #settings_button:hover
 {
-	background-image: url(ui/icon/settings_on.png);
+	background-image: url(C:/Users/user/Workspace/target_manually/targets_manually/src/ui/icon/settings_on.png);
 	background-color:rgb(27,49,70);
 }</string>
    </property>
@@ -177,7 +177,7 @@
     <string notr="true">
 #graph_pushButton
 {
-	background-image: url(ui/icon/graph.png);
+	background-image: url(C:/Users/user/Workspace/target_manually/targets_manually/src/ui/icon/graph.png);
 	border:0px;
 }
 </string>
@@ -242,7 +242,7 @@
     <string notr="true">
 #clock_pushButton
 {
-	background-image: url(ui/icon/clock.png);
+	background-image: url(C:/Users/user/Workspace/target_manually/targets_manually/src/ui/icon/clock.png);
 	border:0px;
 }
 </string>
@@ -375,7 +375,7 @@
     <string notr="true">
 #vis_pushButton
 {
-	background-image: url(ui/icon/vis.png);
+	background-image: url(C:/Users/user/Workspace/target_manually/targets_manually/src/ui/icon/vis.png);
 	border:0px;
 }
 </string>
