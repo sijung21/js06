@@ -228,6 +228,17 @@
 
 </string>
    </property>
+   <property name="lineWidth">
+    <number>1</number>
+   </property>
+   <property name="columnCount">
+    <number>2</number>
+   </property>
+   <attribute name="horizontalHeaderVisible">
+    <bool>false</bool>
+   </attribute>
+   <column/>
+   <column/>
   </widget>
  </widget>
  <resources/>

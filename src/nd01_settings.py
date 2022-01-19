@@ -4,6 +4,7 @@ import sys
 import os
 import time
 import math
+from tkinter.messagebox import RETRY
 
 import cv2
 import numpy as np
@@ -11,7 +12,7 @@ import pandas as pd
 # import PyQt5
 # print(PyQt5.__version__)
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem, QFileDialog, QDockWidget, QGraphicsScene, QGraphicsView, QDialog
+from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QDialog, QTableWidgetItem, QHeaderView
 from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication, pyqtSlot, QTimer, QUrl
 from PyQt5 import uic
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
@@ -65,6 +66,8 @@ class ND01_Setting_Widget(QDialog):
         self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
         
         self.get_target("PNM_9030V")
+        
+        self.show_target_list()
 
         
     def image_load(self):
@@ -243,6 +246,40 @@ class ND01_Setting_Widget(QDialog):
             result["right_range"] = self.right_range
             result["distance"] = self.distance
             result.to_csv(f"{save_path}/PNM_9030V.csv", mode="w", index=False)
+    
+    def show_target_list(self):
+        ### Target의 정보를 보여준다 ###
+        
+        copy_image = self.cp_image.copy()
+        row_count = len(self.distance)
+        self.tableWidget.setRowCount(row_count)
+        self.tableWidget.setColumnCount(2)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)        
+        
+        for i in range(0, row_count):
+            item = self.getImagelabel(copy_image)
+            # self.tableWidget.setItem(i, 1, QTableWidgetItem("test"))
+            self.tableWidget.setCellWidget(i, 0, item)
+        
+        self.tableWidget.verticalHeader().setDefaultSectionSize(90)
+    
+    def getImagelabel(self, image):
+        ### tableWidget의 셀 안에 넣을 이미지 레이블을 만드는 함수 ###
+        imageLabel_1 = QLabel()
+        imageLabel_1.setScaledContents(True)
+        height, width, channel = image.shape
+        bytesPerLine = channel * width
+        
+        ### 레이블에 이미지를 넣는다 ###        
+        qImg = QImage(image.data.tobytes(), 100, 100, bytesPerLine, QImage.Format_RGB888)
+        # pixmap = QPixmap()
+        
+        imageLabel_1.setPixmap(QPixmap.fromImage(qImg))
+        return imageLabel_1
+            
+            
+        # return
+        
                 
                 
 if __name__ == '__main__':
