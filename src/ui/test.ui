@@ -107,7 +107,7 @@
     <string/>
    </property>
   </widget>
-  <widget class="QLabel" name="target_list_label">
+  <widget class="QLabel" name="target_table_label">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -125,14 +125,14 @@
     </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">#target_list_label
+    <string notr="true">#target_table_label
 {
 	background-color:rgb(27,49,70);
 	color:rgb(255,255,255);
 }</string>
    </property>
    <property name="text">
-    <string>  Target list</string>
+    <string>  Target table</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -236,8 +236,14 @@
    <property name="lineWidth">
     <number>1</number>
    </property>
+   <property name="autoScroll">
+    <bool>true</bool>
+   </property>
    <property name="autoScrollMargin">
     <number>5</number>
+   </property>
+   <property name="verticalScrollMode">
+    <enum>QAbstractItemView::ScrollPerItem</enum>
    </property>
    <property name="columnCount">
     <number>2</number>

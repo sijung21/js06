@@ -67,7 +67,7 @@ class ND01_Setting_Widget(QDialog):
         
         self.get_target("PNM_9030V")
         
-        self.show_target_list()
+        self.show_target_table()
 
         
     def image_load(self):
@@ -247,8 +247,8 @@ class ND01_Setting_Widget(QDialog):
             result["distance"] = self.distance
             result.to_csv(f"{save_path}/PNM_9030V.csv", mode="w", index=False)
     
-    def show_target_list(self):
-        """ Target의 정보를 보여준다 """
+    def show_target_table(self):
+        """ Target의 정보들을 테이블로 보여준다 """
         min_x = []
         min_y = []
         
