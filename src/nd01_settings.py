@@ -140,6 +140,7 @@ class ND01_Setting_Widget(QDialog):
             painter.eraseRect(QRect(self.end.x(), self.end.y(), 200, 200))
             self.end_drawing = False
             self.isDrawing = False
+            self.blank_lbl.update()
         painter.end()
                 
     def get_target(self, camera_name: str):
@@ -201,6 +202,7 @@ class ND01_Setting_Widget(QDialog):
                 self.rightflag = True
             self.leftflag = False
             self.blank_lbl.update()
+            self.show_target_table()
 
     def lbl_mouseMoveEvent(self, event):
         """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
@@ -225,6 +227,7 @@ class ND01_Setting_Widget(QDialog):
                 self.save_target()
                 self.isDrawing = False
                 self.end_drawing = True
+                self.show_target_table()
             else:
                 self.isDrawing = False
                 self.blank_lbl.update()
