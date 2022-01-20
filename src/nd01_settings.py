@@ -248,36 +248,85 @@ class ND01_Setting_Widget(QDialog):
             result.to_csv(f"{save_path}/PNM_9030V.csv", mode="w", index=False)
     
     def show_target_list(self):
-        ### Target의 정보를 보여준다 ###
+        """ Target의 정보를 보여준다 """
+        min_x = []
+        min_y = []
         
         copy_image = self.cp_image.copy()
         row_count = len(self.distance)
         self.tableWidget.setRowCount(row_count)
-        self.tableWidget.setColumnCount(2)
+        self.tableWidget.setColumnCount(3)
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)        
         
+        for upper_left, lower_right in zip(self.left_range, self.right_range):
+            result = self.minrgb(upper_left, lower_right, copy_image)
+            min_x.append(result[0])
+            min_y.append(result[1])
+            
         for i in range(0, row_count):
-            item = self.getImagelabel(copy_image)
-            # self.tableWidget.setItem(i, 1, QTableWidgetItem("test"))
-            self.tableWidget.setCellWidget(i, 0, item)
+            
+            # 이미지 넣기            
+            crop_image = copy_image[min_y[i] - 50: min_y[i] + 50, min_x[i] - 50: min_x[i] + 50, :].copy()
+            cv2.rectangle(crop_image, (40, 40), (60, 60), (255, 0, 0), 2)
+            item1 = self.getImagelabel(crop_image)
+            self.tableWidget.setCellWidget(i, 0, item1)
+
+            # target 번호 넣기
+            item2 = QTableWidgetItem(f"Target_{i+1}")
+            item2.setTextAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+            item2.setForeground(QBrush(QColor(255, 255, 255)))
+            self.tableWidget.setItem(i, 1, item2)
+            
+            # target 거리 넣기            
+            item3 = QTableWidgetItem(f"{self.distance[i]}km")
+            item3.setTextAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+            item3.setForeground(QBrush(QColor(255, 255, 255)))
+            self.tableWidget.setItem(i, 2, item3)
+            
         
         self.tableWidget.verticalHeader().setDefaultSectionSize(90)
     
     def getImagelabel(self, image):
-        ### tableWidget의 셀 안에 넣을 이미지 레이블을 만드는 함수 ###
+        """tableWidget의 셀 안에 넣을 이미지 레이블을 만드는 함수"""
         imageLabel_1 = QLabel()
         imageLabel_1.setScaledContents(True)
         height, width, channel = image.shape
         bytesPerLine = channel * width
         
-        ### 레이블에 이미지를 넣는다 ###        
+        # 레이블에 이미지를 넣는다    
         qImg = QImage(image.data.tobytes(), 100, 100, bytesPerLine, QImage.Format_RGB888)
         # pixmap = QPixmap()
         
         imageLabel_1.setPixmap(QPixmap.fromImage(qImg))
         return imageLabel_1
             
-            
+    def minrgb(self, upper_left, lower_right, cp_image):
+        """Extracts the minimum RGB value of the dragged area"""
+
+        up_y = min(upper_left[1], lower_right[1])
+        down_y = max(upper_left[1], lower_right[1])
+
+        left_x = min(upper_left[0], lower_right[0])
+        right_x = max(upper_left[0], lower_right[0])
+
+        test = cp_image[up_y:down_y, left_x:right_x, :]
+
+        r = test[:, :, 0]
+        g = test[:, :, 1]
+        b = test[:, :, 2]
+
+        r = np.clip(r, 0, 765)
+        sum_rgb = r + g + b
+
+        t_idx = np.where(sum_rgb == np.min(sum_rgb))
+        
+        print("red : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,0])
+        print("green : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,1])
+        print("blue : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,2])
+        show_min_y = t_idx[0][0] + up_y
+        show_min_x = t_idx[1][0] + left_x
+
+        return (show_min_x, show_min_y)        
         # return
         
                 
