@@ -92,7 +92,7 @@
      <x>1240</x>
      <y>20</y>
      <width>291</width>
-     <height>570</height>
+     <height>271</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -253,6 +253,86 @@
    </attribute>
    <column/>
    <column/>
+  </widget>
+  <widget class="QRadioButton" name="km_radio_btn">
+   <property name="geometry">
+    <rect>
+     <x>1340</x>
+     <y>100</y>
+     <width>101</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>24</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#km_radio_btn
+{
+	color:rgb(255,255,255);
+}</string>
+   </property>
+   <property name="text">
+    <string>  km</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QRadioButton" name="mile_radio_btn">
+   <property name="geometry">
+    <rect>
+     <x>1340</x>
+     <y>170</y>
+     <width>121</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>24</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#mile_radio_btn
+{
+	color:rgb(255,255,255);
+}</string>
+   </property>
+   <property name="text">
+    <string>  mile</string>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>16</width>
+     <height>16</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QLabel" name="km_mile_setting_2">
+   <property name="geometry">
+    <rect>
+     <x>1240</x>
+     <y>310</y>
+     <width>291</width>
+     <height>271</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#km_mile_setting_2
+{
+	background-color:rgb(25,39,52);
+}
+
+</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
   </widget>
  </widget>
  <resources/>
