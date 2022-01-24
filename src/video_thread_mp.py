@@ -39,7 +39,7 @@ def producer(q):
     
 def minprint(epoch, left_range, right_range, distance, cv_img):
     """A function that outputs pixels for calculating the dissipation coefficient in the specified areas"""
-    print("minprint 시작")
+    # print("minprint 시작")
     # epoch = time.strftime("%Y%m%d%H%M", time.localtime(time.time()))
     cp_image = cv_img.copy()
     result = ()
@@ -76,9 +76,9 @@ def minrgb(upper_left, lower_right, cp_image):
 
     t_idx = np.where(sum_rgb == np.min(sum_rgb))
     
-    print("red : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,0])
-    print("green : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,1])
-    print("blue : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,2])
+    # print("red : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,0])
+    # print("green : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,1])
+    # print("blue : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,2])
     show_min_y = t_idx[0][0] + up_y
     show_min_x = t_idx[1][0] + left_x
 

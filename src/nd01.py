@@ -143,6 +143,12 @@ class ND01MainWindow(QWidget):
             visibility_text = str(visibility_mile) + " mi"
         
         self.c_vis_label.setText(visibility_text)
+        
+        ext = 3.912 / float(visibility)
+        pm_value = round((ext*1000/4/2.5)/(1+5.67*((40/100)**5.8)),2)
+        pm_text = str(pm_value) + "μm"
+        self.c_pm_label.setText(pm_text)
+        
         self.data_storage(float(visibility[:-3]))
         # self.statusBar().showMessage(data)
         

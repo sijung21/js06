@@ -83,10 +83,10 @@ class ND01_Setting_Widget(QDialog):
         """radio button 설정에 따라 시정 단위를 변경해서 출력하는 함수"""
         if self.km_radio_btn.isChecked():
             self.radio_flag = "Km"
-            print(self.radio_flag)
+            # print(self.radio_flag)
         elif self.mile_radio_btn.isChecked():
             self.radio_flag = "Mile"
-            print(self.radio_flag)
+            # print(self.radio_flag)
         
     def image_load(self):
         
@@ -153,7 +153,7 @@ class ND01_Setting_Widget(QDialog):
             painter.drawPixmap(QRect(self.end.x(), self.end.y(), 200, 200), thumbnail_image)
 
         if self.end_drawing:
-            print("썸네일 삭제")
+            # print("썸네일 삭제")
             painter.eraseRect(QRect(self.begin, self.end))
             painter.eraseRect(QRect(self.end.x(), self.end.y(), 200, 200))
             self.end_drawing = False
@@ -165,7 +165,7 @@ class ND01_Setting_Widget(QDialog):
         """특정 카메라의 타겟 정보들을 불러온다."""
 
         save_path = os.path.join(f"target/{camera_name}")
-        print("타겟을 불러옵니다.")
+        # print("타겟을 불러옵니다.")
         if os.path.isfile(f"{save_path}/{camera_name}.csv"):
             target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
             self.target_name = target_df["target_name"].tolist()

@@ -298,7 +298,7 @@
     <rect>
      <x>1330</x>
      <y>750</y>
-     <width>570</width>
+     <width>270</width>
      <height>90</height>
     </rect>
    </property>
@@ -329,16 +329,16 @@
     <rect>
      <x>1330</x>
      <y>840</y>
-     <width>570</width>
+     <width>270</width>
      <height>220</height>
     </rect>
    </property>
    <property name="font">
     <font>
      <family>NanumGothic</family>
-     <pointsize>60</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
+     <pointsize>45</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
     </font>
    </property>
    <property name="contextMenuPolicy">
@@ -353,7 +353,7 @@
 </string>
    </property>
    <property name="text">
-    <string>11km</string>
+    <string>0km</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -362,7 +362,7 @@
   <widget class="QPushButton" name="vis_pushButton">
    <property name="geometry">
     <rect>
-     <x>1840</x>
+     <x>1520</x>
      <y>770</y>
      <width>48</width>
      <height>48</height>
@@ -414,6 +414,73 @@
     </rect>
    </property>
    <layout class="QVBoxLayout" name="web_verticalLayout"/>
+  </widget>
+  <widget class="QLabel" name="c_pm_label">
+   <property name="geometry">
+    <rect>
+     <x>1630</x>
+     <y>840</y>
+     <width>270</width>
+     <height>220</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>NanumGothic</family>
+     <pointsize>45</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::PreventContextMenu</enum>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#c_pm_label
+
+{
+	background-color:rgb(25,39,52);
+	color:rgb(28,136,227);
+}
+</string>
+   </property>
+   <property name="text">
+    <string>0㎛</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="c_pm_title_label">
+   <property name="geometry">
+    <rect>
+     <x>1630</x>
+     <y>750</y>
+     <width>270</width>
+     <height>90</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>NanumGothic</family>
+     <pointsize>25</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#c_pm_title_label
+{
+	background-color:rgb(27,49,70);
+	color:rgb(220,220,220);
+}</string>
+   </property>
+   <property name="text">
+    <string>   PM2.5</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
   </widget>
  </widget>
  <resources/>
