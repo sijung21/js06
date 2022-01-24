@@ -22,7 +22,7 @@ from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 
 class ND01_Setting_Widget(QDialog):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, radio_flag=None, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -54,6 +54,8 @@ class ND01_Setting_Widget(QDialog):
         self.end_drawing = None
         self.cp_image = None
         
+        self.radio_flag = radio_flag
+        
         self.image_load()
         
         # 그림 그리는 Q레이블 생성
@@ -65,10 +67,26 @@ class ND01_Setting_Widget(QDialog):
         self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
         self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
         
+        if self.radio_flag == None or self.radio_flag == "Km":
+            self.km_radio_btn.setChecked(True)
+        elif self.radio_flag == "Mile":
+            self.mile_radio_btn.setChecked(True)
+        
+        self.km_radio_btn.clicked.connect(self.radio_function)
+        self.mile_radio_btn.clicked.connect(self.radio_function)
+        
         self.get_target("PNM_9030V")
         
         self.show_target_table()
 
+    def radio_function(self):
+        """radio button 설정에 따라 시정 단위를 변경해서 출력하는 함수"""
+        if self.km_radio_btn.isChecked():
+            self.radio_flag = "Km"
+            print(self.radio_flag)
+        elif self.mile_radio_btn.isChecked():
+            self.radio_flag = "Mile"
+            print(self.radio_flag)
         
     def image_load(self):
         
@@ -323,9 +341,6 @@ class ND01_Setting_Widget(QDialog):
 
         t_idx = np.where(sum_rgb == np.min(sum_rgb))
         
-        print("red : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,0])
-        print("green : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,1])
-        print("blue : ", cp_image[t_idx[0][0] + up_y, t_idx[1][0] + left_x,2])
         show_min_y = t_idx[0][0] + up_y
         show_min_x = t_idx[1][0] + left_x
 

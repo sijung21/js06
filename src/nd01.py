@@ -70,7 +70,8 @@ class ND01MainWindow(QWidget):
         self.pm_25 = None
         self.test_name = None
         self.end_drawing = None
-        # self.create_dir()        
+        self.radio_checked = None
+        self.visibility_copy = 11
 
         self.filepath = os.path.join(os.getcwd())
     #     # self.image_label.paintEvent = self.paintEvent
@@ -115,19 +116,33 @@ class ND01MainWindow(QWidget):
     def btn_test(self):
         self._player.stop()
         # app = QApplication(sys.argv)
-        dlg = ND01_Setting_Widget()
+        if self.radio_checked == None:
+            dlg = ND01_Setting_Widget("Km")
+        else:
+            dlg = ND01_Setting_Widget(self.radio_checked)
         dlg.show()
         # sys.exit(app.exec_())
         dlg.setWindowModality(Qt.ApplicationModal)
         dlg.exec_()
+        self.radio_checked = dlg.radio_flag
+        print(self.radio_checked, "변환 완료")
+        self.print_data(self.visibility_copy)
         self._player.play()
                 
     @pyqtSlot(str)
     def print_data(self, visibility):
         print(visibility)
-        print(float(visibility[:-3]))
+        self.visibility_copy = visibility
+        # print(float(visibility[:-3]))
         
-        self.c_vis_label.setText(visibility)
+        if self.radio_checked == None or self.radio_checked == "Km":
+            visibility_text = visibility + " km"
+        elif self.radio_checked == "Mile":
+            visibility_mile = round(float(visibility) / 1.609, 2)
+            print(visibility_mile)
+            visibility_text = str(visibility_mile) + " mi"
+        
+        self.c_vis_label.setText(visibility_text)
         self.data_storage(float(visibility[:-3]))
         # self.statusBar().showMessage(data)
         

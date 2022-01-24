@@ -157,7 +157,7 @@ def visibility_print(ext_g: float = 0.0):
         vis_value = 0.01
 
     # self.data_storage(vis_value)
-    vis_value_str = f"{vis_value:.2f}" + " km"
+    vis_value_str = f"{vis_value:.2f}"
     return vis_value_str
         
 def get_target(camera_name: str):
