@@ -26,10 +26,11 @@ def producer(q):
             try:
                 ret, cv_img = cap.read()
                 left_range, right_range, distance = get_target("PNM_9030V")
-                visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
+                if ret:
+                    visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
                 
-                q.put(visibility)
-                time.sleep(1)
+                    q.put(visibility)
+                    time.sleep(1)
             except Exception as e:
                 print(e)
                 cap.release()

@@ -146,7 +146,7 @@ class ND01MainWindow(QWidget):
         
         ext = 3.912 / float(visibility)
         pm_value = round((ext*1000/4/2.5)/(1+5.67*((40/100)**5.8)),2)
-        pm_text = str(pm_value) + "μm"
+        pm_text = str(pm_value) + " μm"
         self.c_pm_label.setText(pm_text)
         
         self.data_storage(float(visibility[:-3]))
