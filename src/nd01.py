@@ -132,20 +132,21 @@ class ND01MainWindow(QWidget):
     @pyqtSlot(str)
     def print_data(self, visibility):
         print(visibility)
-        self.visibility_copy = visibility
+        self.visibility_copy = round(float(visibility), 1)
         # print(float(visibility[:-3]))
         
         if self.radio_checked == None or self.radio_checked == "Km":
-            visibility_text = visibility + " km"
+            visibility_text = str(self.visibility_copy) + " km"
         elif self.radio_checked == "Mile":
-            visibility_mile = round(float(visibility) / 1.609, 2)
+            visibility_mile = round(self.visibility_copy / 1.609, 1)
             print(visibility_mile)
             visibility_text = str(visibility_mile) + " mi"
         
         self.c_vis_label.setText(visibility_text)
         
-        ext = 3.912 / float(visibility)
-        pm_value = round((ext*1000/4/2.5)/(1+5.67*((40/100)**5.8)),2)
+        ext = 3.912 / self.visibility_copy
+        hd = 89
+        pm_value = round((ext*1000/4/2.5)/(1+5.67*((hd/100)**5.8)),2)
         pm_text = str(pm_value) + " μm"
         self.c_pm_label.setText(pm_text)
         
