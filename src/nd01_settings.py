@@ -19,6 +19,11 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 
 
+from PyQt5 import QtWebEngineWidgets
+from PyQt5 import QtWebEngineCore
+from PyQt5.QtWebEngineWidgets import QWebEngineSettings
+
+
 
 class ND01_Setting_Widget(QDialog):
 
@@ -78,6 +83,14 @@ class ND01_Setting_Widget(QDialog):
         self.get_target("PNM_9030V")
         
         self.show_target_table()
+        
+        self.webview = QtWebEngineWidgets.QWebEngineView()
+        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "render.html"))
+        local_url = QUrl.fromLocalFile(file_path)
+        self.webview.load(local_url)
+        # QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ShowScrollBars(False))
+        self.webview.setZoomFactor(1)
+        self.html_verticalLayout.addWidget(self.webview)
 
     def radio_function(self):
         """radio button 설정에 따라 시정 단위를 변경해서 출력하는 함수"""

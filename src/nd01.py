@@ -71,7 +71,7 @@ class ND01MainWindow(QWidget):
         self.test_name = None
         self.end_drawing = None
         self.radio_checked = None
-        self.visibility_copy = 11
+        self.visibility_copy = 0
 
         self.filepath = os.path.join(os.getcwd())
     #     # self.image_label.paintEvent = self.paintEvent
@@ -126,7 +126,7 @@ class ND01MainWindow(QWidget):
         dlg.exec_()
         self.radio_checked = dlg.radio_flag
         print(self.radio_checked, "변환 완료")
-        self.print_data(self.visibility_copy)
+        self.print_data(str(self.visibility_copy))
         self._player.play()
                 
     @pyqtSlot(str)
@@ -150,7 +150,7 @@ class ND01MainWindow(QWidget):
         pm_text = str(pm_value) + " μm"
         self.c_pm_label.setText(pm_text)
         
-        self.data_storage(float(visibility[:-3]))
+        self.data_storage(self.visibility_copy)
         # self.statusBar().showMessage(data)
         
     @pyqtSlot(str)

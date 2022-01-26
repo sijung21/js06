@@ -334,6 +334,17 @@
     <string/>
    </property>
   </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>570</x>
+     <y>600</y>
+     <width>721</width>
+     <height>271</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="html_verticalLayout"/>
+  </widget>
  </widget>
  <resources/>
  <connections>
