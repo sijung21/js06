@@ -1,232 +1,411 @@
+#!/usr/bin/env python3
+#
+# Copyright 2021-2022 Sijung Co., Ltd.
+#
+# Authors:
+#     popskim@gmail.com (Songyoung Kim)
+#     cotjdals5450@gmail.com (Seong Min Chae)
+#     5jx2oh@gmail.com (Jongjin Oh)
 
-import datetime
-from nd01_settings import ND01_Setting_Widget
+
 import sys
 import os
 import time
-import math
 
-import cv2
+import vlc
 import numpy as np
-import pandas as pd
+import pyqtgraph as pg
 from multiprocessing import Process, Queue
 import multiprocessing as mp
 
-# print(PyQt5.__version__)
-from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QListWidgetItem, QFileDialog, QDockWidget, QGraphicsScene, QGraphicsView
-from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication, pyqtSlot, QTimer, QUrl
+from PyQt5.QtGui import QPixmap, QIcon
+from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget,
+                             QGraphicsScene, QFrame, QVBoxLayout,
+                             QLabel, QHBoxLayout, QSizePolicy)
+from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal, QRect,
+                          QTimer, QUrl, QObject, QThread)
 from PyQt5 import uic
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 
-from PyQt5 import QtWebEngineWidgets
-from PyQt5 import QtWebEngineCore
-from PyQt5.QtWebEngineWidgets import QWebEngineSettings
-
-
-from video_thread_mp import VideoThread
-import video_thread_mp
+from video_thread_mp import producer, VideoThread
+from nd01_settings import ND01SettingWidget
 import save_db
 
-from nd01_settings import ND01_Setting_Widget
+# from controller import MainCtrl
 
-print(pd.__version__)
 
-class ND01MainWindow(QWidget):
+def clock(q):
+    while True:
+        now = str(time.time())
+        # now = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+        q.put(now)
+        time.sleep(1)
 
+
+class Consumer(QThread):
+    poped = pyqtSignal(str)
+
+    def __init__(self, q):
+        super().__init__()
+        self.q = q
+
+    def run(self):
+        while True:
+            if not self.q.empty():
+                data = q.get()
+                self.poped.emit(data)
+
+
+class TimeAxisItem(pg.AxisItem):
     def __init__(self, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
+        self.setLabel(text='Time (sec)', units=None)
+        self.enableAutoSIPrefix(False)
+
+    def tickStrings(self, values, scale, spacing):
+        """
+        override 하여, tick 옆에 써지는 문자를 원하는대로 수정함.
+        values --> x축 값들   ; 숫자로 이루어진 Itarable data --> ex) List[int]
+        """
+        # print("--tickStrings valuse ==>", values)
+        return [time.strftime("%H:%M:%S", time.localtime(local_time)) for local_time in values]
+
+
+class PlotWidget(QWidget):
+    def __init__(self, parent=None):
+        QWidget.__init__(self, parent)
+
+        self.pw = pg.PlotWidget(
+            labels={'left': 'Visibility (km)'},
+            axisItems={'bottom': TimeAxisItem(orientation='bottom')}
+        )
+
+        self.pw.showGrid(x=True, y=True)
+        self.pdi = self.pw.plot(pen='w')   # PlotDataItem obj 반환.
+
+        self.plotData = {'x': [], 'y': []}
+
+    def update_plot(self, new_time_data: int):
+        self.plotData['y'].append(np.random.randint(10, 15))
+        self.plotData['x'].append(new_time_data)
+
+        self.pw.setXRange(new_time_data - 3600 * 3, new_time_data + 600, padding=0)   # 항상 x축 시간을 최근 범위만 보여줌.
+        self.pw.setYRange(-1, 21, padding=0)
+
+        self.pdi.setData(self.plotData['x'], self.plotData['y'])
+        # past_value = [x for x in self.plotData['x'] if x <= new_time_data - 3600 * 3]
+
+
+class ThumbnailView(QMainWindow):
+
+    def __init__(self, image_file_name: str):
+        super().__init__()
+
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "ui/js06_1920.ui")
+                               "ui/thumbnail_view.ui")
         uic.loadUi(ui_path, self)
 
-        self.camera_name = ""
-        self.video_thread = None
-        # self.ipcam_start()
-        self.begin = QPoint()
-        self.end = QPoint()
-        self.qt_img = QPixmap()
-        self.isDrawing = False
-        self.curved_thread = None
+        self.front_image.setPixmap(QPixmap(f'D:/ND-01/vista/{image_file_name}.png')
+                                   .scaled(self.front_image.width(), self.front_image.height()))
+        self.rear_image.setPixmap(QPixmap(f'D:/ND-01/vista/{image_file_name}.png')
+                                  .scaled(self.rear_image.width(), self.rear_image.height()))
 
-        self.upper_left = ()
-        self.lower_right = ()
-        self.left_range = []
-        self.right_range = []
-        self.distance = []
-        self.target_name = []
-        self.min_x = []
-        self.min_y = []
-        self.min_xy = ()
-        self.leftflag = False
-        self.rightflag = False
-        self.image_width = None
-        self.image_height = None
-        self.video_flag = False
-        self.cp_image = None
-        self.g_ext = None
-        self.pm_25 = None
-        self.test_name = None
-        self.end_drawing = None
-        # self.create_dir()        
 
-        self.filepath = os.path.join(os.getcwd())
-    #     # self.image_label.paintEvent = self.paintEvent
+class ND01MainWindow(QMainWindow):
 
-        # Create a QGraphicsView to show the camera image
-        self.scene = QGraphicsScene(self)
-        self.video_graphicsview = QGraphicsView(self.scene)
-        self.video_graphicsview.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.video_graphicsview.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.video_item = QGraphicsVideoItem()
-        self.scene.addItem(self.video_item)
-        
-        self.verticallayout.addWidget(self.video_graphicsview)
+    def __init__(self, q):
+        super().__init__()
 
-        self.webview = QtWebEngineWidgets.QWebEngineView()
-        self.webview.setUrl(QUrl("http://localhost:3000/d/GXA3xPS7z/new-dashboard-copy?orgId=1&refresh=30s&kiosk&from=now-30m&to=now"))
-        # QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ShowScrollBars(False))
-        self.webview.setZoomFactor(1)
-        self.web_verticalLayout.addWidget(self.webview)
+        ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                               "ui/main_window.ui")
+        uic.loadUi(ui_path, self)
+        self.showFullScreen()
+        # self._ctrl = MainCtrl
+        self._plot = PlotWidget()
+        self.view = None
 
-        # Create QMediaPlayer that plays video
-        self._player = QMediaPlayer(self, QMediaPlayer.VideoSurface)
-        self._player.setVideoOutput(self.video_item)
-        self._player.setPosition(0)
-  
-        VIDEO_SRC3 = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
-        
-        CAM_NAME = "PNM_9030V"
-        self.onCameraChange(VIDEO_SRC3, CAM_NAME, "Video")
-        
-        self.settings_button.clicked.connect(self.btn_test)
-        
-        self.video_thread = VideoThread(VIDEO_SRC3, "Video", q)
-        self.video_thread.update_pixmap_signal.connect(self.print_data)
-        self.video_thread.start()
+        self.front_video_widget = VideoWidget(self)
+        self.front_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp")
 
-        self.timer = QTimer()
-        self.timer.start(1000)
-        self.timer.timeout.connect(self.timeout_run)
-    
+        self.rear_video_widget = VideoWidget(self)
+        self.rear_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp")
+
+        self.video_horizontalLayout.addWidget(self.front_video_widget)
+        self.video_horizontalLayout.addWidget(self.rear_video_widget)
+
+        self.scene = QGraphicsScene()
+        self.graphView.setScene(self.scene)
+        self.plotWidget = self._plot.pw
+        self.plotWidget.resize(1200, 400)
+        self.scene.addWidget(self.plotWidget)
+
+        self.timeseries_verticalLayout.addWidget(self.graphView)
+
+        self.setting_button.enterEvent = self.btn_on
+        self.setting_button.leaveEvent = self.btn_off
+
+        self.consumer = Consumer(q)
+        self.consumer.poped.connect(self.clock)
+        self.consumer.start()
+
+        self.click_style = 'border: 1px solid red;'
+
+        self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114112000.png'))
+        self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114132300.png'))
+        self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114134000.png'))
+        self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117144800.png'))
+        self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117153300.png'))
+        self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117172600.png'))
+
+        self.label_1hour.mouseDoubleClickEvent = self.thumbnail_click1
+        self.label_2hour.mouseDoubleClickEvent = self.thumbnail_click2
+        self.label_3hour.mouseDoubleClickEvent = self.thumbnail_click3
+        self.label_4hour.mouseDoubleClickEvent = self.thumbnail_click4
+        self.label_5hour.mouseDoubleClickEvent = self.thumbnail_click5
+        self.label_6hour.mouseDoubleClickEvent = self.thumbnail_click6
+
+        self.setting_button.clicked.connect(self.setting_btn_click)
+
+        self.show()
+
+    def reset_StyleSheet(self):
+        self.label_1hour.setStyleSheet('')
+        self.label_2hour.setStyleSheet('')
+        self.label_3hour.setStyleSheet('')
+        self.label_4hour.setStyleSheet('')
+        self.label_5hour.setStyleSheet('')
+        self.label_6hour.setStyleSheet('')
+
+    def thumbnail_view(self, file_name: str):
+        self.view = ThumbnailView(file_name)
+        self.view.setGeometry(QRect(self.video_horizontalLayout.geometry().x(),
+                                    self.video_horizontalLayout.geometry().y() + 21,
+                                    self.video_horizontalLayout.geometry().width(),
+                                    self.video_horizontalLayout.geometry().height()))
+        self.view.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.view.setWindowModality(Qt.ApplicationModal)
+        self.view.show()
+
+    def thumbnail_click1(self, e):
+        name = self.label_1hour_time.text()[:2] + self.label_1hour_time.text()[3:]
+        epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
+        # self.thumbnail_view(epoch + name + "00")
+        self.thumbnail_view('20220114112000')
+
+        self.reset_StyleSheet()
+        self.label_1hour.setStyleSheet(self.click_style)
+        self.monitoring_label.setText(f' {self.label_1hour_time.text()} image')
+
+        QTimer.singleShot(5000, self.thumbnail_show)
+
+    def thumbnail_click2(self, e):
+        name = self.label_2hour_time.text()[:2] + self.label_2hour_time.text()[3:]
+        epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
+        # self.thumbnail_view(epoch + name + "00")
+        self.thumbnail_view('20220114132300')
+
+        self.reset_StyleSheet()
+        self.label_2hour.setStyleSheet(self.click_style)
+        self.monitoring_label.setText(f' {self.label_2hour_time.text()} image')
+
+        QTimer.singleShot(5000, self.thumbnail_show)
+
+    def thumbnail_click3(self, e):
+        name = self.label_3hour_time.text()[:2] + self.label_3hour_time.text()[3:]
+        epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
+        # self.thumbnail_view(epoch + name + "00")
+        self.thumbnail_view('20220114134000')
+
+        self.reset_StyleSheet()
+        self.label_3hour.setStyleSheet(self.click_style)
+        self.monitoring_label.setText(f' {self.label_3hour_time.text()} image')
+
+        QTimer.singleShot(5000, self.thumbnail_show)
+
+    def thumbnail_click4(self, e):
+        name = self.label_4hour_time.text()[:2] + self.label_4hour_time.text()[3:]
+        epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
+        # self.thumbnail_view(epoch + name + "00")
+        self.thumbnail_view('20220117144800')
+
+        self.reset_StyleSheet()
+        self.label_4hour.setStyleSheet(self.click_style)
+        self.monitoring_label.setText(f' {self.label_4hour_time.text()} image')
+
+        QTimer.singleShot(5000, self.thumbnail_show)
+
+    def thumbnail_click5(self, e):
+        name = self.label_5hour_time.text()[:2] + self.label_5hour_time.text()[3:]
+        epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
+        # self.thumbnail_view(epoch + name + "00")
+        self.thumbnail_view('20220117153300')
+
+        self.reset_StyleSheet()
+        self.label_5hour.setStyleSheet(self.click_style)
+        self.monitoring_label.setText(f' {self.label_5hour_time.text()} image')
+
+        QTimer.singleShot(5000, self.thumbnail_show)
+
+    def thumbnail_click6(self, e):
+        name = self.label_6hour_time.text()[:2] + self.label_6hour_time.text()[3:]
+        epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
+        # self.thumbnail_view(epoch + name + "00")
+        self.thumbnail_view('20220117172600')
+
+        self.reset_StyleSheet()
+        self.label_6hour.setStyleSheet(self.click_style)
+        self.monitoring_label.setText(f' {self.label_6hour_time.text()} image')
+
+        QTimer.singleShot(5000, self.thumbnail_show)
+
+    def thumbnail_show(self):
+        self.monitoring_label.setText('   Monitoring')
+        self.reset_StyleSheet()
+        self.view.close()
+
+        # self.front_video_widget.media_player.play()
+        # self.rear_video_widget.media_player.play()
+
     @pyqtSlot()
-    def btn_test(self):
-        self._player.stop()
-        # app = QApplication(sys.argv)
-        dlg = ND01_Setting_Widget()
+    def setting_btn_click(self):
+        self.front_video_widget.media_player.stop()
+        self.rear_video_widget.media_player.stop()
+        # self.front_video_widget.media_player.pause()
+        # self.rear_video_widget.media_player.pause()
+
+        dlg = ND01SettingWidget()
         dlg.show()
-        # sys.exit(app.exec_())
         dlg.setWindowModality(Qt.ApplicationModal)
         dlg.exec_()
-        self._player.play()
-                
+
+        self.front_video_widget.media_player.play()
+        self.rear_video_widget.media_player.play()
+
+    def btn_on(self, event):
+        self.setting_button.setIcon(QIcon('ui/resources/icon/settings_on.png'))
+
+    def btn_off(self, event):
+        self.setting_button.setIcon(QIcon('ui/resources/icon/settings.png'))
+
     @pyqtSlot(str)
-    def print_data(self, visibility):
-        print("gggg")
-        print(visibility)
-        print(float(visibility[:-3]))
-        
-        self.c_vis_label.setText(visibility)
-        self.data_storage(float(visibility[:-3]))
-        # self.statusBar().showMessage(data)
-        
-    @pyqtSlot(str)
-    def onCameraChange(self, url, camera_name, src_type):
-        """Connect the IP camera and run the video thread."""
-        self.camera_name = camera_name
-        self._player.setMedia(QMediaContent(QUrl(url)))
-        # self.video_graphicsview.fitInView(self.video_item)
-        self._player.play()
+    def clock(self, data):
+        data_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
+        self.real_time_label.setText(data_time)
+        self._plot.update_plot(int(float(data)))
 
-        # self.get_target(self.camera_name)
-
-    def timeout_run(self):
-        """Print the current time."""
-        current_time = time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))
-        self.real_time_label.setText(current_time)
-        self.video_graphicsview.fitInView(self.video_item)
-
-    def convert_cv_qt(self, cv_img):
-        """Convert CV image to QImage."""
-        # self.epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
-        self.cp_image = cv_img.copy()
-        self.cp_image = cv2.cvtColor(self.cp_image, cv2.COLOR_BGR2RGB)
-        # img_height, img_width, ch = cv_img.shape
-        # self.image_width = int(img_width)
-        # self.image_height = int(img_height)
-        # self.video_flag = True
-        # bytes_per_line = ch * img_width
-
-        # if self.epoch[-2:] == "00":
-        # if self.pm_25 is not None and self.g_ext is not None and self.test_name is not None:
-        #     self.save_frame(cv_img, self.epoch, self.g_ext, self.pm_25)
-        #     self.g_ext = None
-        #     self.pm_25 = None
-            # return
-        
-        print("비디오 끝")
-        # return
-    
-    def save_frame(self, image: np.ndarray, epoch: str, g_ext, pm_25):
-        """Save the image of the calculation time."""
-        print("save_frame 시작")
-        image_path = os.path.join(self.filepath, f"{self.test_name}")
-        file_name = f"{epoch}"
-        if not os.path.isdir(image_path):
-            os.makedirs(image_path)
-
-        g_ext = round(g_ext / 1000, 4)
-
-        if not os.path.isfile(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg"):
-            cv2.imwrite(f"{image_path}/{file_name}_{g_ext}_{pm_25}.jpg", image)
-            del image
-            del image_path
-            cv2.destroyAllWindows()
-            print(file_name , "The image has been saved.")
-            return
+        # one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600))
+        # two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*2))
+        # three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*3))
+        # four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*4))
+        # five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*5))
+        # six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*6))
+        #
+        self.label_1hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600)))
+        self.label_2hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*2)))
+        self.label_3hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*3)))
+        self.label_4hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*4)))
+        self.label_5hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*5)))
+        self.label_6hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*6)))
+        #
+        # try:
+        #     # self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/resize/{one_hour_ago}.png'))
+        #     # self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/resize/{two_hour_ago}.png'))
+        #     # self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/resize/{three_hour_ago}.png'))
+        #     # self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/{four_hour_ago}.png'))
+        #     # self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/{five_hour_ago}.png'))
+        #     # self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/{six_hour_ago}.png'))
+        #
+        #     self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113071000.png').scaled(315, 131))
+        #     self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113090400.png').scaled(315, 131))
+        #     self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113110300.png').scaled(315, 131))
+        #     self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113130900.png').scaled(315, 131))
+        #     self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113150500.png').scaled(315, 131))
+        #     self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113160300.png').scaled(315, 131))
+        # except Exception as e:
+        #     print(e)
 
     def keyPressEvent(self, e):
         """Override function QMainwindow KeyPressEvent that works when key is pressed"""
-        if e.key() == Qt.Key_Escape:
-            sys.exit()
         if e.key() == Qt.Key_F:
             self.showFullScreen()
-        
-    def data_storage(self, vis_data):
-        """Store visibility and fine dust values ​​in the database."""
+        if e.key() == Qt.Key_D:
+            self.showNormal()
 
-        save_db.SaveDB(vis_data)
-        print("data storage!")
 
-    def save_target(self):
-        """Save the target information for each camera."""
-        try:
-            save_path = os.path.join(f"target/{self.camera_name}")
-            os.mkdir(save_path)
+class VideoWidget(QWidget):
+    """Video stream player using QVideoWidget"""
+    video_frame = None
 
-        except Exception as e:
+    def __init__(self, parent: QObject = None):
+        super().__init__(parent)
+
+        self.instance = vlc.Instance()
+        self.instance.log_unset()
+        self.media_player = self.instance.media_player_new()
+
+        self.image_player = self.instance.media_list_player_new()
+        self.image_media = self.instance.media_list_new('')
+
+        self.video_frame = QFrame()
+
+        if sys.platform == 'win32':
+            self.media_player.set_hwnd(self.video_frame.winId())
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.video_frame)
+
+    @pyqtSlot(str)
+    def on_camera_change(self, uri: str):
+        # uri = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
+        if uri[:4] == "rtsp":
+            self.media_player.set_media(self.instance.media_new(uri))
+            self.media_player.play()
+        else:
             pass
 
-        if self.left_range:
-            col = ["target_name", "left_range", "right_range", "distance"]
-            result = pd.DataFrame(columns=col)
-            result["target_name"] = self.target_name
-            result["left_range"] = self.left_range
-            result["right_range"] = self.right_range
-            result["distance"] = self.distance
-            result.to_csv(f"{save_path}/{self.camera_name}.csv", mode="w", index=False)
+    def mousePressEvent(self, e):
+        print(self.media_player.get_fps())
+
+
+class MainCtrl(QObject):
+    front_camera_changed = pyqtSignal(str)
+    rear_camera_changed = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+
+        self.front_target_prepared = False
+        self.rear_target_prepared = False
+
+        self.front_camera_changed.connect(self.decompose_front_targets)
+        self.rear_camera_changed.connect(self.decompose_rear_targets)
+
+    @pyqtSlot(str)
+    def decompose_front_targets(self, _: str):
+        self.front_target_prepared = False
+        self.decompose_targets('front')
+        self.front_target_prepared = True
+
 
 if __name__ == '__main__':
-    
     q = Queue()
-    p = Process(name="producer", target=video_thread_mp.producer, args=(q, ), daemon=True)
+    _q = Queue()
+
+    _producer = producer
+
+    p = Process(name='clock', target=clock, args=(q, ), daemon=True)
+    _p = Process(name="producer", target=_producer, args=(_q, ), daemon=True)
+
     p.start()
-    
+    _p.start()
+
+    os.makedirs('D:/ND-01/vista', exist_ok=True)
+    os.makedirs('D:/ND-01/resize', exist_ok=True)
+
     app = QApplication(sys.argv)
-    MainWindow = QMainWindow()
-    ui = ND01MainWindow()
-    # ui.setupUi(MainWindow)
-    ui.show()
+    window = ND01MainWindow(q)
     sys.exit(app.exec_())
+
+    # MainWindow = QMainWindow()
+    # ui = ND01MainWindow()
+    # ui.show()
+    # sys.exit(app.exec_())
