@@ -30,8 +30,6 @@ from video_thread_mp import producer, VideoThread
 from nd01_settings import ND01SettingWidget
 import save_db
 
-# from controller import MainCtrl
-
 
 def clock(q):
     while True:
@@ -127,7 +125,7 @@ class ND01MainWindow(QMainWindow):
         self.front_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp")
 
         self.rear_video_widget = VideoWidget(self)
-        self.rear_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp")
+        self.rear_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
 
         self.video_horizontalLayout.addWidget(self.front_video_widget)
         self.video_horizontalLayout.addWidget(self.rear_video_widget)
@@ -148,13 +146,6 @@ class ND01MainWindow(QMainWindow):
         self.consumer.start()
 
         self.click_style = 'border: 1px solid red;'
-
-        # self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114112000.png'))
-        # self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114132300.png'))
-        # self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114134000.png'))
-        # self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117144800.png'))
-        # self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117153300.png'))
-        # self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117172600.png'))
 
         self.label_1hour.mouseDoubleClickEvent = self.thumbnail_click1
         self.label_2hour.mouseDoubleClickEvent = self.thumbnail_click2
@@ -306,13 +297,6 @@ class ND01MainWindow(QMainWindow):
         self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/{four_hour_ago}.png'))
         self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/{five_hour_ago}.png'))
         self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/{six_hour_ago}.png'))
-
-        # self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113071000.png').scaled(315, 131))
-        # self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113090400.png').scaled(315, 131))
-        # self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113110300.png').scaled(315, 131))
-        # self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113130900.png').scaled(315, 131))
-        # self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113150500.png').scaled(315, 131))
-        # self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113160300.png').scaled(315, 131))
 
     def keyPressEvent(self, e):
         """Override function QMainwindow KeyPressEvent that works when key is pressed"""
