@@ -149,12 +149,12 @@ class ND01MainWindow(QMainWindow):
 
         self.click_style = 'border: 1px solid red;'
 
-        self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114112000.png'))
-        self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114132300.png'))
-        self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114134000.png'))
-        self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117144800.png'))
-        self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117153300.png'))
-        self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117172600.png'))
+        # self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114112000.png'))
+        # self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114132300.png'))
+        # self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220114134000.png'))
+        # self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117144800.png'))
+        # self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117153300.png'))
+        # self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/20220117172600.png'))
 
         self.label_1hour.mouseDoubleClickEvent = self.thumbnail_click1
         self.label_2hour.mouseDoubleClickEvent = self.thumbnail_click2
@@ -188,8 +188,7 @@ class ND01MainWindow(QMainWindow):
     def thumbnail_click1(self, e):
         name = self.label_1hour_time.text()[:2] + self.label_1hour_time.text()[3:]
         epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
-        # self.thumbnail_view(epoch + name + "00")
-        self.thumbnail_view('20220114112000')
+        self.thumbnail_view(epoch + name + "00")
 
         self.reset_StyleSheet()
         self.label_1hour.setStyleSheet(self.click_style)
@@ -200,8 +199,7 @@ class ND01MainWindow(QMainWindow):
     def thumbnail_click2(self, e):
         name = self.label_2hour_time.text()[:2] + self.label_2hour_time.text()[3:]
         epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
-        # self.thumbnail_view(epoch + name + "00")
-        self.thumbnail_view('20220114132300')
+        self.thumbnail_view(epoch + name + "00")
 
         self.reset_StyleSheet()
         self.label_2hour.setStyleSheet(self.click_style)
@@ -212,8 +210,7 @@ class ND01MainWindow(QMainWindow):
     def thumbnail_click3(self, e):
         name = self.label_3hour_time.text()[:2] + self.label_3hour_time.text()[3:]
         epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
-        # self.thumbnail_view(epoch + name + "00")
-        self.thumbnail_view('20220114134000')
+        self.thumbnail_view(epoch + name + "00")
 
         self.reset_StyleSheet()
         self.label_3hour.setStyleSheet(self.click_style)
@@ -224,8 +221,7 @@ class ND01MainWindow(QMainWindow):
     def thumbnail_click4(self, e):
         name = self.label_4hour_time.text()[:2] + self.label_4hour_time.text()[3:]
         epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
-        # self.thumbnail_view(epoch + name + "00")
-        self.thumbnail_view('20220117144800')
+        self.thumbnail_view(epoch + name + "00")
 
         self.reset_StyleSheet()
         self.label_4hour.setStyleSheet(self.click_style)
@@ -236,8 +232,7 @@ class ND01MainWindow(QMainWindow):
     def thumbnail_click5(self, e):
         name = self.label_5hour_time.text()[:2] + self.label_5hour_time.text()[3:]
         epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
-        # self.thumbnail_view(epoch + name + "00")
-        self.thumbnail_view('20220117153300')
+        self.thumbnail_view(epoch + name + "00")
 
         self.reset_StyleSheet()
         self.label_5hour.setStyleSheet(self.click_style)
@@ -248,8 +243,7 @@ class ND01MainWindow(QMainWindow):
     def thumbnail_click6(self, e):
         name = self.label_6hour_time.text()[:2] + self.label_6hour_time.text()[3:]
         epoch = time.strftime("%Y%m%d", time.localtime(time.time()))
-        # self.thumbnail_view(epoch + name + "00")
-        self.thumbnail_view('20220117172600')
+        self.thumbnail_view(epoch + name + "00")
 
         self.reset_StyleSheet()
         self.label_6hour.setStyleSheet(self.click_style)
@@ -292,36 +286,33 @@ class ND01MainWindow(QMainWindow):
         self.real_time_label.setText(data_time)
         self._plot.update_plot(int(float(data)))
 
-        # one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600))
-        # two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*2))
-        # three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*3))
-        # four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*4))
-        # five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*5))
-        # six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*6))
-        #
+        one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600))
+        two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*2))
+        three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*3))
+        four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*4))
+        five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*5))
+        six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*6))
+
         self.label_1hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600)))
         self.label_2hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*2)))
         self.label_3hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*3)))
         self.label_4hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*4)))
         self.label_5hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*5)))
         self.label_6hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*6)))
-        #
-        # try:
-        #     # self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/resize/{one_hour_ago}.png'))
-        #     # self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/resize/{two_hour_ago}.png'))
-        #     # self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/resize/{three_hour_ago}.png'))
-        #     # self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/{four_hour_ago}.png'))
-        #     # self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/{five_hour_ago}.png'))
-        #     # self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/{six_hour_ago}.png'))
-        #
-        #     self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113071000.png').scaled(315, 131))
-        #     self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113090400.png').scaled(315, 131))
-        #     self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113110300.png').scaled(315, 131))
-        #     self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113130900.png').scaled(315, 131))
-        #     self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113150500.png').scaled(315, 131))
-        #     self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113160300.png').scaled(315, 131))
-        # except Exception as e:
-        #     print(e)
+
+        self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/resize/{one_hour_ago}.png'))
+        self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/resize/{two_hour_ago}.png'))
+        self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/resize/{three_hour_ago}.png'))
+        self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/{four_hour_ago}.png'))
+        self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/{five_hour_ago}.png'))
+        self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/{six_hour_ago}.png'))
+
+        # self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113071000.png').scaled(315, 131))
+        # self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113090400.png').scaled(315, 131))
+        # self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113110300.png').scaled(315, 131))
+        # self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113130900.png').scaled(315, 131))
+        # self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113150500.png').scaled(315, 131))
+        # self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/vista/20220113160300.png').scaled(315, 131))
 
     def keyPressEvent(self, e):
         """Override function QMainwindow KeyPressEvent that works when key is pressed"""
