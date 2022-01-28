@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 
 # Ignore image data files
-*.png
 *.jpg
 
 # Ignore data files
