@@ -22,6 +22,7 @@ from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 from PyQt5 import QtWebEngineWidgets
 from PyQt5 import QtWebEngineCore
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
+from PyQt5.QtChart import QChart, QChartView, QLineSeries 
 
 
 
@@ -84,13 +85,49 @@ class ND01_Setting_Widget(QDialog):
         
         self.show_target_table()
         
-        self.webview = QtWebEngineWidgets.QWebEngineView()
-        file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "render.html"))
-        local_url = QUrl.fromLocalFile(file_path)
-        self.webview.load(local_url)
+        # self.webview = QtWebEngineWidgets.QWebEngineView()
+        # file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "render.html"))
+        # local_url = QUrl.fromLocalFile(file_path)
+        # self.webview.load(local_url)
         # QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ShowScrollBars(False))
-        self.webview.setZoomFactor(1)
-        self.html_verticalLayout.addWidget(self.webview)
+        # QWebEngineSettings.ShowScrollBars(False)
+        # self.webview.setZoomFactor(0)
+        
+        self.chart_update()
+        
+    
+    
+    def chart_update(self):
+        # data
+        raw_data = [
+            (0, 6),
+            (2, 4),
+            (3, 8),
+            (7, 4),
+            (10, 5),
+            (11, 1),
+            (13, 3),
+            (17, 6),
+            (18, 3),
+            (20, 2)
+        ]
+
+        series = QLineSeries()
+        for d in raw_data:
+            series.append(*d)
+
+        # chart object
+        chart = QChart()
+        chart.legend().hide()
+        chart.addSeries(series)         # data feeding
+        chart.createDefaultAxes()
+
+        # displaying chart
+        chart_view = QChartView(chart)
+        chart_view.setRenderHint(QPainter.Antialiasing)
+        
+        self.html_verticalLayout.addWidget(chart_view)
+        print("update chart!")
 
     def radio_function(self):
         """radio button 설정에 따라 시정 단위를 변경해서 출력하는 함수"""
@@ -301,7 +338,7 @@ class ND01_Setting_Widget(QDialog):
             
             # 이미지 넣기            
             crop_image = copy_image[min_y[i] - 50: min_y[i] + 50, min_x[i] - 50: min_x[i] + 50, :].copy()
-            cv2.rectangle(crop_image, (40, 40), (60, 60), (255, 0, 0), 2)
+            cv2.rectangle(crop_image, (40, 40), (60, 60), (127, 0, 255), 2)
             item1 = self.getImagelabel(crop_image)
             self.tableWidget.setCellWidget(i, 0, item1)
 

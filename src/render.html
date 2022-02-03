@@ -29,16 +29,15 @@
 </script>
 </head>
 <body>
-    <div id="ef04e45ae7db4964b0f8c0b50bc55da8" style="width:800px;height:400px;"></div>
+    <div id="72323614962d47f29803bc012ee969b7" style="width:800px;height:400px;"></div>
     <script type="text/javascript">
 
-var myChart_ef04e45ae7db4964b0f8c0b50bc55da8 = echarts.init(document.getElementById('ef04e45ae7db4964b0f8c0b50bc55da8'), 'dark', {renderer: 'canvas'});
+var myChart_72323614962d47f29803bc012ee969b7 = echarts.init(document.getElementById('72323614962d47f29803bc012ee969b7'), 'light', {renderer: 'canvas'});
 
-var option_ef04e45ae7db4964b0f8c0b50bc55da8 = {
+var option_72323614962d47f29803bc012ee969b7 = {
     "title": [
         {
-            "text": "My first bar chart",
-            "subtext": "For our fashion shop client",
+            "text": "Extinction coefficient",
             "left": "auto",
             "top": "auto",
             "textStyle": {
@@ -67,7 +66,7 @@ var option_ef04e45ae7db4964b0f8c0b50bc55da8 = {
             }
         }
     },
-    "series_id": 1104778,
+    "series_id": 152435,
     "tooltip": {
         "trigger": "item",
         "triggerOn": "mousemove|click",
@@ -83,20 +82,39 @@ var option_ef04e45ae7db4964b0f8c0b50bc55da8 = {
     },
     "series": [
         {
-            "type": "bar",
-            "name": "Clothes",
+            "type": "line",
+            "name": "red",
+            "symbol": "emptyCircle",
+            "symbolSize": 4,
+            "smooth": false,
+            "step": false,
+            "stack": "stack_152435",
+            "showSymbol": true,
             "data": [
-                5,
-                20,
-                36,
-                10,
-                75,
-                90
+                [
+                    "0.22",
+                    5
+                ],
+                [
+                    "1.60",
+                    20
+                ],
+                [
+                    "3.00",
+                    36
+                ],
+                [
+                    "6.00",
+                    10
+                ],
+                [
+                    "20.00",
+                    100
+                ]
             ],
-            "barCategoryGap": "20%",
             "label": {
                 "normal": {
-                    "show": false,
+                    "show": true,
                     "position": "top",
                     "textStyle": {
                         "fontSize": 12
@@ -109,19 +127,96 @@ var option_ef04e45ae7db4964b0f8c0b50bc55da8 = {
                     }
                 }
             },
+            "lineStyle": {
+                "normal": {
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "areaStyle": {
+                "opacity": 0
+            },
             "markPoint": {
                 "data": []
             },
             "markLine": {
                 "data": []
             },
-            "seriesId": 1104778
+            "seriesId": 152435
+        },
+        {
+            "type": "line",
+            "name": "blue",
+            "symbol": "emptyCircle",
+            "symbolSize": 4,
+            "smooth": false,
+            "step": false,
+            "stack": "stack_152435",
+            "showSymbol": true,
+            "data": [
+                [
+                    "0.22",
+                    55
+                ],
+                [
+                    "1.60",
+                    60
+                ],
+                [
+                    "3.00",
+                    16
+                ],
+                [
+                    "6.00",
+                    20
+                ],
+                [
+                    "20.00",
+                    80
+                ]
+            ],
+            "label": {
+                "normal": {
+                    "show": true,
+                    "position": "top",
+                    "textStyle": {
+                        "fontSize": 12
+                    }
+                },
+                "emphasis": {
+                    "show": true,
+                    "textStyle": {
+                        "fontSize": 12
+                    }
+                }
+            },
+            "lineStyle": {
+                "normal": {
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "areaStyle": {
+                "opacity": 0
+            },
+            "markPoint": {
+                "data": []
+            },
+            "markLine": {
+                "data": []
+            },
+            "seriesId": 152435
         }
     ],
     "legend": [
         {
             "data": [
-                "Clothes"
+                "red",
+                "blue"
             ],
             "selectedMode": "multiple",
             "show": true,
@@ -164,12 +259,11 @@ var option_ef04e45ae7db4964b0f8c0b50bc55da8 = {
                 }
             },
             "data": [
-                "T-shirt",
-                "Sweater",
-                "Georgette",
-                "Trousers",
-                "High-heels",
-                "Socks"
+                "0.22",
+                "1.60",
+                "3.00",
+                "6.00",
+                "20.00"
             ]
         }
     ],
@@ -206,9 +300,35 @@ var option_ef04e45ae7db4964b0f8c0b50bc55da8 = {
             }
         }
     ],
-    "color": []
+    "color": [
+        "#c23531",
+        "#2f4554",
+        "#61a0a8",
+        "#d48265",
+        "#749f83",
+        "#ca8622",
+        "#bda29a",
+        "#6e7074",
+        "#546570",
+        "#c4ccd3",
+        "#f05b72",
+        "#ef5b9c",
+        "#f47920",
+        "#905a3d",
+        "#fab27b",
+        "#2a5caa",
+        "#444693",
+        "#726930",
+        "#b2d235",
+        "#6d8346",
+        "#ac6767",
+        "#1d953f",
+        "#6950a1",
+        "#918597",
+        "#f6f5ec"
+    ]
 };
-myChart_ef04e45ae7db4964b0f8c0b50bc55da8.setOption(option_ef04e45ae7db4964b0f8c0b50bc55da8);
+myChart_72323614962d47f29803bc012ee969b7.setOption(option_72323614962d47f29803bc012ee969b7);
 
 </script>
 </body>
