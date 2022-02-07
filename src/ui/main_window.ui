@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1035</width>
+    <width>1087</width>
     <height>816</height>
    </rect>
   </property>
@@ -143,6 +143,71 @@ color: rgb(255, 0, 0);</string>
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="alert">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>55</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border:0px;
+background-color: #1b3146;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>resources/icon/green.png</normaloff>resources/icon/green.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>30</width>
+              <height>30</height>
+             </size>
+            </property>
+            <property name="autoDefault">
+             <bool>true</bool>
+            </property>
+            <property name="default">
+             <bool>true</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="blank_label">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>16</width>
+              <height>55</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border:0px;
+background-color: #1b3146;</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="setting_button">
             <property name="enabled">
              <bool>true</bool>
@@ -207,7 +272,7 @@ background-color: #1b3146;</string>
          <number>6</number>
         </property>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_8">
+         <layout class="QVBoxLayout" name="ago6hour_verticalLayout">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -263,7 +328,7 @@ color:#ffffff;</string>
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_7">
+         <layout class="QVBoxLayout" name="ago5hour_verticalLayout">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -319,7 +384,7 @@ color:#ffffff;</string>
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
+         <layout class="QVBoxLayout" name="ago4hour_verticalLayout">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -375,7 +440,7 @@ color:#ffffff;</string>
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
+         <layout class="QVBoxLayout" name="ago3hour_verticalLayout">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -431,7 +496,7 @@ color:#ffffff;</string>
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <layout class="QVBoxLayout" name="ago2hour_verticalLayout">
           <property name="spacing">
            <number>0</number>
           </property>
@@ -552,7 +617,7 @@ color:#ffffff;</string>
        </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="data_horizontalLayout">
+       <layout class="QHBoxLayout" name="data_horizontalLayout" stretch="1,0">
         <property name="sizeConstraint">
          <enum>QLayout::SetMinimumSize</enum>
         </property>
@@ -637,14 +702,28 @@ background-color: #1b3146;</string>
            </layout>
           </item>
           <item>
-           <widget class="QGraphicsView" name="graphView">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="graph_horizontalLayout">
+            <item>
+             <widget class="QGraphicsView" name="vis_plot">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGraphicsView" name="polar_plot">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -899,7 +978,7 @@ background-color: #1b3146;</string>
            </layout>
           </item>
           <item>
-           <widget class="QLabel" name="c_vis_label_2">
+           <widget class="QLabel" name="p_vis_label">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -913,7 +992,7 @@ background-color: #1b3146;</string>
              </font>
             </property>
             <property name="styleSheet">
-             <string notr="true">color:rgb(28,136,227);</string>
+             <string notr="true">color:#ffffff</string>
             </property>
             <property name="text">
              <string>- km</string>
@@ -939,7 +1018,7 @@ background-color: #1b3146;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1035</width>
+     <width>1087</width>
      <height>21</height>
     </rect>
    </property>

@@ -18,11 +18,16 @@ def producer(q):
     cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
     while True:
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+        date = epoch[2:6]
+
         if epoch[-2:] == "00":
             try:
+                os.makedirs(f'D:/ND-01/vista/{date}', exist_ok=True)
+                os.makedirs(f'D:/ND-01/resize/{date}', exist_ok=True)
+
                 _, frame = cap.read()
-                cv2.imwrite(f'D:/ND-01/vista/{epoch}.png', frame)
-                cv2.imwrite(f'D:/ND-01/resize/{epoch}.png', cv2.resize(frame, (315, 131)))
+                cv2.imwrite(f'D:/ND-01/vista/{date}/{epoch}.png', frame)
+                cv2.imwrite(f'D:/ND-01/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
                 cv2.destroyAllWindows()
 
                 # left_range, right_range, distance = get_target("PNM_9030V")
