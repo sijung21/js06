@@ -1,5 +1,5 @@
-# ND-01
-The successor of JS-08. The design doal of ND-01 is to provide higher spatial resolution for each azimuthal direction.
+# JS-06
+The successor of JS-08. The design doal of JS-06 is to provide higher spatial resolution for each azimuthal direction.
 
 ## Setting Up Development Environment
 - Visual Studio Code with the end of line sequence to **LF**. You can set git to resolve the issue automatically:

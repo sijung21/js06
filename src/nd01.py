@@ -3,7 +3,6 @@
 # Copyright 2021-2022 Sijung Co., Ltd.
 #
 # Authors:
-#     popskim@gmail.com (Songyoung Kim)
 #     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
 
@@ -15,26 +14,32 @@ import time
 import vlc
 import numpy as np
 import pyqtgraph as pg
-import plotly.express as px
 import multiprocessing as mp
 from multiprocessing import Process, Queue
 
 from PyQt5.QtGui import (QPixmap, QIcon, QPainter, QColor)
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QGraphicsScene, QFrame, QVBoxLayout)
-from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal, QRect, QTimer, QObject, QThread)
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QGraphicsScene,
+                             QFrame, QVBoxLayout)
+from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal, QRect,
+                          QTimer, QObject, QThread)
 from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
                            QPolarChart, QScatterSeries, QValueAxis)
 from PyQt5 import uic
 
 from video_thread_mp import producer, VideoThread
 from nd01_settings import ND01SettingWidget
-import save_db
+from save_db import main
 
 
-def clock(q):
+def clock(queue):
+    """Real-time clock
+    Current time to be expressed on JS-06
+
+    :param queue: MultiProcessing Queue
+    """
     while True:
         now = str(time.time())
-        q.put(now)
+        queue.put(now)
         time.sleep(1)
 
 
@@ -69,7 +74,8 @@ class TimeAxisItem(pg.AxisItem):
     def tickStrings(self, values, scale, spacing):
         """
         override 하여, tick 옆에 써지는 문자를 원하는대로 수정함.
-        values --> x축 값들   ; 숫자로 이루어진 Itarable data --> ex) List[int]
+        values --> x축 값들
+        숫자로 이루어진 Iterable data(하나씩 차례로 반환 가능한 object -> ex) List[int]) list, str, tuple 등등
         """
         return [time.strftime("%H:%M:%S", time.localtime(local_time)) for local_time in values]
 
@@ -174,26 +180,14 @@ class ND01MainWindow(QMainWindow):
         super().__init__()
 
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "ui/main_window.ui")
+                               "resources/main_window.ui")
         uic.loadUi(ui_path, self)
         self.showFullScreen()
-        # self._ctrl = MainCtrl
         self._plot = PlotWidget()
         self._polar = PolarWidget()
         self.view = None
         self.km_mile_convert = False
         self.date = None
-
-        # left = QFrame(self)
-        # left.setFrameShape(QFrame.StyledPanel)
-        # right = QFrame(self)
-        # right.setFrameShape(QFrame.StyledPanel)
-        # splitter = QSplitter(Qt.Horizontal)
-        # splitter.addWidget(left)
-        # splitter.addWidget(right)
-        # splitter.setStretchFactor(1, 1)
-        # splitter.setSizes([125, 150])
-        # self.data_horizontalLayout.addWidget(splitter)
 
         self.front_video_widget = VideoWidget(self)
         self.front_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp")
@@ -203,9 +197,6 @@ class ND01MainWindow(QMainWindow):
 
         self.video_horizontalLayout.addWidget(self.front_video_widget)
         self.video_horizontalLayout.addWidget(self.rear_video_widget)
-
-        # self.front_video_widget.media_player.stop()
-        # self.rear_video_widget.media_player.stop()
 
         self.scene = QGraphicsScene()
         self.vis_plot.setScene(self.scene)
@@ -218,19 +209,6 @@ class ND01MainWindow(QMainWindow):
         self.polarWidget = self._polar.pw
         self.polarWidget.resize(600, 400)
         self.scene_polar.addWidget(self.polarWidget)
-
-        # self.vis_plot.clicked.connect(self.vis_plot_click)
-
-        ##
-        # self.m_output = QtWebEngineWidgets.QWebEngineView()
-        # self.graph_horizontalLayout.addWidget(self.m_output)
-        #
-        # df = px.data.wind()
-        # fig = px.line_polar(df, r='frequency', theta='direction', color='strength', line_close=True,
-        #                     color_discrete_sequence=px.colors.sequential.Plasma_r,
-        #                     template='plotly_dark', )
-        # self.m_output.setHtml(fig.to_html(include_plotlyjs='cdn'))
-        ##
 
         self.setting_button.enterEvent = self.btn_on
         self.setting_button.leaveEvent = self.btn_off
@@ -258,7 +236,7 @@ class ND01MainWindow(QMainWindow):
         self.show()
 
     def alert_test(self):
-        self.alert.setIcon(QIcon('ui/resources/icon/red.png'))
+        self.alert.setIcon(QIcon('resources/asset/red.png'))
 
     def reset_StyleSheet(self):
         self.label_1hour.setStyleSheet('')
@@ -349,9 +327,6 @@ class ND01MainWindow(QMainWindow):
         self.reset_StyleSheet()
         self.view.close()
 
-        # self.front_video_widget.media_player.play()
-        # self.rear_video_widget.media_player.play()
-
     @pyqtSlot()
     def setting_btn_click(self):
         self.front_video_widget.media_player.stop()
@@ -369,10 +344,10 @@ class ND01MainWindow(QMainWindow):
         self.consumer.start()
 
     def btn_on(self, event):
-        self.setting_button.setIcon(QIcon('ui/resources/icon/settings_on.png'))
+        self.setting_button.setIcon(QIcon('resources/asset/settings_on.png'))
 
     def btn_off(self, event):
-        self.setting_button.setIcon(QIcon('ui/resources/icon/settings.png'))
+        self.setting_button.setIcon(QIcon('resources/asset/settings.png'))
 
     def unit_convert(self, event):
         if self.km_mile_convert:
@@ -427,8 +402,6 @@ class ND01MainWindow(QMainWindow):
         self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{four_hour_ago}.jpg'))
         self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{five_hour_ago}.jpg'))
         self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{six_hour_ago}.jpg'))
-
-        print(f'D:/ND-01/resize/{self.date}/{one_minute_ago}.png')
 
     def keyPressEvent(self, e):
         """Override function QMainwindow KeyPressEvent that works when key is pressed"""
@@ -498,6 +471,8 @@ class MainCtrl(QObject):
 if __name__ == '__main__':
 
     from PyQt5.QtWidgets import QApplication
+
+    mp.freeze_support()
     q = Queue()
     _q = Queue()
 

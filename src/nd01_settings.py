@@ -3,21 +3,22 @@
 # Copyright 2021-2022 Sijung Co., Ltd.
 #
 # Authors:
-#     popskim@gmail.com (Songyoung Kim)
 #     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 
 import os
-import math
-
 import cv2
 import pandas as pd
 
-from PyQt5.QtGui import QPixmap, QPainter, QBrush, QColor, QPen, QImage
-from PyQt5.QtWidgets import QApplication, QLabel, QInputDialog, QDialog, QAbstractItemView, \
-    QVBoxLayout, QGridLayout, QPushButton
-from PyQt5.QtCore import QPoint, QRect, Qt
+from PyQt5.QtGui import (QPixmap, QPainter, QBrush,
+                         QColor, QPen, QImage,
+                         QIcon)
+from PyQt5.QtWidgets import (QApplication, QLabel, QInputDialog,
+                             QDialog, QAbstractItemView, QVBoxLayout,
+                             QGridLayout, QPushButton, QMessageBox)
+from PyQt5.QtCore import (QPoint, QRect, Qt)
+
 from PyQt5 import uic
 
 
@@ -29,11 +30,10 @@ class ND01SettingWidget(QDialog):
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                "ui/settings.ui")
         uic.loadUi(ui_path, self)
+        # self.setWindowFlag(Qt.FramelessWindowHint)
 
         self.begin = QPoint()
         self.end = QPoint()
-        self.qt_img = QPixmap()
-        self.isDrawing = False
         self.upper_left = ()
         self.lower_right = ()
         self.left_range = []
@@ -41,28 +41,20 @@ class ND01SettingWidget(QDialog):
         self.distance = []
         self.target_name = []
         self.min_xy = ()
-        self.flag = False
-        self.image_width = None
-        self.image_height = None
+
+        self.isDrawing = False
+        self.draw_flag = False
+        self.cam_flag = False
+
+        self.video_width = 0
+        self.video_height = 0
+
         self.cp_image = None
         self.end_drawing = None
 
-        self.image_load()
+        self.current_camera = ""
 
-        # QTableWidget
-        self.target_tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)
-        vbox = QVBoxLayout()
-        vbox.addWidget(self.target_tableWidget)
-        grid = QGridLayout()
-        vbox.addLayout(grid)
-        btn1 = QPushButton("전체내용 삭제")
-        grid.addWidget(btn1, 0, 0)
-        btn2 = QPushButton("table삭제")
-        grid.addWidget(btn2, 0, 1)
-        btn3 = QPushButton("selection mode")
-        grid.addWidget(btn3, 0, 2)
-        btn4 = QPushButton("column 추가")
-        grid.addWidget(btn4, 0, 3)
+        self.image_load()
 
         # 그림 그리는 삐뮤디 생성
         # self.blank_lbl = QLabel(self.target_setting_image_label)
@@ -73,25 +65,46 @@ class ND01SettingWidget(QDialog):
         # self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
         # self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
 
-        self.target_setting_image_label.paintEvent = self.lbl_paintEvent
+        self.flip_button.clicked.connect(self.camera_flip)
+        self.flip_button.enterEvent = self.btn_on
+        self.flip_button.leaveEvent = self.btn_off
 
+        self.target_setting_image_label.paintEvent = self.lbl_paintEvent
         self.target_setting_image_label.mousePressEvent = self.lbl_mousePressEvent
         self.target_setting_image_label.mouseMoveEvent = self.lbl_mouseMoveEvent
         self.target_setting_image_label.mouseReleaseEvent = self.lbl_mouseReleaseEvent
 
         self.get_target("PNM_9022V")
 
-    def image_load(self):
+    def camera_flip(self):
+        if self.cam_flag:
+            self.cam_flag = False
+        else:
+            self.cam_flag = True
+        self.image_load()
 
-        src = "rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp"
+    def btn_on(self, e):
+        self.flip_button.setIcon(QIcon('ui/resources/icon/flip_on.png'))
+
+    def btn_off(self, e):
+        self.flip_button.setIcon(QIcon('ui/resources/icon/flip_off.png'))
+
+    def image_load(self):
+        self.target_setting_image_label.setStyleSheet('background-image:')
+        if self.cam_flag:
+            src = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
+            self.target_setting_label.setText('  Rear Target Setting')
+        else:
+            src = "rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp"
+            self.target_setting_label.setText('  Front Target Setting')
+
         try:
             cap = cv2.VideoCapture(src)
             ret, cv_img = cap.read()
             cp_image = cv_img.copy()
             cap.release()
         except Exception as e:
-            print(e)
-            self.image_load()
+            QMessageBox.about(self, 'Error', f'{e}')
 
         self.target_setting_image_label.setPixmap(self.convert_cv_qt(cp_image))
 
@@ -99,16 +112,18 @@ class ND01SettingWidget(QDialog):
         """Convert CV image to QImage."""
         cv_img = cv_img.copy()
         cv_img = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
+
         self.cp_image = cv_img.copy()
-        img_height, img_width, ch = cv_img.shape
-        self.image_width = int(img_width)
-        self.image_height = int(img_height)
-        bytes_per_line = ch * img_width
-        # print(img_width, img_height)
-        convert_to_Qt_format = QImage(cv_img.data, img_width, img_height, bytes_per_line, QImage.Format_RGB888)
-        p = convert_to_Qt_format.scaled(1200, 500, Qt.KeepAspectRatio,
-                                        Qt.SmoothTransformation)
-        # print(self.target_setting_image_label.width(), self.target_setting_image_label.height())
+
+        self.video_height, self.video_width, ch = cv_img.shape
+
+        bytes_per_line = ch * self.video_width
+        convert_to_Qt_format = QImage(cv_img.data, self.video_width, self.video_height,
+                                      bytes_per_line, QImage.Format_RGB888)
+        p = convert_to_Qt_format.scaled(self.target_setting_image_label.width(),
+                                        self.target_setting_image_label.height(),
+                                        Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
         return QPixmap.fromImage(p)
 
     def lbl_paintEvent(self, event):
@@ -116,16 +131,17 @@ class ND01SettingWidget(QDialog):
 
         back_ground_image = self.thumbnail(self.cp_image)
         bk_image = QPixmap.fromImage(back_ground_image)
-        painter.drawPixmap(QRect(0, 0, 1200, 500), bk_image)
+        painter.drawPixmap(QRect(0, 0, self.target_setting_image_label.width(),
+                                 self.target_setting_image_label.height()), bk_image)
 
         for corner1, corner2, in zip(self.left_range, self.right_range):
             br = QBrush(QColor(100, 10, 10, 40))
             painter.setBrush(br)
             painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
-            corner1_1 = int(corner1[0] / self.image_width * self.target_setting_image_label.width())
-            corner1_2 = int(corner1[1] / self.image_height * self.target_setting_image_label.height())
-            corner2_1 = int((corner2[0] - corner1[0]) / self.image_width * self.target_setting_image_label.width())
-            corner2_2 = int((corner2[1] - corner1[1]) / self.image_height * self.target_setting_image_label.height())
+            corner1_1 = int(corner1[0] / self.video_width * self.target_setting_image_label.width())
+            corner1_2 = int(corner1[1] / self.video_height * self.target_setting_image_label.height())
+            corner2_1 = int((corner2[0] - corner1[0]) / self.video_width * self.target_setting_image_label.width())
+            corner2_2 = int((corner2[1] - corner1[1]) / self.video_height * self.target_setting_image_label.height())
             painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
 
         if self.isDrawing:
@@ -170,8 +186,8 @@ class ND01SettingWidget(QDialog):
 
     # 타겟 조정 및 썸네일 관련 함수 시작
     def thumbnail_pos(self, end_pos):
-        x = int((end_pos.x() / self.target_setting_image_label.width()) * self.image_width)
-        y = int((end_pos.y() / self.target_setting_image_label.height()) * self.image_height)
+        x = int((end_pos.x() / self.target_setting_image_label.width()) * self.video_width)
+        y = int((end_pos.y() / self.target_setting_image_label.height()) * self.video_height)
         return x, y
 
     def thumbnail(self, image):
@@ -188,12 +204,11 @@ class ND01SettingWidget(QDialog):
             self.isDrawing = True
             self.begin = event.pos()
             self.end = event.pos()
-            print(self.end)
-            self.upper_left = (int((self.begin.x() / self.target_setting_image_label.width()) * self.image_width),
-                               int((self.begin.y() / self.target_setting_image_label.height()) * self.image_height))
+            self.upper_left = (int((self.begin.x() / self.target_setting_image_label.width()) * self.video_width),
+                               int((self.begin.y() / self.target_setting_image_label.height()) * self.video_height))
             self.target_setting_image_label.update()
 
-            self.flag = True
+            self.draw_flag = True
 
         # 우 클릭시 실행
         elif event.buttons() == Qt.RightButton:
@@ -203,8 +218,8 @@ class ND01SettingWidget(QDialog):
                 del self.target_name[-1]
                 del self.left_range[-1]
                 del self.right_range[-1]
-                self.save_target()
-            self.flag = False
+                self.save_target(self.current_camera)
+            self.draw_flag = False
             self.target_setting_image_label.update()
 
     def lbl_mouseMoveEvent(self, event):
@@ -216,11 +231,11 @@ class ND01SettingWidget(QDialog):
 
     def lbl_mouseReleaseEvent(self, event):
         """마우스 클릭이 떼질 때 발생하는 이벤트, QLabel method overriding"""
-        if self.flag:
+        if self.draw_flag:
             self.end = event.pos()
             self.target_setting_image_label.update()
-            self.lower_right = (int((self.end.x() / self.target_setting_image_label.width()) * self.image_width),
-                                int((self.end.y() / self.target_setting_image_label.height()) * self.image_height))
+            self.lower_right = (int((self.end.x() / self.target_setting_image_label.width()) * self.video_width),
+                                int((self.end.y() / self.target_setting_image_label.height()) * self.video_height))
             text, ok = QInputDialog.getText(self, '거리 입력', '거리(km)')
             if ok:
                 self.left_range.append(self.upper_left)
