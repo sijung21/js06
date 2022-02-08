@@ -1,7 +1,6 @@
 PyQt5 >= 5.13
 python-vlc
 PyQtGraph
-PyQtChart
 pyechart
 influxdb
 opencv-python
