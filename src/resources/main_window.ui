@@ -165,7 +165,7 @@ background-color: #1b3146;</string>
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>resources/icon/green.png</normaloff>resources/icon/green.png</iconset>
+              <normaloff>asset/green.png</normaloff>asset/green.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -236,7 +236,7 @@ background-color: #1b3146;</string>
             </property>
             <property name="icon">
              <iconset>
-              <normaloff>resources/icon/settings.png</normaloff>resources/icon/settings.png</iconset>
+              <normaloff>asset/settings.png</normaloff>asset/settings.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -1141,7 +1141,7 @@ color:#ffffff;</string>
   </action>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources.qrc"/>
  </resources>
  <connections>
   <connection>

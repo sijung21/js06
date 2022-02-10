@@ -9,6 +9,7 @@ from multiprocessing import Process, Queue
 
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 import curve_save
+from model import JS06Settings
 
 
 def producer(q):
@@ -22,12 +23,13 @@ def producer(q):
 
         if epoch[-2:] == "00":
             try:
-                os.makedirs(f'D:/ND-01/vista/{date}', exist_ok=True)
-                os.makedirs(f'D:/ND-01/resize/{date}', exist_ok=True)
+                image_save_path = JS06Settings.get('image_save_path')
+                os.makedirs(f'{image_save_path}/vista/{date}', exist_ok=True)
+                os.makedirs(f'{image_save_path}/resize/{date}', exist_ok=True)
 
                 _, frame = cap.read()
-                cv2.imwrite(f'D:/ND-01/vista/{date}/{epoch}.png', frame)
-                cv2.imwrite(f'D:/ND-01/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
+                cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
                 cv2.destroyAllWindows()
 
                 # left_range, right_range, distance = get_target("PNM_9030V")
