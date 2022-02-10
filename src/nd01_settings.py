@@ -336,9 +336,16 @@ class ND01SettingWidget(QDialog):
             QMessageBox.about(self, 'Error', 'no file...')
 
     def accept_click(self):
-        print('accept? yes accept~')
 
-        # JS06Settings.set('data_csv_path', self.)
+        JS06Settings.set('data_csv_path', self.data_csv_path_textBrowser.toPlainText())
+        JS06Settings.set('target_csv_path', self.target_csv_path_textBrowser.toPlainText())
+        JS06Settings.set('image_save_path', self.image_save_path_textBrowser.toPlainText())
+        JS06Settings.set('image_size', self.image_size_comboBox.currentIndex())
+        JS06Settings.set('visibility_alert_limit', self.vis_limit_spinBox.value())
+        JS06Settings.set('login_id', self.id_lineEdit.text())
+        JS06Settings.set('login_pw', self.pw_lineEdit.text())
+
+        self.close()
 
 
 if __name__ == '__main__':
