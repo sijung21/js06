@@ -28,6 +28,7 @@ from PyQt5 import uic
 
 from video_thread_mp import producer, VideoThread
 from nd01_settings import ND01SettingWidget
+from model import JS06Settings
 from save_db import main
 
 
@@ -382,26 +383,40 @@ class ND01MainWindow(QMainWindow):
             self._plot.plotData['x'].pop(index)
             self._plot.plotData['y'].pop(index)
 
-        one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600))
-        two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*2))
-        three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*3))
-        four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*4))
-        five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*5))
-        six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time()-3600*6))
+        self.thumbnail_refresh()
+        if current_time[-2:] == "00":
+            self.thumbnail_refresh()
 
-        self.label_1hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600)))
-        self.label_2hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*2)))
-        self.label_3hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*3)))
-        self.label_4hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*4)))
-        self.label_5hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*5)))
-        self.label_6hour_time.setText(time.strftime('%H:%M', time.localtime(time.time()-3600*6)))
+        if int(p_vis_km.replace(',', '')) <= JS06Settings.get('visibility_alert_limit'):
+            self.alert.setIcon(QIcon('resources/asset/red.png'))
 
-        self.label_1hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{one_hour_ago}.jpg'))
-        self.label_2hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{two_hour_ago}.jpg'))
-        self.label_3hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{three_hour_ago}.jpg'))
-        self.label_4hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{four_hour_ago}.jpg'))
-        self.label_5hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{five_hour_ago}.jpg'))
-        self.label_6hour.setPixmap(QPixmap(f'D:/ND-01/resize/{self.date}/{six_hour_ago}.jpg'))
+    def thumbnail_refresh(self):
+        one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600))
+        two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 2))
+        three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 3))
+        four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 4))
+        five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 5))
+        six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 6))
+
+        self.label_1hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600)))
+        self.label_2hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 2)))
+        self.label_3hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 3)))
+        self.label_4hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 4)))
+        self.label_5hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 5)))
+        self.label_6hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 6)))
+
+        self.label_1hour.setPixmap(
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{one_hour_ago}.jpg'))
+        self.label_2hour.setPixmap(
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{two_hour_ago}.jpg'))
+        self.label_3hour.setPixmap(
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{three_hour_ago}.jpg'))
+        self.label_4hour.setPixmap(
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{four_hour_ago}.jpg'))
+        self.label_5hour.setPixmap(
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{five_hour_ago}.jpg'))
+        self.label_6hour.setPixmap(
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{six_hour_ago}.jpg'))
 
     def keyPressEvent(self, e):
         """Override function QMainwindow KeyPressEvent that works when key is pressed"""
