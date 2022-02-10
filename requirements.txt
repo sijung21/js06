@@ -1,0 +1,7 @@
+PyQt5 >= 5.13
+python-vlc
+PyQtGraph
+pyechart
+influxdb
+opencv-python
+pandas
