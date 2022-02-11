@@ -5,8 +5,7 @@
 # Authors:
 #     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
-
-
+import collections
 import sys
 import os
 import time
@@ -17,16 +16,19 @@ import pyqtgraph as pg
 import multiprocessing as mp
 from multiprocessing import Process, Queue
 
-from PyQt5.QtGui import (QPixmap, QIcon, QPainter, QColor)
+from PyQt5.QtGui import (QPixmap, QIcon, QPainter,
+                         QColor)
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QGraphicsScene,
-                             QFrame, QVBoxLayout)
-from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal, QRect,
-                          QTimer, QObject, QThread)
+                             QFrame, QVBoxLayout, QStyle)
+from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal,
+                          QRect, QTimer, QObject,
+                          QThread, QPointF, QDateTime)
 from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
-                           QPolarChart, QScatterSeries, QValueAxis)
+                           QPolarChart, QScatterSeries, QValueAxis,
+                           QChart, QDateTimeAxis)
 from PyQt5 import uic
 
-from video_thread_mp import producer, VideoThread
+from video_thread_mp import producer
 from nd01_settings import ND01SettingWidget
 from model import JS06Settings
 from save_db import main
@@ -81,83 +83,170 @@ class TimeAxisItem(pg.AxisItem):
         return [time.strftime("%H:%M:%S", time.localtime(local_time)) for local_time in values]
 
 
-class PlotWidget(QWidget):
+# class PlotWidget(QWidget):
+#
+#     def __init__(self, parent=None):
+#         QWidget.__init__(self, parent)
+#
+#         self.pw = pg.PlotWidget(
+#             labels={'left': 'Visibility (km)'},
+#             axisItems={'bottom': TimeAxisItem(orientation='bottom')}
+#         )
+#         # self.setMaximumSize(600, 400)
+#
+#         self.pw.showGrid(x=True, y=True)
+#         self.pdi = self.pw.plot(pen='w')   # PlotDataItem obj 반환.
+#
+#         self.p1 = self.pw.plotItem
+#
+#         self.p2 = pg.ViewBox()
+#         self.p1.showAxis('right')
+#         self.p1.scene().addItem(self.p2)
+#         self.p1.getAxis('right').linkToView(self.p2)
+#         self.p2.setXLink(self.p1)
+#         self.p1.getAxis('right').setLabel('Axis 2', color='#ffff00')
+#
+#         self.p2.setGeometry(self.p1.vb.sceneBoundingRect())
+#         # self.p2.addItem(pg.PlotCurveItem([10, 20, 40, 80, 400, 2000], pen='y'))
+#         # self.pdi.sigClicked.connect(self.onclick)
+#
+#         self.plotData = {'x': [], 'y': []}
+#         self.pre_plotData = {'x': [], 'y': []}
+#
+#     def update_plot(self, new_time_data: int):
+#         self.plotData['x'].append(new_time_data)
+#         self.plotData['y'].append(np.random.randint(10000, 15000))
+#
+#         # 항상 x축 시간을 설정한 범위 ( -3 시간 전 ~ 10 분 후 )만 보여줌.
+#         # self.pw.setXRange(new_time_data - 3600 * 3, new_time_data + 600, padding=0)
+#         # self.pw.setYRange(-1, 21, padding=0)
+#
+#         data = []
+#         for i in self.plotData['y']:
+#             i = i / 1000
+#             data.append(i)
+#         self.pdi.setData(self.plotData['x'], data)
+#
+#         # self.pdi.setData([1643873584, 1643873585, 1643873586, 1643873587, 1643873588],
+#         #                  [12, 11, 10, 14, 13])
+#
+#     def onclick(self, plot, points):
+#         for point in points:
+#             print(point.pos())
 
-    def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
 
-        self.pw = pg.PlotWidget(
-            labels={'left': 'Visibility (km)'},
-            axisItems={'bottom': TimeAxisItem(orientation='bottom')}
-        )
-
-        self.pw.showGrid(x=True, y=True)
-        self.pdi = self.pw.plot(pen='w')   # PlotDataItem obj 반환.
-
-        self.p1 = self.pw.plotItem
-
-        self.p2 = pg.ViewBox()
-        self.p1.showAxis('right')
-        self.p1.scene().addItem(self.p2)
-        self.p1.getAxis('right').linkToView(self.p2)
-        self.p2.setXLink(self.p1)
-        self.p1.getAxis('right').setLabel('Axis 2', color='#ffff00')
-
-        self.p2.setGeometry(self.p1.vb.sceneBoundingRect())
-        # self.p2.addItem(pg.PlotCurveItem([10, 20, 40, 80, 400, 2000], pen='y'))
-        # self.pdi.sigClicked.connect(self.onclick)
-
-        self.plotData = {'x': [], 'y': []}
-        self.pre_plotData = {'x': [], 'y': []}
-
-    def update_plot(self, new_time_data: int):
-        self.plotData['x'].append(new_time_data)
-        self.plotData['y'].append(np.random.randint(10000, 15000))
-
-        # 항상 x축 시간을 설정한 범위 ( -3 시간 전 ~ 10 분 후 )만 보여줌.
-        # self.pw.setXRange(new_time_data - 3600 * 3, new_time_data + 600, padding=0)
-        # self.pw.setYRange(-1, 21, padding=0)
-
-        data = []
-        for i in self.plotData['y']:
-            i = i / 1000
-            data.append(i)
-        self.pdi.setData(self.plotData['x'], data)
-
-        # self.pdi.setData([1643873584, 1643873585, 1643873586, 1643873587, 1643873588],
-        #                  [12, 11, 10, 14, 13])
-
-    def onclick(self, plot, points):
-        for point in points:
-            print(point.pos())
+# class PolarWidget(QWidget):
+#
+#     def __init__(self, parent=None):
+#         QWidget.__init__(self, parent)
+#
+#         self.pw = pg.plot(
+#             labels={'left': 'Visibility (km)'},
+#             axisItems={'bottom': TimeAxisItem(orientation='bottom')}
+#         )
+#
+#         self.pw.showGrid(x=True, y=True)
+#         self.pdi = self.pw.plot(pen='w')
+#
+#         self.pw.addLine(x=0, pen=0.2)
+#         self.pw.addLine(y=0, pen=0.2)
+#         for r in range(2, 20, 2):
+#             circle = pg.QtGui.QGraphicsEllipseItem(-r, -r, r * 2, r * 2)
+#             circle.setPen(pg.mkPen(0.2))
+#             self.pw.addItem(circle)
+#
+#         theta = np.linspace(0, 2 * np.pi, 8)
+#         radius = np.random.normal(loc=10, size=8)
+#
+#         x = radius * np.cos(theta)
+#         y = radius * np.sin(theta)
+#         self.pw.plot(x, y)
 
 
-class PolarWidget(QWidget):
+class VisibilityView(QChartView):
 
-    def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+    def __init__(self, parent: QWidget, maxlen: int):
+        super().__init__(parent)
 
-        self.pw = pg.plot(
-            labels={'left': 'Visibility (km)'},
-            axisItems={'bottom': TimeAxisItem(orientation='bottom')}
-        )
+        now = QDateTime.currentSecsSinceEpoch()
+        zeros = [(t * 1000, -1) for t in range(now - maxlen * 60, now, 60)]
+        self.data = collections.deque(zeros, maxlen=maxlen)
 
-        self.pw.showGrid(x=True, y=True)
-        self.pdi = self.pw.plot(pen='w')
+        self.setRenderHint(QPainter.Antialiasing)
 
-        self.pw.addLine(x=0, pen=0.2)
-        self.pw.addLine(y=0, pen=0.2)
-        for r in range(2, 20, 2):
-            circle = pg.QtGui.QGraphicsEllipseItem(-r, -r, r * 2, r * 2)
-            circle.setPen(pg.mkPen(0.2))
-            self.pw.addItem(circle)
+        chart = QChart()
+        chart.legend().setVisible(False)
+        self.setChart(chart)
+        self.series = QLineSeries(name='Prevailing Visibility')
+        chart.addSeries(self.series)
 
-        theta = np.linspace(0, 2 * np.pi, 8)
-        radius = np.random.normal(loc=10, size=8)
+        axis_x = QDateTimeAxis()
+        axis_x.setFormat('hh:mm')
+        axis_x.setTitleText('Time')
+        left = QDateTime.fromMSecsSinceEpoch(self.data[0][0])
+        right = QDateTime.fromMSecsSinceEpoch(self.data[-1][0])
+        axis_x.setRange(left, right)
+        chart.setAxisX(axis_x, self.series)
 
-        x = radius * np.cos(theta)
-        y = radius * np.sin(theta)
-        self.pw.plot(x, y)
+        axis_y = QValueAxis()
+        axis_y.setRange(0, 20)
+        axis_y.setLabelFormat('%d')
+        axis_y.setTitleText('Distance (km)')
+        chart.setAxisY(axis_y, self.series)
+
+        data_point = [QPointF[t, v] for t, v in self.data]
+        self.series.append(data_point)
+
+
+class DiscernmentView(QChartView):
+
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self.setRenderHint(QPainter.Antialiasing)
+        self.setMaximumSize(600, 400)
+
+        chart = QPolarChart(title='Discernment Visibility')
+        chart.legend().setAlignment(Qt.AlignRight)
+        chart.legend().setMarkerShape(QLegend.MarkerShapeCircle)
+        chart.legend().setColor(QColor(255, 255, 255, 255))
+        chart.setTitleBrush(QColor(255, 255, 255, 255))
+        chart.setBackgroundBrush(QColor(0, 0, 0, 255))
+        self.setChart(chart)
+
+        self.positives = QScatterSeries(name='Positive')
+        self.negatives = QScatterSeries(name='Negative')
+        self.positives.setColor(QColor('green'))
+        self.negatives.setColor(QColor('red'))
+        self.positives.setMarkerSize(10)
+        self.negatives.setMarkerSize(10)
+        chart.addSeries(self.positives)
+        chart.addSeries(self.negatives)
+
+        axis_x = QValueAxis()
+        axis_x.setTickCount(9)
+        axis_x.setLabelsColor(QColor(255, 255, 255, 255))
+        axis_x.setRange(0, 360)
+        axis_x.setLabelFormat('%d \xc2\xb0')
+        axis_x.setTitleText('Azimuth (deg)')
+        axis_x.setTitleVisible(False)
+        chart.setAxisX(axis_x, self.positives)
+        chart.setAxisX(axis_x, self.negatives)
+
+        axis_y = QValueAxis()
+        axis_y.setLabelsColor(QColor(255, 255, 255, 255))
+        axis_y.setRange(0, 20)
+        axis_y.setLabelFormat('%d')
+        axis_y.setTitleText('Distance (km)')
+        axis_y.setTitleVisible(False)
+        chart.setAxisY(axis_y, self.positives)
+        chart.setAxisY(axis_y, self.negatives)
+
+    @pyqtSlot(list, list)
+    def refresh_stats(self, positives: list, negatives: list):
+        pos_point = [QPointF(a, d) for a, d in positives]
+        self.positives.replace(pos_point)
+        neg_point = [QPointF(a, d) for a, d in negatives]
+        self.negatives.replace(neg_point)
 
 
 class ThumbnailView(QMainWindow):
@@ -184,8 +273,8 @@ class ND01MainWindow(QMainWindow):
                                "resources/main_window.ui")
         uic.loadUi(ui_path, self)
         self.showFullScreen()
-        self._plot = PlotWidget()
-        self._polar = PolarWidget()
+        self._plot = VisibilityView(self, 1440)
+        self._polar = DiscernmentView(self)
         self.view = None
         self.km_mile_convert = False
         self.date = None
@@ -199,17 +288,22 @@ class ND01MainWindow(QMainWindow):
         self.video_horizontalLayout.addWidget(self.front_video_widget)
         self.video_horizontalLayout.addWidget(self.rear_video_widget)
 
-        self.scene = QGraphicsScene()
-        self.vis_plot.setScene(self.scene)
-        self.plotWidget = self._plot.pw
-        self.plotWidget.resize(600, 400)
-        self.scene.addWidget(self.plotWidget)
+        # self.scene = QGraphicsScene()
+        # self.vis_plot.setScene(self.scene)
+        # self.plotWidget = self._plot.pw
+        # self.plotWidget.resize(600, 400)
+        # self.scene.addWidget(self.plotWidget)
 
-        self.scene_polar = QGraphicsScene()
-        self.polar_plot.setScene(self.scene_polar)
-        self.polarWidget = self._polar.pw
-        self.polarWidget.resize(600, 400)
-        self.scene_polar.addWidget(self.polarWidget)
+        self.graph_horizontalLayout.addWidget(self._plot)
+
+        # self.scene_polar = QGraphicsScene()
+        # self.polar_plot.setScene(self.scene_polar)
+        # self.polarWidget = self._polar.pw
+        # self.polarWidget.resize(600, 400)
+        # self.scene_polar.addWidget(self.polarWidget)
+
+        # self.discernment_widget = DiscernmentView(self)
+        self.graph_horizontalLayout.addWidget(self._polar)
 
         self.setting_button.enterEvent = self.btn_on
         self.setting_button.leaveEvent = self.btn_off

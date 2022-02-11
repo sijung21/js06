@@ -13,8 +13,6 @@ from model import JS06Settings
 
 
 def producer(q):
-    # proc = mp.current_process()
-    # print(f'{proc.name} multiprocessing start.')
 
     cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
     while True:
@@ -28,7 +26,12 @@ def producer(q):
                 os.makedirs(f'{image_save_path}/resize/{date}', exist_ok=True)
 
                 _, frame = cap.read()
-                cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                if JS06Settings.get('image_size') == 0:
+                    cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                elif JS06Settings.get('image_size') == 1:
+                    frame = cv2.resize(frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
+                    cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                frame = cv2.resize(frame, (315, 131), interpolation=cv2.INTER_NEAREST)
                 cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
                 cv2.destroyAllWindows()
 

@@ -12,7 +12,8 @@ import os
 import cv2
 import pandas as pd
 from PyQt5 import uic
-from PyQt5.QtCore import (QPoint, QRect, Qt)
+from PyQt5.QtCore import (QPoint, QRect, Qt,
+                          QPointF)
 from PyQt5.QtGui import (QPixmap, QPainter, QBrush,
                          QColor, QPen, QImage,
                          QIcon)
@@ -20,7 +21,11 @@ from PyQt5.QtWidgets import (QApplication, QLabel, QInputDialog,
                              QDialog, QAbstractItemView, QVBoxLayout,
                              QGridLayout, QPushButton, QMessageBox,
                              QFileDialog)
+from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
+                           QPolarChart, QScatterSeries, QValueAxis,
+                           QChart)
 from model import JS06Settings
+from efficiency_chart import EfficiencyChart
 
 
 class ND01SettingWidget(QDialog):
@@ -35,13 +40,19 @@ class ND01SettingWidget(QDialog):
 
         self.begin = QPoint()
         self.end = QPoint()
+
         self.upper_left = ()
         self.lower_right = ()
+        # self.min_xy = ()
+
+        self.target_name = []
         self.left_range = []
         self.right_range = []
         self.distance = []
-        self.target_name = []
-        self.min_xy = ()
+
+        col = ['datetime', 'camera_direction',
+               'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW',
+               'prevailing_visibility']
 
         self.isDrawing = False
         self.draw_flag = False
@@ -65,6 +76,9 @@ class ND01SettingWidget(QDialog):
         # self.blank_lbl.mousePressEvent = self.lbl_mousePressEvent
         # self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
         # self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
+
+        self.efficiencyChart = EfficiencyChart(self)
+        self.value_verticalLayout.addWidget(self.efficiencyChart)
 
         self.flip_button.clicked.connect(self.camera_flip)
         self.flip_button.enterEvent = self.btn_on
@@ -294,6 +308,7 @@ class ND01SettingWidget(QDialog):
                'prevailing_visibility']
         result = pd.DataFrame(col)
         print(result)
+
         # result['datetime'] =
         # result['camera_direction'] =
         # result['N'] =
@@ -305,8 +320,8 @@ class ND01SettingWidget(QDialog):
         # result['W'] =
         # result['NW'] =
         # result['prevailing_visibility'] =
-        # result.to_csv(f'{JS06Settings.get("data_csv_path")}/{self.current_camera}/{self.current_camera}.csv',
-        #               index=False)
+        result.to_csv(f'{JS06Settings.get("data_csv_path")}/{self.current_camera}/{self.current_camera}.csv',
+                      index=False)
 
     def save_target(self, camera: str):
 
@@ -333,7 +348,7 @@ class ND01SettingWidget(QDialog):
             self.right_range = self.str_to_tuple(target_df["right_range"].tolist())
             self.distance = target_df["distance"].tolist()
         else:
-            QMessageBox.about(self, 'Error', 'no file...')
+            print('no file...')
 
     def accept_click(self):
 

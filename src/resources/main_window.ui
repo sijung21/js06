@@ -702,28 +702,7 @@ background-color: #1b3146;</string>
            </layout>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="graph_horizontalLayout">
-            <item>
-             <widget class="QGraphicsView" name="vis_plot">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QGraphicsView" name="polar_plot">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <layout class="QHBoxLayout" name="graph_horizontalLayout"/>
           </item>
          </layout>
         </item>
