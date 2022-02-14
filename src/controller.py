@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 #
-# Copyright 2020-2021 Sijung Co., Ltd.
-# 
-# Authors: 
-#     ruddyscent@gmail.com (Kyungwon Chun)
+# Copyright 2021-2022 Sijung Co., Ltd.
+#
+# Authors:
+#     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import json
@@ -20,11 +20,11 @@ from PyQt5.QtCore import (QDateTime, QDir, QObject, QRect, QThread,
 from PyQt5.QtGui import QImage
 from PyQt5.QtMultimedia import QVideoFrame
 
-# from .model import (Js08AttrModel, Js08CameraTableModel, Js08IoRunner,
-#                     Js08Settings, Js08SimpleTarget, Js08Wedge)
+from .model import (Js08AttrModel, , Js08IoRunner,
+                    Js08Settings, Js08SimpleTarget, Js08Wedge)
 
 
-class MainCtrl(QObject):
+class JS06MainCtrl(QObject):
     abnormal_shutdown = pyqtSignal()
     front_camera_changed = pyqtSignal(str) # uri
     rear_camera_changed = pyqtSignal(str) # uri
@@ -60,10 +60,10 @@ class MainCtrl(QObject):
         self.start_observation_timer()
 
     def init_db(self):
-        db_host = Js08Settings.get('db_host')
-        db_port = Js08Settings.get('db_port')
-        db_name = Js08Settings.get('db_name')
-        self._model.connect_to_db(db_host, db_port, db_name)
+        # db_host = Js08Settings.get('db_host')
+        # db_port = Js08Settings.get('db_port')
+        # db_name = Js08Settings.get('db_name')
+        # self._model.connect_to_db(db_host, db_port, db_name)
 
         if getattr(sys, 'frozen', False):
             directory = sys._MEIPASS
