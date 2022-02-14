@@ -5,6 +5,7 @@
 # Authors:
 #     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
+
 import collections
 import sys
 import os
@@ -167,6 +168,8 @@ class VisibilityView(QChartView):
 
     def __init__(self, parent: QWidget, maxlen: int):
         super().__init__(parent)
+        self.setMinimumSize(200, 200)
+        self.setMaximumSize(600, 400)
 
         now = QDateTime.currentSecsSinceEpoch()
         zeros = [(t * 1000, -1) for t in range(now - maxlen * 60, now, 60)]
@@ -176,6 +179,9 @@ class VisibilityView(QChartView):
 
         chart = QChart()
         chart.legend().setVisible(False)
+        # chart.legend().setColor(QColor(255, 255, 255, 255))
+        # chart.setTitleBrush(QColor(255, 255, 255, 255))
+        # chart.setBackgroundBrush(QColor(0, 0, 0, 255))
         self.setChart(chart)
         self.series = QLineSeries(name='Prevailing Visibility')
         chart.addSeries(self.series)
@@ -183,19 +189,42 @@ class VisibilityView(QChartView):
         axis_x = QDateTimeAxis()
         axis_x.setFormat('hh:mm')
         axis_x.setTitleText('Time')
+        # axis_x.setLabelsColor(QColor(255, 255, 255, 255))
         left = QDateTime.fromMSecsSinceEpoch(self.data[0][0])
         right = QDateTime.fromMSecsSinceEpoch(self.data[-1][0])
         axis_x.setRange(left, right)
         chart.setAxisX(axis_x, self.series)
+        print(left, right)
 
         axis_y = QValueAxis()
         axis_y.setRange(0, 20)
+        # axis_y.setLabelsColor(QColor(255, 255, 255, 255))
         axis_y.setLabelFormat('%d')
         axis_y.setTitleText('Distance (km)')
         chart.setAxisY(axis_y, self.series)
 
+        # data_point = [QPointF[t, v] for t, v in self.data]
+        # self.series.append(data_point)
+
+    @pyqtSlot(int, dict)
+    def refresh_stats(self, epoch: int, wedge_vis: dict):
+        wedge_vis_list = list(wedge_vis.values())
+        prev_vis = self.prevailing_visibility(wedge_vis_list)
+        self.data.append((epoch * 1000, prev_vis))
+
+        left = QDateTime.fromMSecsSinceEpoch(self.data[0][0])
+        right = QDateTime.fromMSecsSinceEpoch(self.data[-1][0])
+        self.chart().axisX().setRange(left, right)
+
         data_point = [QPointF[t, v] for t, v in self.data]
-        self.series.append(data_point)
+        self.series.replace(data_point)
+
+    def prevailing_visibility(self, wedge_vis: list) -> float:
+        if None in wedge_vis:
+            return 0
+        sorted_vis = sorted(wedge_vis, reverse=True)
+        prevailing = sorted_vis[(len(sorted_vis) - 1) // 2]
+        return prevailing
 
 
 class DiscernmentView(QChartView):
@@ -203,14 +232,15 @@ class DiscernmentView(QChartView):
     def __init__(self, parent: QWidget):
         super().__init__(parent)
         self.setRenderHint(QPainter.Antialiasing)
+        self.setMinimumSize(200, 200)
         self.setMaximumSize(600, 400)
 
         chart = QPolarChart(title='Discernment Visibility')
         chart.legend().setAlignment(Qt.AlignRight)
         chart.legend().setMarkerShape(QLegend.MarkerShapeCircle)
-        chart.legend().setColor(QColor(255, 255, 255, 255))
-        chart.setTitleBrush(QColor(255, 255, 255, 255))
-        chart.setBackgroundBrush(QColor(0, 0, 0, 255))
+        # chart.legend().setColor(QColor(255, 255, 255, 255))
+        # chart.setTitleBrush(QColor(255, 255, 255, 255))
+        # chart.setBackgroundBrush(QColor(0, 0, 0, 255))
         self.setChart(chart)
 
         self.positives = QScatterSeries(name='Positive')
@@ -224,7 +254,7 @@ class DiscernmentView(QChartView):
 
         axis_x = QValueAxis()
         axis_x.setTickCount(9)
-        axis_x.setLabelsColor(QColor(255, 255, 255, 255))
+        # axis_x.setLabelsColor(QColor(255, 255, 255, 255))
         axis_x.setRange(0, 360)
         axis_x.setLabelFormat('%d \xc2\xb0')
         axis_x.setTitleText('Azimuth (deg)')
@@ -233,9 +263,9 @@ class DiscernmentView(QChartView):
         chart.setAxisX(axis_x, self.negatives)
 
         axis_y = QValueAxis()
-        axis_y.setLabelsColor(QColor(255, 255, 255, 255))
+        # axis_y.setLabelsColor(QColor(255, 255, 255, 255))
         axis_y.setRange(0, 20)
-        axis_y.setLabelFormat('%d')
+        axis_y.setLabelFormat('%d km')
         axis_y.setTitleText('Distance (km)')
         axis_y.setTitleVisible(False)
         chart.setAxisY(axis_y, self.positives)
@@ -278,6 +308,9 @@ class ND01MainWindow(QMainWindow):
         self.view = None
         self.km_mile_convert = False
         self.date = None
+
+        # self.front_video_widget.media_player.pause()
+        # self.rear_video_widget.media_player.pause()
 
         self.front_video_widget = VideoWidget(self)
         self.front_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp")
@@ -329,6 +362,12 @@ class ND01MainWindow(QMainWindow):
         self.setting_button.clicked.connect(self.setting_btn_click)
 
         self.show()
+
+    def front_camera_pause(self, event):
+        self.front_video_widget.media_player.pause()
+
+    def rear_camera_pause(self, event):
+        self.rear_video_widget.media_player.pause()
 
     def alert_test(self):
         self.alert.setIcon(QIcon('resources/asset/red.png'))
@@ -455,34 +494,34 @@ class ND01MainWindow(QMainWindow):
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
         self.date = current_time[2:4] + current_time[5:7]
         self.real_time_label.setText(current_time)
-        self._plot.update_plot(int(float(data)))
+        # self._plot.update_plot(int(float(data)))
 
-        result = 0
-        for i in self._plot.plotData['y']:
-            result += i
-        p_vis_km = f'{format(round(int(result / len(self._plot.plotData["y"])), 2), ",")}'
-        p_vis_nm = f'{format(round(int(result / len(self._plot.plotData["y"])) / 1609, 2), ",")}'
+        # result = 0
+        # for i in self._plot.plotData['y']:
+        #     result += i
+        # p_vis_km = f'{format(round(int(result / len(self._plot.plotData["y"])), 2), ",")}'
+        # p_vis_nm = f'{format(round(int(result / len(self._plot.plotData["y"])) / 1609, 2), ",")}'
 
-        if self.km_mile_convert:
-            self.c_vis_label.setText(f'{format(round(self._plot.plotData["y"][-1] / 1609, 2), ",")} mile')
-            self.p_vis_label.setText(f'{p_vis_nm} mile')
-
-        elif self.km_mile_convert is False:
-            self.c_vis_label.setText(f'{format(self._plot.plotData["y"][-1], ",")} m')
-            self.p_vis_label.setText(f'{p_vis_km} m')
-
-        data_time = self._plot.plotData['x']
-        if int(float(data)) - 3600 * 3 in self._plot.plotData['x']:
-            index = data_time.index(int(float(data)) - 3600 * 3)
-            self._plot.plotData['x'].pop(index)
-            self._plot.plotData['y'].pop(index)
-
+        # if self.km_mile_convert:
+        #     self.c_vis_label.setText(f'{format(round(self._plot.plotData["y"][-1] / 1609, 2), ",")} mile')
+        #     self.p_vis_label.setText(f'{p_vis_nm} mile')
+        #
+        # elif self.km_mile_convert is False:
+        #     self.c_vis_label.setText(f'{format(self._plot.plotData["y"][-1], ",")} m')
+        #     self.p_vis_label.setText(f'{p_vis_km} m')
+        #
+        # data_time = self._plot.plotData['x']
+        # if int(float(data)) - 3600 * 3 in self._plot.plotData['x']:
+        #     index = data_time.index(int(float(data)) - 3600 * 3)
+        #     self._plot.plotData['x'].pop(index)
+        #     self._plot.plotData['y'].pop(index)
+        #
         self.thumbnail_refresh()
         if current_time[-2:] == "00":
             self.thumbnail_refresh()
-
-        if int(p_vis_km.replace(',', '')) <= JS06Settings.get('visibility_alert_limit'):
-            self.alert.setIcon(QIcon('resources/asset/red.png'))
+        #
+        # if int(p_vis_km.replace(',', '')) <= JS06Settings.get('visibility_alert_limit'):
+        #     self.alert.setIcon(QIcon('resources/asset/red.png'))
 
     def thumbnail_refresh(self):
         one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600))
@@ -555,6 +594,10 @@ class VideoWidget(QWidget):
             self.media_player.play()
         else:
             pass
+
+    def mouseDoubleClickEvent(self, event):
+        self.media_player.pause()
+        print('Mouse double click')
 
 
 class MainCtrl(QObject):
