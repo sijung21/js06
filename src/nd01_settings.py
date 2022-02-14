@@ -49,10 +49,6 @@ class ND01SettingWidget(QDialog):
         self.right_range = []
         self.distance = []
 
-        col = ['datetime', 'camera_direction',
-               'N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW',
-               'prevailing_visibility']
-
         self.isDrawing = False
         self.draw_flag = False
         self.cam_flag = False
@@ -103,8 +99,6 @@ class ND01SettingWidget(QDialog):
         self.image_label.mouseMoveEvent = self.lbl_mouseMoveEvent
         self.image_label.mouseReleaseEvent = self.lbl_mouseReleaseEvent
 
-        self.get_target()
-
         self.buttonBox.accepted.connect(self.accept_click)
         self.buttonBox.rejected.connect(self.reject)
 
@@ -122,22 +116,23 @@ class ND01SettingWidget(QDialog):
         self.flip_button.setIcon(QIcon('resources/asset/flip_off.png'))
 
     def image_load(self):
-        # self.image_label.update()
+        self.left_range = None
+        self.right_range = None
 
         if self.cam_flag:
             src = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
             self.target_setting_label.setText('  Rear Target Setting')
             self.current_camera = 'PNM_9030V'
-            self.get_target()
+            self.get_target(self.current_camera)
 
         else:
             src = "rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp"
             self.target_setting_label.setText('  Front Target Setting')
             self.current_camera = 'PNM_9022V'
-            self.get_target()
+            self.get_target(self.current_camera)
 
         try:
-            print(f'현재 카메라 {self.current_camera}')
+            print(f'Current camera - {self.current_camera.replace("_", " ")}')
 
             os.makedirs(f'{JS06Settings.get("target_csv_path")}/{self.current_camera}', exist_ok=True)
             cap = cv2.VideoCapture(src)
@@ -175,15 +170,17 @@ class ND01SettingWidget(QDialog):
         painter.drawPixmap(QRect(0, 0, self.image_label.width(),
                                  self.image_label.height()), bk_image)
 
-        for corner1, corner2, in zip(self.left_range, self.right_range):
-            br = QBrush(QColor(100, 10, 10, 40))
-            painter.setBrush(br)
-            painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
-            corner1_1 = int(corner1[0] / self.video_width * self.image_label.width())
-            corner1_2 = int(corner1[1] / self.video_height * self.image_label.height())
-            corner2_1 = int((corner2[0] - corner1[0]) / self.video_width * self.image_label.width())
-            corner2_2 = int((corner2[1] - corner1[1]) / self.video_height * self.image_label.height())
-            painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
+        if self.left_range:
+            for corner1, corner2, in zip(self.left_range, self.right_range):
+                br = QBrush(QColor(100, 10, 10, 40))
+                painter.setBrush(br)
+                painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+                corner1_1 = int(corner1[0] / self.video_width * self.image_label.width())
+                corner1_2 = int(corner1[1] / self.video_height * self.image_label.height())
+                corner2_1 = int((corner2[0] - corner1[0]) / self.video_width * self.image_label.width())
+                corner2_2 = int((corner2[1] - corner1[1]) / self.video_height * self.image_label.height())
+                self.target = QRect(corner1_1, corner1_2, corner2_1, corner2_2)
+                painter.drawRect(self.target)
 
         if self.isDrawing:
             br = QBrush(QColor(100, 10, 10, 40))
@@ -324,30 +321,30 @@ class ND01SettingWidget(QDialog):
 
     def save_target(self, camera: str):
 
-        print(f'타겟을 저장합니다 - {camera}')
-        if self.left_range:
+        file = f'{JS06Settings.get("target_csv_path")}/{camera}/{camera}.csv'
+        if self.left_range and os.path.isfile(file):
             col = ['target_name', 'left_range', 'right_range', 'distance']
             result = pd.DataFrame(columns=col)
             result['target_name'] = self.target_name
             result['left_range'] = self.left_range
             result['right_range'] = self.right_range
             result['distance'] = self.distance
-            result.to_csv(f'{JS06Settings.get("target_csv_path")}/{camera}/{camera}.csv',
-                          mode='w', index=False)
-            print(f'{JS06Settings.get("target_csv_path")}/{camera}/{camera}.csv - SAVED!!!!')
+            result.to_csv(file, mode='w', index=False)
+            print(f'[{camera}.csv SAVED]')
 
-    def get_target(self):
-        print("타겟을 불러옵니다.")
+    def get_target(self, camera: str):
 
-        save_path = os.path.join(f'{JS06Settings.get("target_csv_path")}/{self.current_camera}')
-        if os.path.isfile(f'{save_path}/{self.current_camera}.csv'):
-            target_df = pd.read_csv(f'{save_path}/{self.current_camera}.csv')
-            self.target_name = target_df["target_name"].tolist()
-            self.left_range = self.str_to_tuple(target_df["left_range"].tolist())
-            self.right_range = self.str_to_tuple(target_df["right_range"].tolist())
-            self.distance = target_df["distance"].tolist()
-        else:
-            print('no file...')
+        save_path = os.path.join(f'{JS06Settings.get("target_csv_path")}/{camera}')
+
+        if os.path.isfile(f'{save_path}/{camera}.csv') is False:
+            makeFile = pd.DataFrame(columns=['target_name', 'left_range', 'right_range', 'distance'])
+            makeFile.to_csv(f'{save_path}/{camera}.csv', mode='w', index=False)
+
+        target_df = pd.read_csv(f'{save_path}/{camera}.csv')
+        self.target_name = target_df["target_name"].tolist()
+        self.left_range = self.str_to_tuple(target_df["left_range"].tolist())
+        self.right_range = self.str_to_tuple(target_df["right_range"].tolist())
+        self.distance = target_df["distance"].tolist()
 
     def accept_click(self):
 
