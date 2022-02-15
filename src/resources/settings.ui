@@ -95,6 +95,9 @@ color: #ffffff;</string>
                   <pointsize>15</pointsize>
                  </font>
                 </property>
+                <property name="cursor">
+                 <cursorShape>PointingHandCursor</cursorShape>
+                </property>
                 <property name="styleSheet">
                  <string notr="true">border:0px;
 background-color: #1b3146;

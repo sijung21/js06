@@ -170,7 +170,7 @@ class ND01SettingWidget(QDialog):
         painter.drawPixmap(QRect(0, 0, self.image_label.width(),
                                  self.image_label.height()), bk_image)
 
-        if self.left_range:
+        if self.left_range and self.right_range:
             for corner1, corner2, in zip(self.left_range, self.right_range):
                 br = QBrush(QColor(100, 10, 10, 40))
                 painter.setBrush(br)

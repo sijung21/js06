@@ -100,7 +100,7 @@ def minrgb(upper_left, lower_right, cp_image):
     show_min_y = t_idx[0][0] + up_y
     show_min_x = t_idx[1][0] + left_x
 
-    return (show_min_x, show_min_y)
+    return show_min_x, show_min_y
 
 
 def get_rgb(epoch: str, min_x, min_y, cp_image, distance):
