@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 #
-# Copyright 2021-2022 Sijung Co., Ltd.
+# Copyright 2020-2021 Sijung Co., Ltd.
 #
 # Authors:
-#     cotjdals5450@gmail.com (Seong Min Chae)
+#     ruddyscent@gmail.com (Kyungwon Chun)
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import json
@@ -20,8 +20,8 @@ from PyQt5.QtCore import (QDateTime, QDir, QObject, QRect, QThread,
 from PyQt5.QtGui import QImage
 from PyQt5.QtMultimedia import QVideoFrame
 
-from .model import (Js08AttrModel, , Js08IoRunner,
-                    Js08Settings, Js08SimpleTarget, Js08Wedge)
+from model import (Js08AttrModel, Js08CameraTableModel, Js08IoRunner,
+                   Js08Settings, Js08SimpleTarget, Js08Wedge)
 
 
 class JS06MainCtrl(QObject):

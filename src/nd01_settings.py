@@ -337,6 +337,7 @@ class ND01SettingWidget(QDialog):
         save_path = os.path.join(f'{JS06Settings.get("target_csv_path")}/{camera}')
 
         if os.path.isfile(f'{save_path}/{camera}.csv') is False:
+            os.makedirs(f'{save_path}', exist_ok=True)
             makeFile = pd.DataFrame(columns=['target_name', 'left_range', 'right_range', 'distance'])
             makeFile.to_csv(f'{save_path}/{camera}.csv', mode='w', index=False)
 

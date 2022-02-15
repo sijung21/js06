@@ -194,7 +194,6 @@ class VisibilityView(QChartView):
         right = QDateTime.fromMSecsSinceEpoch(self.data[-1][0])
         axis_x.setRange(left, right)
         chart.setAxisX(axis_x, self.series)
-        print(left, right)
 
         axis_y = QValueAxis()
         axis_y.setRange(0, 20)
@@ -281,17 +280,24 @@ class DiscernmentView(QChartView):
 
 class ThumbnailView(QMainWindow):
 
-    def __init__(self, image_file_name: str, date: int):
+    def __init__(self, image_file_name: str, year: int, date: int):
         super().__init__()
 
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "ui/thumbnail_view.ui")
+                               "resources/thumbnail_view.ui")
         uic.loadUi(ui_path, self)
+        print(f'{JS06Settings.get("image_save_path")}/{year}/vista/{date}/{image_file_name}.png')
 
-        self.front_image.setPixmap(QPixmap(f'D:/ND-01/vista/{date}/{image_file_name}.png')
-                                   .scaled(self.front_image.width(), self.front_image.height()))
-        self.rear_image.setPixmap(QPixmap(f'D:/ND-01/vista/{date}/{image_file_name}.png')
-                                  .scaled(self.rear_image.width(), self.rear_image.height()))
+        self.front_image.setPixmap(
+            QPixmap(
+                f'{JS06Settings.get("image_save_path")}/{year}/vista/{date}/{image_file_name}.png').scaled(
+                self.front_image.width(),
+                self.front_image.height()))
+        self.rear_image.setPixmap(
+            QPixmap(
+                f'{JS06Settings.get("image_save_path")}/{year}/vista/{date}/{image_file_name}.png').scaled(
+                self.rear_image.width(),
+                self.rear_image.height()))
 
 
 class ND01MainWindow(QMainWindow):
@@ -307,6 +313,7 @@ class ND01MainWindow(QMainWindow):
         self._polar = DiscernmentView(self)
         self.view = None
         self.km_mile_convert = False
+        self.year = None
         self.date = None
 
         # self.front_video_widget.media_player.pause()
@@ -381,7 +388,7 @@ class ND01MainWindow(QMainWindow):
         self.label_6hour.setStyleSheet('')
 
     def thumbnail_view(self, file_name: str):
-        self.view = ThumbnailView(file_name, self.date)
+        self.view = ThumbnailView(file_name, self.year, self.date)
         self.view.setGeometry(QRect(self.video_horizontalLayout.geometry().x(),
                                     self.video_horizontalLayout.geometry().y() + 21,
                                     self.video_horizontalLayout.geometry().width(),
@@ -492,8 +499,10 @@ class ND01MainWindow(QMainWindow):
     @pyqtSlot(str)
     def clock(self, data):
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
-        self.date = current_time[2:4] + current_time[5:7]
+        self.year = current_time[:4]
+        self.date = current_time[5:7] + current_time[8:10]
         self.real_time_label.setText(current_time)
+
         # self._plot.update_plot(int(float(data)))
 
         # result = 0
@@ -524,12 +533,19 @@ class ND01MainWindow(QMainWindow):
         #     self.alert.setIcon(QIcon('resources/asset/red.png'))
 
     def thumbnail_refresh(self):
-        one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600))
-        two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 2))
-        three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 3))
-        four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 4))
-        five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 5))
-        six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 6))
+        # one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600))
+        # two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 2))
+        # three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 3))
+        # four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 4))
+        # five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 5))
+        # six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 6))
+
+        one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60))
+        two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 2))
+        three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 3))
+        four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 4))
+        five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 5))
+        six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 6))
 
         self.label_1hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600)))
         self.label_2hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 2)))
@@ -539,17 +555,17 @@ class ND01MainWindow(QMainWindow):
         self.label_6hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 6)))
 
         self.label_1hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{one_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{one_hour_ago}.jpg'))
         self.label_2hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{two_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{two_hour_ago}.jpg'))
         self.label_3hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{three_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{three_hour_ago}.jpg'))
         self.label_4hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{four_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{four_hour_ago}.jpg'))
         self.label_5hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{five_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{five_hour_ago}.jpg'))
         self.label_6hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{six_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{six_hour_ago}.jpg'))
 
     def keyPressEvent(self, e):
         """Override function QMainwindow KeyPressEvent that works when key is pressed"""
@@ -621,7 +637,6 @@ class MainCtrl(QObject):
 
 
 if __name__ == '__main__':
-
     from PyQt5.QtWidgets import QApplication
 
     mp.freeze_support()
@@ -630,14 +645,15 @@ if __name__ == '__main__':
 
     _producer = producer
 
-    p = Process(name='clock', target=clock, args=(q, ), daemon=True)
-    _p = Process(name="producer", target=_producer, args=(_q, ), daemon=True)
+    p = Process(name='clock', target=clock, args=(q,), daemon=True)
+    _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
 
     p.start()
     _p.start()
 
-    os.makedirs('D:/ND-01/vista', exist_ok=True)
-    os.makedirs('D:/ND-01/resize', exist_ok=True)
+    os.makedirs(f'{JS06Settings.get("data_csv_path")}', exist_ok=True)
+    os.makedirs(f'{JS06Settings.get("target_csv_path")}', exist_ok=True)
+    os.makedirs(f'{JS06Settings.get("image_save_path")}', exist_ok=True)
 
     app = QApplication(sys.argv)
     window = ND01MainWindow(q)
