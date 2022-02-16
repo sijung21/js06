@@ -16,11 +16,15 @@ import curve_save
 def producer(q):
     proc = mp.current_process()
     print(proc.name)
-
+    q_list = []
     
     while True:
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         
+        # 2초에 한번
+        # if int(epoch[-2:]) % 2 == 00:
+        
+        # 1분에 한번
         if epoch[-2:] == "00":
             print(epoch)
             try:
@@ -29,8 +33,21 @@ def producer(q):
                 left_range, right_range, distance = get_target("PNM_9030V")
                 if ret:
                     visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
+                    visibility = float(visibility)
                     cap.release()
-                    q.put(visibility)
+                    if len(q_list) == 0:
+                        for i in range(300):
+                            q_list.append(visibility)
+                            
+                        print("q 리스트 길이", len(q_list))
+                        result_vis = np.mean(q_list)
+                        q.put(str(result_vis))
+                    else:
+                        q_list.pop(0)
+                        q_list.append(visibility)
+                        result_vis = np.mean(q_list)
+                        print("q 리스트 길이", len(q_list))
+                        q.put(str(result_vis))
                     time.sleep(1)
             except Exception as e:
                 print(e)
@@ -159,7 +176,7 @@ def visibility_print(ext_g: float = 0.0):
         vis_value = 0.01
 
     # self.data_storage(vis_value)
-    vis_value_str = f"{vis_value:.2f}"
+    vis_value_str = f"{vis_value:.3f}"
     return vis_value_str
         
 def get_target(camera_name: str):

@@ -32,6 +32,8 @@ def select_max_rgb(r, g, b):
         select_color = "green"
     else :
         select_color = "blue"
+        
+    select_color = "green"
     return select_color
 
 def cal_curve(hanhwa: pd.DataFrame):
@@ -44,6 +46,12 @@ def cal_curve(hanhwa: pd.DataFrame):
     hanhwa_r = hanhwa[['r']].squeeze().to_numpy()
     hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
     hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
+    
+    print("오리지날 green", hanhwa_g)
+    # hanhwa_g = hanhwa_g[:-1]
+    
+    # hanhwa_g = np.append(hanhwa_g, np.array([160]))
+    print("소산계수 산출용 green 리스트 :  ", hanhwa_g)
 
     r1_init = hanhwa_r[0] * 0.7
     g1_init = hanhwa_g[0] * 0.7
@@ -51,6 +59,7 @@ def cal_curve(hanhwa: pd.DataFrame):
 
     r2_init = hanhwa_r[-1] * 1.3
     g2_init = hanhwa_g[-1] * 1.3
+    # g2_init = 160 * 1.3
     b2_init = hanhwa_b[-1] * 1.3
     
     select_color = select_max_rgb(r2_init, g2_init, b2_init)

@@ -445,7 +445,7 @@
 </string>
    </property>
    <property name="text">
-    <string>0㎛</string>
+    <string>0㎍/㎥</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>

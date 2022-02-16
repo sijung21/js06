@@ -87,7 +87,7 @@ class ND01MainWindow(QWidget):
         self.verticallayout.addWidget(self.video_graphicsview)
 
         self.webview = QtWebEngineWidgets.QWebEngineView()
-        self.webview.setUrl(QUrl("http://localhost:3000/d/GXA3xPS7z/new-dashboard-copy?orgId=1&refresh=30s&kiosk&from=now-30m&to=now"))
+        self.webview.setUrl(QUrl("http://localhost:3000/d/GXA3xPS7z/new-dashboard-copy?orgId=1&kiosk&from=now-1h&to=now"))
         # QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ShowScrollBars(False))
         self.webview.setZoomFactor(1)
         self.web_verticalLayout.addWidget(self.webview)
@@ -126,13 +126,13 @@ class ND01MainWindow(QWidget):
         dlg.exec_()
         self.radio_checked = dlg.radio_flag
         print(self.radio_checked, "변환 완료")
-        self.print_data(str(self.visibility_copy))
+        # self.print_data(str(self.visibility_copy))
         self._player.play()
                 
     @pyqtSlot(str)
     def print_data(self, visibility):
         print(visibility)
-        self.visibility_copy = round(float(visibility), 1)
+        self.visibility_copy = round(float(visibility), 3)
         # print(float(visibility[:-3]))
         
         if self.radio_checked == None or self.radio_checked == "Km":
@@ -147,7 +147,7 @@ class ND01MainWindow(QWidget):
         ext = 3.912 / self.visibility_copy
         hd = 89
         pm_value = round((ext*1000/4/2.5)/(1+5.67*((hd/100)**5.8)),2)
-        pm_text = str(pm_value) + " μm"
+        pm_text = str(pm_value) + " ㎍/㎥"
         self.c_pm_label.setText(pm_text)
         
         self.data_storage(self.visibility_copy)

@@ -9,6 +9,8 @@ from tkinter.messagebox import RETRY
 import cv2
 import numpy as np
 import pandas as pd
+import scipy
+from scipy.optimize import curve_fit
 # import PyQt5
 # print(PyQt5.__version__)
 from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
@@ -59,6 +61,9 @@ class ND01_Setting_Widget(QDialog):
         self.test_name = None
         self.end_drawing = None
         self.cp_image = None
+        self.r_list = []
+        self.g_list = []
+        self.b_list = []
         
         self.radio_flag = radio_flag
         
@@ -96,25 +101,33 @@ class ND01_Setting_Widget(QDialog):
         self.chart_update()
         
     
-    
+    def func(self, x, c1, c2, a):
+        return c2 + (c1 - c2) * np.exp(-a * x)
     def chart_update(self):
         # data
-        raw_data = [
-            (0, 6),
-            (2, 4),
-            (3, 8),
-            (7, 4),
-            (10, 5),
-            (11, 1),
-            (13, 3),
-            (17, 6),
-            (18, 3),
-            (20, 2)
-        ]
+        
+        self.r_list
+        # self.g_list
+        # self.b_list
+        
+        # raw_data = [
+        #     (0, 6),
+        #     (2, 4),
+        #     (3, 8),
+        #     (7, 4),
+        #     (10, 5),
+        #     (11, 1),
+        #     (13, 3),
+        #     (17, 6),
+        #     (18, 3),
+        #     (20, 2)
+        # ]
 
-        series = QLineSeries()
-        for d in raw_data:
-            series.append(*d)
+        hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
+        
+        series = QLineSeries()        
+        for dis, r in zip(self.distance, self.r_list):
+            series.append(*(r, self.func(r, *hanhwa_opt_r)))
 
         # chart object
         chart = QChart()
@@ -334,6 +347,10 @@ class ND01_Setting_Widget(QDialog):
             min_x.append(result[0])
             min_y.append(result[1])
             
+            self.r_list.append(copy_image[result[1],result[0],0])
+            self.g_list.append(copy_image[result[1],result[0],1])
+            self.b_list.append(copy_image[result[1],result[0],2])
+            
         for i in range(0, row_count):
             
             # 이미지 넣기            
@@ -396,8 +413,6 @@ class ND01_Setting_Widget(QDialog):
 
         return (show_min_x, show_min_y)        
         # return
-        
-                
                 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
