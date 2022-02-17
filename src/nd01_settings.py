@@ -24,7 +24,7 @@ from PyQt5.QtMultimediaWidgets import QGraphicsVideoItem
 from PyQt5 import QtWebEngineWidgets
 from PyQt5 import QtWebEngineCore
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
-from PyQt5.QtChart import QChart, QChartView, QLineSeries 
+from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
 
 
 
@@ -122,19 +122,75 @@ class ND01_Setting_Widget(QDialog):
         #     (18, 3),
         #     (20, 2)
         # ]
-
-        hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
+        print("r_리스트 : " , self.r_list)
+        print("g_리스트 : " , self.g_list)
+        self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
+        self.x.sort()
         
-        series = QLineSeries()        
-        for dis, r in zip(self.distance, self.r_list):
-            series.append(*(r, self.func(r, *hanhwa_opt_r)))
-
+        hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
+        hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.distance, self.g_list, maxfev=5000)
+        hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.distance, self.b_list, maxfev=5000)
+        
         # chart object
         chart = QChart()
-        chart.legend().hide()
-        chart.addSeries(series)         # data feeding
-        chart.createDefaultAxes()
+        chart.setTitle('Extinction coefficient Graph')
+        
+        # Red Graph
+        series1 = QLineSeries()
+        series1.setName("Red")
+        pen = QPen()
+        pen.setWidth(2)
+        series1.setPen(pen)
+        series1.setColor(QColor("Red"))
+        
+        for dis in self.x:
+            series1.append(*(dis, self.func(dis, *hanhwa_opt_r)))
+        chart.addSeries(series1) # data feeding       
+        
+        # Green Graph
+        series2 = QLineSeries()
+        series2.setName("Green")
+        pen = QPen()
+        pen.setWidth(2)
+        series2.setPen(pen)   
+        series2.setColor(QColor("Green")) 
+        # series2.setWidth(3)
+        for dis in self.x:
+            series2.append(*(dis, self.func(dis, *hanhwa_opt_g)))
+        chart.addSeries(series2)  # data feeding
 
+        # Blue Graph
+        series3 = QLineSeries()
+        series3.setName("Blue")  
+        pen = QPen()
+        pen.setWidth(2)
+        series3.setPen(pen)   
+        series3.setColor(QColor("Blue"))
+        # series3.setWidth(3)
+        for dis in self.x:
+            series3.append(*(dis, self.func(dis, *hanhwa_opt_b)))
+        chart.addSeries(series3)  # data feeding
+        
+        
+        chart.legend().setAlignment(Qt.AlignRight) 
+        
+        # chart.createDefaultAxes()
+        axis_x = QValueAxis()
+        axis_x.setTickCount(7)
+        axis_x.setLabelFormat("%i")
+        axis_x.setTitleText("Distance(km)")
+        chart.addAxis(axis_x, Qt.AlignBottom)
+        series1.attachAxis(axis_x)
+        
+        axis_y = QValueAxis()
+        axis_y.setTickCount(7)
+        axis_y.setLabelFormat("%i")
+        axis_y.setTitleText("Intensity")
+        chart.addAxis(axis_y, Qt.AlignLeft)
+        series1.attachAxis(axis_y)
+
+        
+        
         # displaying chart
         chart_view = QChartView(chart)
         chart_view.setRenderHint(QPainter.Antialiasing)
