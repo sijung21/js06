@@ -20,6 +20,7 @@ class JS06Settings:
         'image_save_path': os.path.join('D:\\JS06', 'image'),
         'image_size': 0,
         'visibility_alert_limit': 1000,
+        'afd_activate': False,
         'login_id': 'admin',
         'login_pw': '1234'
     }

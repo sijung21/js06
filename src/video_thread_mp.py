@@ -26,35 +26,39 @@ from model import JS06Settings
 
 def producer(q):
 
-    cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
+    cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+
     if cap.isOpened():
         while True:
-            epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
-            year = epoch[:4]
-            date = epoch[4:8]
+            epoch = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
+            year = epoch[:4]    # 2022
+            date = epoch[4:8]   # 0215
 
-            if epoch[-2:] == "00":
+            if epoch[-2:] == '00':
                 try:
                     image_save_path = JS06Settings.get('image_save_path')
-                    os.makedirs(f'{image_save_path}/{year}', exist_ok=True)
-                    os.makedirs(f'{image_save_path}/{year}/vista/{date}', exist_ok=True)
-                    os.makedirs(f'{image_save_path}/{year}/resize/{date}', exist_ok=True)
+                    os.makedirs(f'{image_save_path}/vista/{date}', exist_ok=True)
+                    os.makedirs(f'{image_save_path}/resize/{date}', exist_ok=True)
 
                     ret, frame = cap.read()
-                    if ret:
-                        if JS06Settings.get('image_size') == 0:
-                            cv2.imwrite(f'{image_save_path}/{year}/vista/{date}/{epoch}.png', frame)
-                        elif JS06Settings.get('image_size') == 1:
-                            frame = cv2.resize(frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
-                            cv2.imwrite(f'{image_save_path}/{year}/vista/{date}/{epoch}.png', frame)
-                        frame = cv2.resize(frame, (315, 131), interpolation=cv2.INTER_NEAREST)
-                        cv2.imwrite(f'{image_save_path}/{year}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
-                        time.sleep(1)
+                    if not ret:
+                        cap.release()
+                        cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+                        print('Found Error; Rebuilding stream')
 
+                    if JS06Settings.get('image_size') == 0:
+                        cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                    elif JS06Settings.get('image_size') == 1:
+                        frame = cv2.resize(frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
+                        cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                    frame = cv2.resize(frame, (315, 131), interpolation=cv2.INTER_NEAREST)
+                    cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
+
+                    if JS06Settings.get('afd_activate'):
                         total, used, free = shutil.disk_usage('D:\\')
                         print(byte_transform(free, 'GB'))
 
-                    cap.release()
+                    time.sleep(1)
 
                 except:
                     print(traceback.format_exc())

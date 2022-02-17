@@ -280,22 +280,22 @@ class DiscernmentView(QChartView):
 
 class ThumbnailView(QMainWindow):
 
-    def __init__(self, image_file_name: str, year: int, date: int):
+    def __init__(self, image_file_name: str, date: int):
         super().__init__()
 
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                "resources/thumbnail_view.ui")
         uic.loadUi(ui_path, self)
-        print(f'{JS06Settings.get("image_save_path")}/{year}/vista/{date}/{image_file_name}.png')
+        print(f'{JS06Settings.get("image_save_path")}/vista/{date}/{image_file_name}.png')
 
         self.front_image.setPixmap(
             QPixmap(
-                f'{JS06Settings.get("image_save_path")}/{year}/vista/{date}/{image_file_name}.png').scaled(
+                f'{JS06Settings.get("image_save_path")}/vista/{date}/{image_file_name}.png').scaled(
                 self.front_image.width(),
                 self.front_image.height()))
         self.rear_image.setPixmap(
             QPixmap(
-                f'{JS06Settings.get("image_save_path")}/{year}/vista/{date}/{image_file_name}.png').scaled(
+                f'{JS06Settings.get("image_save_path")}/vista/{date}/{image_file_name}.png').scaled(
                 self.rear_image.width(),
                 self.rear_image.height()))
 
@@ -313,11 +313,8 @@ class ND01MainWindow(QMainWindow):
         self._polar = DiscernmentView(self)
         self.view = None
         self.km_mile_convert = False
-        self.year = None
+        # self.year = None
         self.date = None
-
-        # self.front_video_widget.media_player.pause()
-        # self.rear_video_widget.media_player.pause()
 
         self.front_video_widget = VideoWidget(self)
         self.front_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp")
@@ -328,21 +325,7 @@ class ND01MainWindow(QMainWindow):
         self.video_horizontalLayout.addWidget(self.front_video_widget)
         self.video_horizontalLayout.addWidget(self.rear_video_widget)
 
-        # self.scene = QGraphicsScene()
-        # self.vis_plot.setScene(self.scene)
-        # self.plotWidget = self._plot.pw
-        # self.plotWidget.resize(600, 400)
-        # self.scene.addWidget(self.plotWidget)
-
         self.graph_horizontalLayout.addWidget(self._plot)
-
-        # self.scene_polar = QGraphicsScene()
-        # self.polar_plot.setScene(self.scene_polar)
-        # self.polarWidget = self._polar.pw
-        # self.polarWidget.resize(600, 400)
-        # self.scene_polar.addWidget(self.polarWidget)
-
-        # self.discernment_widget = DiscernmentView(self)
         self.graph_horizontalLayout.addWidget(self._polar)
 
         self.setting_button.enterEvent = self.btn_on
@@ -388,7 +371,7 @@ class ND01MainWindow(QMainWindow):
         self.label_6hour.setStyleSheet('')
 
     def thumbnail_view(self, file_name: str):
-        self.view = ThumbnailView(file_name, self.year, self.date)
+        self.view = ThumbnailView(file_name, self.date)
         self.view.setGeometry(QRect(self.video_horizontalLayout.geometry().x(),
                                     self.video_horizontalLayout.geometry().y() + 21,
                                     self.video_horizontalLayout.geometry().width(),
@@ -499,7 +482,7 @@ class ND01MainWindow(QMainWindow):
     @pyqtSlot(str)
     def clock(self, data):
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
-        self.year = current_time[:4]
+        # self.year = current_time[:4]
         self.date = current_time[5:7] + current_time[8:10]
         self.real_time_label.setText(current_time)
 
@@ -555,17 +538,17 @@ class ND01MainWindow(QMainWindow):
         self.label_6hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 6)))
 
         self.label_1hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{one_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{one_hour_ago}.jpg'))
         self.label_2hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{two_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{two_hour_ago}.jpg'))
         self.label_3hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{three_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{three_hour_ago}.jpg'))
         self.label_4hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{four_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{four_hour_ago}.jpg'))
         self.label_5hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{five_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{five_hour_ago}.jpg'))
         self.label_6hour.setPixmap(
-            QPixmap(f'{JS06Settings.get("image_save_path")}/{self.year}/resize/{self.date}/{six_hour_ago}.jpg'))
+            QPixmap(f'{JS06Settings.get("image_save_path")}/resize/{self.date}/{six_hour_ago}.jpg'))
 
     def keyPressEvent(self, e):
         """Override function QMainwindow KeyPressEvent that works when key is pressed"""

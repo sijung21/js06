@@ -25,6 +25,7 @@ from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
                            QChart)
 from model import JS06Settings
 from efficiency_chart import EfficiencyChart
+from auto_file_delete import AutoFileDelete
 
 
 class ND01SettingWidget(QDialog):
@@ -98,6 +99,8 @@ class ND01SettingWidget(QDialog):
         self.image_label.mousePressEvent = self.lbl_mousePressEvent
         self.image_label.mouseMoveEvent = self.lbl_mouseMoveEvent
         self.image_label.mouseReleaseEvent = self.lbl_mouseReleaseEvent
+
+        self.afd_checkBox.stateChanged.connect(self.run_afd)
 
         self.buttonBox.accepted.connect(self.accept_click)
         self.buttonBox.rejected.connect(self.reject)
@@ -358,6 +361,13 @@ class ND01SettingWidget(QDialog):
         JS06Settings.set('login_pw', self.pw_lineEdit.text())
 
         self.close()
+
+    def run_afd(self, state):
+        if state == Qt.Checked:
+            if not JS06Settings.get('afd_activate'):
+                JS06Settings.set('afd_activate', True)
+        else:
+            JS06Settings.set('afd_activate', False)
 
 
 if __name__ == '__main__':
