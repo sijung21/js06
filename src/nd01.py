@@ -313,7 +313,6 @@ class ND01MainWindow(QMainWindow):
         self._polar = DiscernmentView(self)
         self.view = None
         self.km_mile_convert = False
-        # self.year = None
         self.date = None
 
         self.front_video_widget = VideoWidget(self)
@@ -482,7 +481,6 @@ class ND01MainWindow(QMainWindow):
     @pyqtSlot(str)
     def clock(self, data):
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
-        # self.year = current_time[:4]
         self.date = current_time[5:7] + current_time[8:10]
         self.real_time_label.setText(current_time)
 

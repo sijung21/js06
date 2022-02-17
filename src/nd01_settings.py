@@ -25,7 +25,6 @@ from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
                            QChart)
 from model import JS06Settings
 from efficiency_chart import EfficiencyChart
-from auto_file_delete import AutoFileDelete
 
 
 class ND01SettingWidget(QDialog):

@@ -5,7 +5,6 @@ import shutil
 import sys
 
 import psutil
-from model import JS06Settings
 
 
 class AutoFileDelete:
@@ -13,7 +12,7 @@ class AutoFileDelete:
     Delete the oldest folder from the path specified by user
     """
 
-    def __init__(self):
+    def __init__(self, need_storage: int):
 
         drive = []
         # Save all of the user's drives in drive variable.
@@ -26,7 +25,7 @@ class AutoFileDelete:
 
         self.path = None
 
-        self.need_storage = 100
+        self.need_storage = need_storage
         self.main()
 
     def byte_transform(self, bytes, to, bsize=1024):
@@ -81,11 +80,11 @@ class AutoFileDelete:
         :return: None
         """
         # If storage space required is more than current storage space
-        if 100 >= self.byte_transform(self.free, 'GB'):
+        if self.need_storage >= self.byte_transform(self.free, 'GB'):
             # Specify the Vista folder path of the d drive as a path variable
             self.path = os.path.join(self.diskLabel, 'vista')
             try:
-                self.delete_oldest_files(self.path, 100)
+                self.delete_oldest_files(self.path, self.need_storage)
             except FileNotFoundError:
                 print(f'[{self.path}] - Not Found Error')
 
@@ -95,4 +94,4 @@ class AutoFileDelete:
 
 if __name__ == "__main__":
 
-    start = AutoFileDelete()
+    start = AutoFileDelete(100)
