@@ -165,7 +165,7 @@
      <x>1090</x>
      <y>670</y>
      <width>441</width>
-     <height>381</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -343,7 +343,232 @@
      <height>451</height>
     </rect>
    </property>
-   <layout class="QVBoxLayout" name="html_verticalLayout"/>
+   <layout class="QVBoxLayout" name="html_verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <property name="sizeConstraint">
+     <enum>QLayout::SetMaximumSize</enum>
+    </property>
+   </layout>
+  </widget>
+  <widget class="QCheckBox" name="red_checkBox">
+   <property name="geometry">
+    <rect>
+     <x>1150</x>
+     <y>720</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>14</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#red_checkBox
+{
+	color:rgb(255,255,255);
+}</string>
+   </property>
+   <property name="text">
+    <string>    Red</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="green_checkBox">
+   <property name="geometry">
+    <rect>
+     <x>1270</x>
+     <y>720</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#green_checkBox
+{
+	color:rgb(255,255,255);
+}</string>
+   </property>
+   <property name="text">
+    <string>    Green</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="blue_checkBox">
+   <property name="geometry">
+    <rect>
+     <x>1390</x>
+     <y>720</y>
+     <width>81</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Arial</family>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#blue_checkBox
+{
+	color:rgb(255,255,255);
+}</string>
+   </property>
+   <property name="text">
+    <string>    Blue</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="run_aver_label">
+   <property name="geometry">
+    <rect>
+     <x>1090</x>
+     <y>800</y>
+     <width>441</width>
+     <height>70</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>NanumGothic</family>
+     <pointsize>25</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#run_aver_label
+{
+	background-color:rgb(27,49,70);
+	color:rgb(255,255,255);
+}</string>
+   </property>
+   <property name="text">
+    <string>  Running Average</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="runaver_value">
+   <property name="geometry">
+    <rect>
+     <x>1090</x>
+     <y>870</y>
+     <width>441</width>
+     <height>171</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">#runaver_value
+{
+	background-color:rgb(25,39,52);
+}
+
+</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>1090</x>
+     <y>870</y>
+     <width>441</width>
+     <height>171</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string/>
+   </property>
+   <widget class="QRadioButton" name="one_radio_btn">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>70</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#one_radio_btn
+{
+	color:rgb(255,255,255);
+}</string>
+    </property>
+    <property name="text">
+     <string>  1min</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="five_radio_btn">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>70</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#five_radio_btn
+{
+	color:rgb(255,255,255);
+}</string>
+    </property>
+    <property name="text">
+     <string>  5min</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="ten_radio_btn">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>70</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">#ten_radio_btn
+{
+	color:rgb(255,255,255);
+}</string>
+    </property>
+    <property name="text">
+     <string>  10min</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

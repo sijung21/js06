@@ -13,7 +13,7 @@ import scipy
 from scipy.optimize import curve_fit
 # import PyQt5
 # print(PyQt5.__version__)
-from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon
+from PyQt5.QtGui import QPixmap, QImage, QPainter, QBrush, QColor, QPen, QImage, QPixmap, QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QApplication, QDesktopWidget, QVBoxLayout, QWidget, QLabel, QInputDialog, QDialog, QTableWidgetItem, QHeaderView
 from PyQt5.QtCore import QPoint, QRect, Qt, QRectF, QSize, QCoreApplication, pyqtSlot, QTimer, QUrl
 from PyQt5 import uic
@@ -104,26 +104,8 @@ class ND01_Setting_Widget(QDialog):
     def func(self, x, c1, c2, a):
         return c2 + (c1 - c2) * np.exp(-a * x)
     def chart_update(self):
-        # data
+        # data        
         
-        self.r_list
-        # self.g_list
-        # self.b_list
-        
-        # raw_data = [
-        #     (0, 6),
-        #     (2, 4),
-        #     (3, 8),
-        #     (7, 4),
-        #     (10, 5),
-        #     (11, 1),
-        #     (13, 3),
-        #     (17, 6),
-        #     (18, 3),
-        #     (20, 2)
-        # ]
-        print("r_리스트 : " , self.r_list)
-        print("g_리스트 : " , self.g_list)
         self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
         self.x.sort()
         
@@ -133,6 +115,11 @@ class ND01_Setting_Widget(QDialog):
         
         # chart object
         chart = QChart()
+        font = QFont()
+        font.setPixelSize(20)        
+        font.setBold(3)
+        chart.setTitleFont(font)
+        
         chart.setTitle('Extinction coefficient Graph')
         
         # Red Graph
@@ -154,7 +141,6 @@ class ND01_Setting_Widget(QDialog):
         pen.setWidth(2)
         series2.setPen(pen)   
         series2.setColor(QColor("Green")) 
-        # series2.setWidth(3)
         for dis in self.x:
             series2.append(*(dis, self.func(dis, *hanhwa_opt_g)))
         chart.addSeries(series2)  # data feeding
@@ -166,7 +152,6 @@ class ND01_Setting_Widget(QDialog):
         pen.setWidth(2)
         series3.setPen(pen)   
         series3.setColor(QColor("Blue"))
-        # series3.setWidth(3)
         for dis in self.x:
             series3.append(*(dis, self.func(dis, *hanhwa_opt_b)))
         chart.addSeries(series3)  # data feeding
@@ -187,11 +172,10 @@ class ND01_Setting_Widget(QDialog):
         axis_y.setLabelFormat("%i")
         axis_y.setTitleText("Intensity")
         chart.addAxis(axis_y, Qt.AlignLeft)
-        series1.attachAxis(axis_y)
-
-        
+        series1.attachAxis(axis_y)        
         
         # displaying chart
+        chart.setBackgroundBrush(QBrush(QColor(22,32,42)))
         chart_view = QChartView(chart)
         chart_view.setRenderHint(QPainter.Antialiasing)
         
