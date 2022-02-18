@@ -7,7 +7,7 @@
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import os
-
+import traceback
 import cv2
 import pandas as pd
 from PyQt5 import uic
@@ -92,14 +92,14 @@ class ND01SettingWidget(QDialog):
         self.pw_lineEdit.setText(JS06Settings.get('login_pw'))
 
         self.image_size_comboBox.setCurrentIndex(JS06Settings.get('image_size'))
-        # self.image_size_comboBox.currentTextChanged.connect(self.image_size_changed)
+
+        self.afd_checkBox.setChecked(JS06Settings.get('afd_activate'))
+        self.afd_spinBox.setValue(JS06Settings.get('need_storage'))
 
         self.image_label.paintEvent = self.lbl_paintEvent
         self.image_label.mousePressEvent = self.lbl_mousePressEvent
         self.image_label.mouseMoveEvent = self.lbl_mouseMoveEvent
         self.image_label.mouseReleaseEvent = self.lbl_mouseReleaseEvent
-
-        self.afd_checkBox.stateChanged.connect(self.run_afd)
 
         self.buttonBox.accepted.connect(self.accept_click)
         self.buttonBox.rejected.connect(self.reject)
@@ -358,15 +358,10 @@ class ND01SettingWidget(QDialog):
         JS06Settings.set('visibility_alert_limit', self.vis_limit_spinBox.value())
         JS06Settings.set('login_id', self.id_lineEdit.text())
         JS06Settings.set('login_pw', self.pw_lineEdit.text())
+        JS06Settings.set('afd_activate', self.afd_checkBox.isChecked())
+        JS06Settings.set('need_storage', self.afd_spinBox.value())
 
         self.close()
-
-    def run_afd(self, state):
-        if state == Qt.Checked:
-            if not JS06Settings.get('afd_activate'):
-                JS06Settings.set('afd_activate', True)
-        else:
-            JS06Settings.set('afd_activate', False)
 
 
 if __name__ == '__main__':

@@ -10,6 +10,8 @@ import psutil
 class AutoFileDelete:
     """
     Delete the oldest folder from the path specified by user
+
+    :param need_storage: The variable arguments are used based on maximum storage space
     """
 
     def __init__(self, need_storage: int):
@@ -20,7 +22,8 @@ class AutoFileDelete:
             drive.append(str(psutil.disk_partitions()[i])[18:19])
 
         # Set the drive as the reference to D
-        self.diskLabel = 'D://'
+        if 'D' in drive:
+            self.diskLabel = 'D://'
         self.total, self.used, self.free = shutil.disk_usage(self.diskLabel)
 
         self.path = None

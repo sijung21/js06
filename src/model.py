@@ -21,6 +21,7 @@ class JS06Settings:
         'image_size': 0,
         'visibility_alert_limit': 1000,
         'afd_activate': False,
+        'need_storage': 100,
         'login_id': 'admin',
         'login_pw': '1234'
     }
