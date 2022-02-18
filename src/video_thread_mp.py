@@ -25,40 +25,41 @@ def producer(q):
     if cap.isOpened():
         while True:
             epoch = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
-            date = epoch[4:8]
+            date = epoch[2:6]
 
-            # if epoch[-2:] == '00':
-            if epoch[-1:] == '0':
+            if epoch[-2:] == '00':
                 try:
                     image_save_path = JS06Settings.get('image_save_path')
                     os.makedirs(f'{image_save_path}/vista/{date}', exist_ok=True)
                     os.makedirs(f'{image_save_path}/resize/{date}', exist_ok=True)
 
-                    # ret, frame = cap.read()
-                    # if not ret:
-                    #     cap.release()
-                    #     cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
-                    #     print('Found Error; Rebuilding stream')
+                    ret, frame = cap.read()
+                    if not ret:
+                        cap.release()
+                        cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+                        print('Found Error; Rebuilding stream')
 
-                    # if JS06Settings.get('image_size') == 0:
-                    #     cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
-                    # elif JS06Settings.get('image_size') == 1:
-                    #     frame = cv2.resize(frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
-                    #     cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
-                    # frame = cv2.resize(frame, (315, 131), interpolation=cv2.INTER_NEAREST)
-                    # cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
+                    if JS06Settings.get('image_size') == 0:     # Original size
+                        cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                    elif JS06Settings.get('image_size') == 1:   # FHD size
+                        frame = cv2.resize(frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
+                        cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                    frame = cv2.resize(frame, (315, 131), interpolation=cv2.INTER_NEAREST)  # Thumbnail size
+                    cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
 
                     if JS06Settings.get('afd_activate'):
-                        AutoFileDelete(100)
+                        AutoFileDelete(JS06Settings.get('need_storage'))
 
                     time.sleep(1)
 
-                except Exception as e:
-                    print(e)
+                except:
+                    print(traceback.format_exc())
                     cap.release()
                     cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
-                    # continue
+
             cv2.destroyAllWindows()
+    else:
+        print('cap closed')
 
 
 def minprint(epoch, left_range, right_range, distance, cv_img):
