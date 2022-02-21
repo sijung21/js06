@@ -348,7 +348,7 @@
      <number>0</number>
     </property>
     <property name="sizeConstraint">
-     <enum>QLayout::SetMaximumSize</enum>
+     <enum>QLayout::SetNoConstraint</enum>
     </property>
    </layout>
   </widget>

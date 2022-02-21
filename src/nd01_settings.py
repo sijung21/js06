@@ -64,6 +64,8 @@ class ND01_Setting_Widget(QDialog):
         self.r_list = []
         self.g_list = []
         self.b_list = []
+        self.x = None
+        self.chart_view = None
         
         self.radio_flag = radio_flag
         
@@ -90,22 +92,38 @@ class ND01_Setting_Widget(QDialog):
         
         self.show_target_table()
         
-        # self.webview = QtWebEngineWidgets.QWebEngineView()
-        # file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "render.html"))
-        # local_url = QUrl.fromLocalFile(file_path)
-        # self.webview.load(local_url)
-        # QWebEngineSettings.globalSettings().setAttribute(QWebEngineSettings.ShowScrollBars(False))
-        # QWebEngineSettings.ShowScrollBars(False)
-        # self.webview.setZoomFactor(0)
-        
+        self.red_checkBox.setChecked(True)
+        self.green_checkBox.setChecked(True)
+        self.blue_checkBox.setChecked(True)
         self.chart_update()
         
+        
+        self.red_checkBox.clicked.connect(self.chart_update)
+        self.green_checkBox.clicked.connect(self.chart_update)
+        self.blue_checkBox.clicked.connect(self.chart_update)
     
     def func(self, x, c1, c2, a):
         return c2 + (c1 - c2) * np.exp(-a * x)
+    
     def chart_update(self):
-        # data        
         
+        if self.html_verticalLayout.count() == 0:
+            self.chart_view = self.chart_draw()
+            self.html_verticalLayout.addWidget(self.chart_view)        
+        else:
+            new_chart_view = self.chart_draw()
+            self.html_verticalLayout.removeWidget(self.chart_view)
+            self.html_verticalLayout.addWidget(new_chart_view)            
+            self.html_verticalLayout.update()
+            self.chart_view = new_chart_view
+            
+        print("update chart!")
+        
+    def chart_draw(self):
+        # data
+        global x   
+        
+        # if self.x is None:
         self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
         self.x.sort()
         
@@ -122,65 +140,78 @@ class ND01_Setting_Widget(QDialog):
         
         chart.setTitle('Extinction coefficient Graph')
         
-        # Red Graph
-        series1 = QLineSeries()
-        series1.setName("Red")
-        pen = QPen()
-        pen.setWidth(2)
-        series1.setPen(pen)
-        series1.setColor(QColor("Red"))
-        
-        for dis in self.x:
-            series1.append(*(dis, self.func(dis, *hanhwa_opt_r)))
-        chart.addSeries(series1) # data feeding       
-        
-        # Green Graph
-        series2 = QLineSeries()
-        series2.setName("Green")
-        pen = QPen()
-        pen.setWidth(2)
-        series2.setPen(pen)   
-        series2.setColor(QColor("Green")) 
-        for dis in self.x:
-            series2.append(*(dis, self.func(dis, *hanhwa_opt_g)))
-        chart.addSeries(series2)  # data feeding
-
-        # Blue Graph
-        series3 = QLineSeries()
-        series3.setName("Blue")  
-        pen = QPen()
-        pen.setWidth(2)
-        series3.setPen(pen)   
-        series3.setColor(QColor("Blue"))
-        for dis in self.x:
-            series3.append(*(dis, self.func(dis, *hanhwa_opt_b)))
-        chart.addSeries(series3)  # data feeding
-        
-        
-        chart.legend().setAlignment(Qt.AlignRight) 
-        
         # chart.createDefaultAxes()
         axis_x = QValueAxis()
         axis_x.setTickCount(7)
         axis_x.setLabelFormat("%i")
         axis_x.setTitleText("Distance(km)")
         chart.addAxis(axis_x, Qt.AlignBottom)
-        series1.attachAxis(axis_x)
+        
         
         axis_y = QValueAxis()
         axis_y.setTickCount(7)
         axis_y.setLabelFormat("%i")
         axis_y.setTitleText("Intensity")
         chart.addAxis(axis_y, Qt.AlignLeft)
-        series1.attachAxis(axis_y)        
+        
+        # Red Graph
+        if self.red_checkBox.isChecked():
+        
+            series1 = QLineSeries()
+            series1.setName("Red")
+            pen = QPen()
+            pen.setWidth(2)
+            series1.setPen(pen)
+            series1.setColor(QColor("Red"))
+            
+            for dis in self.x:
+                series1.append(*(dis, self.func(dis, *hanhwa_opt_r)))
+            chart.addSeries(series1) # data feeding  
+            series1.attachAxis(axis_x)
+            series1.attachAxis(axis_y)     
+        
+        # Green Graph
+        if self.green_checkBox.isChecked():
+        
+            series2 = QLineSeries()
+            series2.setName("Green")
+            pen = QPen()
+            pen.setWidth(2)
+            series2.setPen(pen)   
+            series2.setColor(QColor("Green")) 
+            for dis in self.x:
+                series2.append(*(dis, self.func(dis, *hanhwa_opt_g)))
+            chart.addSeries(series2)  # data feeding
+            
+            series2.attachAxis(axis_x)
+            series2.attachAxis(axis_y)  
+            
+
+        # Blue Graph
+        if self.blue_checkBox.isChecked():
+            series3 = QLineSeries()
+            series3.setName("Blue")  
+            pen = QPen()
+            pen.setWidth(2)
+            series3.setPen(pen)   
+            series3.setColor(QColor("Blue"))
+            for dis in self.x:
+                series3.append(*(dis, self.func(dis, *hanhwa_opt_b)))
+            chart.addSeries(series3)  # data feeding
+            
+            series3.attachAxis(axis_x)
+            series3.attachAxis(axis_y)  
+        
+        
+        chart.legend().setAlignment(Qt.AlignRight)
         
         # displaying chart
         chart.setBackgroundBrush(QBrush(QColor(22,32,42)))
         chart_view = QChartView(chart)
         chart_view.setRenderHint(QPainter.Antialiasing)
         
-        self.html_verticalLayout.addWidget(chart_view)
-        print("update chart!")
+        return chart_view
+        
 
     def radio_function(self):
         """radio button 설정에 따라 시정 단위를 변경해서 출력하는 함수"""
