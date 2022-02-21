@@ -5,3 +5,4 @@ pyechart
 influxdb
 opencv-python
 pandas
+psutil

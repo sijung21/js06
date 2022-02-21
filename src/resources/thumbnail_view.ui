@@ -315,7 +315,7 @@ color: rgb(255, 255, 255);</string>
   </action>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources.qrc"/>
  </resources>
  <connections>
   <connection>

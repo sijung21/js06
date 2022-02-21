@@ -9,49 +9,57 @@
 import os
 import cv2
 import time
-import traceback
 import numpy as np
 import pandas as pd
-import multiprocessing as mp
-from multiprocessing import Process, Queue
 
-from PyQt5.QtCore import QThread, pyqtSignal, QObject
+
 import curve_save
 from model import JS06Settings
+from auto_file_delete import AutoFileDelete
 
 
 def producer(q):
 
-    cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
+    cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+
     if cap.isOpened():
         while True:
-            epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
+            epoch = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             date = epoch[2:6]
 
-            if epoch[-2:] == "00":
+            if epoch[-2:] == '00':
                 try:
                     image_save_path = JS06Settings.get('image_save_path')
                     os.makedirs(f'{image_save_path}/vista/{date}', exist_ok=True)
                     os.makedirs(f'{image_save_path}/resize/{date}', exist_ok=True)
 
                     ret, frame = cap.read()
-                    if ret:
-                        if JS06Settings.get('image_size') == 0:
-                            cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
-                        elif JS06Settings.get('image_size') == 1:
-                            frame = cv2.resize(frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
-                            cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
-                        frame = cv2.resize(frame, (315, 131), interpolation=cv2.INTER_NEAREST)
-                        cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
-                        time.sleep(1)
-                    cap.release()
+                    if not ret:
+                        cap.release()
+                        cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
+                        print('Found Error; Rebuilding stream')
+
+                    if JS06Settings.get('image_size') == 0:     # Original size
+                        cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                    elif JS06Settings.get('image_size') == 1:   # FHD size
+                        frame = cv2.resize(frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
+                        cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
+                    frame = cv2.resize(frame, (315, 131), interpolation=cv2.INTER_NEAREST)  # Thumbnail size
+                    cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
+
+                    if JS06Settings.get('afd_activate'):
+                        AutoFileDelete(JS06Settings.get('need_storage'))
+
+                    time.sleep(1)
 
                 except:
                     print(traceback.format_exc())
                     cap.release()
                     cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
-                    # continue
+
             cv2.destroyAllWindows()
+    else:
+        print('cap closed')
 
 
 def minprint(epoch, left_range, right_range, distance, cv_img):
@@ -100,7 +108,7 @@ def minrgb(upper_left, lower_right, cp_image):
     show_min_y = t_idx[0][0] + up_y
     show_min_x = t_idx[1][0] + left_x
 
-    return (show_min_x, show_min_y)
+    return show_min_x, show_min_y
 
 
 def get_rgb(epoch: str, min_x, min_y, cp_image, distance):
@@ -204,31 +212,3 @@ def str_to_tuple(before_list):
     tuple_list = [i.split(',') for i in before_list]
     tuple_list = [(int(i[0][1:]), int(i[1][:-1])) for i in tuple_list]
     return tuple_list
-
-
-class VideoThread(QThread):
-    update_pixmap_signal = pyqtSignal(str)
-
-    def __init__(self, src: str = "", file_type: str = "None", q: Queue = None):
-        super().__init__()
-        self._run_flag = False
-        self.src = src
-        self.file_type = file_type
-        self.q = q
-
-    def run(self):
-        self._run_flag = True
-        ## 영상 입력이 카메라일 때
-        if self.file_type == "Video":
-            print("비디오 쓰레드 시작")
-            while self._run_flag:
-                if not self.q.empty():
-                    cv_img = self.q.get()
-                    self.update_pixmap_signal.emit(cv_img)
-            # shut down capture system
-
-    def stop(self):
-        """Sets run flag to False and waits for thread to finish"""
-        self._run_flag = False
-        self.quit()
-        self.wait()
