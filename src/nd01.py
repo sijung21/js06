@@ -72,6 +72,9 @@ class ND01MainWindow(QWidget):
         self.end_drawing = None
         self.radio_checked = None
         self.visibility_copy = 0
+        self.running_ave_checked = None
+        self.q_list = []
+        self.q_list_scale = 300
 
         self.filepath = os.path.join(os.getcwd())
     #     # self.image_label.paintEvent = self.paintEvent
@@ -124,19 +127,46 @@ class ND01MainWindow(QWidget):
         # sys.exit(app.exec_())
         dlg.setWindowModality(Qt.ApplicationModal)
         dlg.exec_()
+        
         self.radio_checked = dlg.radio_flag
         print(self.radio_checked, "변환 완료")
-        # self.print_data(str(self.visibility_copy))
+        
+        self.running_ave_checked = dlg.running_ave_checked
+        print(self.running_ave_checked, "변환 완료")
+        
+        if self.running_ave_checked == "One":
+            self.q_list_scale = 30
+        elif self.running_ave_checked == "Five":
+            self.q_list_scale = 150
+        elif self.running_ave_checked == "Ten":
+            self.q_list_scale = 300
+            
+        self._player.play()
         self._player.play()
                 
     @pyqtSlot(str)
     def print_data(self, visibility):
         print(visibility)
-        self.visibility_copy = round(float(visibility), 3)
-        # print(float(visibility[:-3]))
+        visibility_float = round(float(visibility), 3)
+        
+        if len(self.q_list) == 0 or self.q_list_scale != len(self.q_list):
+            self.q_list = []
+            for i in range(self.q_list_scale):
+                self.q_list.append(visibility_float)
+                
+            print("q 리스트 길이", len(self.q_list))
+            result_vis = np.mean(self.q_list)
+        else:
+            print("q 리스트 길이2", len(self.q_list))
+            self.q_list.pop(0)
+            self.q_list.append(visibility_float)
+            result_vis = np.mean(self.q_list)            
+        
+        self.visibility_copy = round(float(result_vis), 3)
         
         if self.radio_checked == None or self.radio_checked == "Km":
             visibility_text = str(self.visibility_copy) + " km"
+            print(visibility_text)
         elif self.radio_checked == "Mile":
             visibility_mile = round(self.visibility_copy / 1.609, 1)
             print(visibility_mile)

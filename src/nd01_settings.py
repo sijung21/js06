@@ -67,6 +67,8 @@ class ND01_Setting_Widget(QDialog):
         self.x = None
         self.chart_view = None
         
+        self.running_ave_checked = None
+        
         self.radio_flag = radio_flag
         
         self.image_load()
@@ -95,12 +97,17 @@ class ND01_Setting_Widget(QDialog):
         self.red_checkBox.setChecked(True)
         self.green_checkBox.setChecked(True)
         self.blue_checkBox.setChecked(True)
-        self.chart_update()
-        
+        self.chart_update()        
         
         self.red_checkBox.clicked.connect(self.chart_update)
         self.green_checkBox.clicked.connect(self.chart_update)
         self.blue_checkBox.clicked.connect(self.chart_update)
+        
+        self.ten_radio_btn.setChecked(True)
+        
+        self.one_radio_btn.clicked.connect(self.running_avr_time_settings_function)
+        self.five_radio_btn.clicked.connect(self.running_avr_time_settings_function)
+        self.ten_radio_btn.clicked.connect(self.running_avr_time_settings_function)
     
     def func(self, x, c1, c2, a):
         return c2 + (c1 - c2) * np.exp(-a * x)
@@ -211,7 +218,17 @@ class ND01_Setting_Widget(QDialog):
         chart_view.setRenderHint(QPainter.Antialiasing)
         
         return chart_view
-        
+    
+    def running_avr_time_settings_function(self):
+        """radio button 설정에 따라 Running Average 단위를 변경해서 설정하는 함수"""
+        if self.one_radio_btn.isChecked():
+            self.running_ave_checked = "One"
+            
+        elif self.five_radio_btn.isChecked():
+            self.running_ave_checked = "Five"
+            
+        elif self.ten_radio_btn.isChecked():
+            self.running_ave_checked = "Ten"
 
     def radio_function(self):
         """radio button 설정에 따라 시정 단위를 변경해서 출력하는 함수"""

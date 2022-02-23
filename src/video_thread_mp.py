@@ -14,18 +14,16 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 import curve_save
 
 def producer(q):
-    proc = mp.current_process()
-    print(proc.name)
-    q_list = []
+    proc = mp.current_process()    
     
     while True:
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         
         # 2초에 한번
-        # if int(epoch[-2:]) % 2 == 00:
+        if int(epoch[-2:]) % 2 == 00:
         
         # 1분에 한번
-        if epoch[-2:] == "00":
+        # if epoch[-2:] == "00":
             print(epoch)
             try:
                 cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
@@ -33,21 +31,10 @@ def producer(q):
                 left_range, right_range, distance = get_target("PNM_9030V")
                 if ret:
                     visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
-                    visibility = float(visibility)
+                    visibility = visibility
                     cap.release()
-                    if len(q_list) == 0:
-                        for i in range(300):
-                            q_list.append(visibility)
-                            
-                        print("q 리스트 길이", len(q_list))
-                        result_vis = np.mean(q_list)
-                        q.put(str(result_vis))
-                    else:
-                        q_list.pop(0)
-                        q_list.append(visibility)
-                        result_vis = np.mean(q_list)
-                        print("q 리스트 길이", len(q_list))
-                        q.put(str(result_vis))
+                    
+                    q.put(visibility)
                     time.sleep(1)
             except Exception as e:
                 print(e)
