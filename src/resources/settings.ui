@@ -471,7 +471,7 @@ color: #ffffff;</string>
             <item>
              <layout class="QHBoxLayout" name="vis_limit_horizontalLayout_2">
               <property name="spacing">
-               <number>0</number>
+               <number>6</number>
               </property>
               <item>
                <widget class="QLabel" name="vis_limit_label_2">
@@ -521,7 +521,7 @@ color: #ffffff;</string>
             <item>
              <layout class="QHBoxLayout" name="vis_limit_horizontalLayout">
               <property name="spacing">
-               <number>0</number>
+               <number>6</number>
               </property>
               <item>
                <widget class="QLabel" name="vis_limit_label">
@@ -579,7 +579,7 @@ color: #ffffff;</string>
             <item>
              <layout class="QHBoxLayout" name="id_horizontalLayout">
               <property name="spacing">
-               <number>0</number>
+               <number>6</number>
               </property>
               <item>
                <widget class="QLabel" name="id_label">
@@ -622,7 +622,7 @@ color: #ffffff;</string>
             <item>
              <layout class="QHBoxLayout" name="pw_horizontalLayout">
               <property name="spacing">
-               <number>0</number>
+               <number>6</number>
               </property>
               <item>
                <widget class="QLabel" name="pw_label">

@@ -15,6 +15,8 @@ from PyQt5.QtWidgets import (QDialog, QApplication, QMenuBar,
 from PyQt5.QtCore import QDate
 from PyQt5 import uic
 
+from model import JS06Settings
+
 
 def byte_transform(bytes, to, bsize=1024):
     """
@@ -49,6 +51,7 @@ class FileAutoDelete(QDialog):
 
         self.path = None
         self.date = None
+        self.date_convert = None
 
         self.exit_pushButton.clicked.connect(self.exit_click)
 
@@ -57,7 +60,9 @@ class FileAutoDelete(QDialog):
 
     def showDate(self, date):
         self.date = date.toString('yyMMdd')
-        self.check_file_date(r'D:\JS06\image\vista')    # JS06Setting.get('image_save_path')
+        self.date_convert = date.toString('yyyy/MM/dd')
+        self.check_file_date(os.path.join(JS06Settings.get('image_save_path'),
+                                          'vista'))
 
     def check_file_date(self, path: str):
         is_old = []
@@ -67,10 +72,9 @@ class FileAutoDelete(QDialog):
                 is_old.append(int(f))
 
         if is_old:
-            dlg = QMessageBox.question(self, 'Warning', f'Delete {is_old} folder?',
+            dlg = QMessageBox.question(self, 'Warning', f'Delete folder before {self.date_convert} ?',
                                        QMessageBox.Yes | QMessageBox.No)
             if dlg == QMessageBox.Yes:
-                print('DELETE!!')
                 self.delete_select_date(path, is_old)
         else:
             QMessageBox.information(self, 'Information', 'There is no data before the selected date.')
@@ -87,38 +91,6 @@ class FileAutoDelete(QDialog):
             a = os.path.join(path, str(folder[i]))
             # shutil.rmtree(a)
             print(f'{a} delete complete.')
-
-    def delete_oldest_files(self, path: str, minimum_storage_GB=100):
-        """
-        The main function of this Program
-        Find oldest file and proceed with deletion
-
-        :param path: Path to proceed with a auto-delete
-        :param minimum_storage_GB: Minimum storage space desired by the user
-        """
-        is_old = {}
-
-        if minimum_storage_GB >= byte_transform(self.free, 'GB'):
-
-            for f in os.listdir(path):
-                i = os.path.join(path, f)
-                is_old[f'{i}'] = int(os.path.getctime(i))
-
-            value = list(is_old.values())
-            key = {v: k for k, v in is_old.items()}
-            old_folder = key.get(min(value))
-            print(old_folder)
-
-            try:
-                # shutil.rmtree(old_folder)
-                self.progressBar.setValue(self.progressBar.value() + 1)
-            except IndexError:
-                pass
-
-            self.progressBar.setValue(100)
-
-        else:
-            print('Already you have enough storage.')
 
 
 if __name__ == "__main__":
