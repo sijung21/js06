@@ -26,11 +26,10 @@
    <cursorShape>ArrowCursor</cursorShape>
   </property>
   <property name="windowTitle">
-   <string>AFD</string>
+   <string>File delete</string>
   </property>
-  <property name="windowIcon">
-   <iconset>
-    <normaloff>resource/afd.png</normaloff>resource/afd.png</iconset>
+  <property name="whatsThis">
+   <string>This is this.</string>
   </property>
   <property name="styleSheet">
    <string notr="true"/>
@@ -51,6 +50,9 @@
          <family>Noto Sans</family>
         </font>
        </property>
+       <property name="whatsThis">
+        <string>Select a date and erase the data before that date</string>
+       </property>
        <property name="styleSheet">
         <string notr="true">background-color: rgb(255, 255, 255);
 color: rgb(0, 0, 0);</string>
@@ -68,6 +70,12 @@ color: rgb(0, 0, 0);</string>
      </item>
      <item>
       <widget class="QPushButton" name="exit_pushButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="font">
         <font>
          <family>Noto Sans</family>
@@ -80,11 +88,14 @@ color: rgb(0, 0, 0);</string>
        <property name="cursor">
         <cursorShape>PointingHandCursor</cursorShape>
        </property>
+       <property name="whatsThis">
+        <string>Exit this window</string>
+       </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>
        <property name="text">
-        <string>C l o s e (Ctrl + W)</string>
+        <string>Close</string>
        </property>
        <property name="shortcut">
         <string>Ctrl+W</string>

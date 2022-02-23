@@ -302,7 +302,6 @@ class ND01SettingWidget(QDialog):
     def afd_btn_click(self):
         dlg = FileAutoDelete()
         dlg.show()
-        # dlg.setWindowModality(Qt.ApplicationModal)
         dlg.exec_()
 
     def save_vis(self):
