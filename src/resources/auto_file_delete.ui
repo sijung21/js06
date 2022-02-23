@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>424</width>
-    <height>460</height>
+    <width>482</width>
+    <height>334</height>
    </rect>
   </property>
   <property name="font">
@@ -37,93 +37,12 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QComboBox" name="comboBox">
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="currentText">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item>
     <widget class="QCalendarWidget" name="calendarWidget">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
-     </property>
-     <property name="firstDayOfWeek">
-      <enum>Qt::Sunday</enum>
-     </property>
-     <property name="gridVisible">
-      <bool>true</bool>
-     </property>
-     <property name="horizontalHeaderFormat">
-      <enum>QCalendarWidget::LongDayNames</enum>
-     </property>
-     <property name="verticalHeaderFormat">
-      <enum>QCalendarWidget::NoVerticalHeader</enum>
-     </property>
-     <property name="navigationBarVisible">
-      <bool>true</bool>
-     </property>
-     <property name="dateEditEnabled">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="styleSheet">
-      <string notr="true">border: 1px solid black;</string>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Required storage space: </string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="spinBox">
-       <property name="suffix">
-        <string> GB</string>
-       </property>
-       <property name="prefix">
-        <string/>
-       </property>
-       <property name="maximum">
-        <number>99999</number>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QPushButton" name="pushButton">
-     <property name="styleSheet">
-      <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>Open Path</string>
      </property>
     </widget>
    </item>
@@ -169,15 +88,8 @@
      <property name="text">
       <string>C l o s e (Ctrl + W)</string>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLabel" name="complete_lbl">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
+     <property name="shortcut">
+      <string>Ctrl+W</string>
      </property>
     </widget>
    </item>
