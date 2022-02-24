@@ -26,7 +26,7 @@ from PyQt5 import QtWebEngineCore
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
 
-
+import target_info
 
 class ND01_Setting_Widget(QDialog):
 
@@ -87,8 +87,8 @@ class ND01_Setting_Widget(QDialog):
         elif self.radio_flag == "Mile":
             self.mile_radio_btn.setChecked(True)
         
-        self.get_target("PNM_9030V")        
-        self.show_target_table()        
+        self.left_range, self.right_range, self.distance = target_info.get_target("PNM_9030V")
+        self.show_target_table()
         self.red_checkBox.setChecked(True)
         self.green_checkBox.setChecked(True)
         self.blue_checkBox.setChecked(True)
@@ -96,7 +96,8 @@ class ND01_Setting_Widget(QDialog):
                 
         self.ten_radio_btn.setChecked(True)
         
-        ## 라디오 버튼, 체크박스 이벤트 함수와 연동
+        
+        ## 라디오 버튼, 체크박스 이벤트시 함수와 연동 설정
         
         self.km_radio_btn.clicked.connect(self.radio_function)
         self.mile_radio_btn.clicked.connect(self.radio_function)  
@@ -312,20 +313,6 @@ class ND01_Setting_Widget(QDialog):
             self.isDrawing = False
             self.blank_lbl.update()
         painter.end()
-                
-    def get_target(self, camera_name: str):
-        """특정 카메라의 타겟 정보들을 불러온다."""
-
-        save_path = os.path.join(f"target/{camera_name}")
-        # print("타겟을 불러옵니다.")
-        if os.path.isfile(f"{save_path}/{camera_name}.csv"):
-            target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
-            self.target_name = target_df["target_name"].tolist()
-            self.left_range = target_df["left_range"].tolist()
-            self.left_range = self.str_to_tuple(self.left_range)
-            self.right_range = target_df["right_range"].tolist()
-            self.right_range = self.str_to_tuple(self.right_range)
-            self.distance = target_df["distance"].tolist()
             
     def str_to_tuple(self, before_list):
         """저장된 타겟들의 위치정보인 튜플 리스트가 문자열로 바뀌어 다시 튜플형태로 변환하는 함수"""
