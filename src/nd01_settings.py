@@ -87,23 +87,24 @@ class ND01_Setting_Widget(QDialog):
         elif self.radio_flag == "Mile":
             self.mile_radio_btn.setChecked(True)
         
-        self.km_radio_btn.clicked.connect(self.radio_function)
-        self.mile_radio_btn.clicked.connect(self.radio_function)
-        
-        self.get_target("PNM_9030V")
-        
-        self.show_target_table()
-        
+        self.get_target("PNM_9030V")        
+        self.show_target_table()        
         self.red_checkBox.setChecked(True)
         self.green_checkBox.setChecked(True)
         self.blue_checkBox.setChecked(True)
-        self.chart_update()        
+        self.chart_update()
+                
+        self.ten_radio_btn.setChecked(True)
+        
+        ## 라디오 버튼, 체크박스 이벤트 함수와 연동
+        
+        self.km_radio_btn.clicked.connect(self.radio_function)
+        self.mile_radio_btn.clicked.connect(self.radio_function)  
         
         self.red_checkBox.clicked.connect(self.chart_update)
         self.green_checkBox.clicked.connect(self.chart_update)
         self.blue_checkBox.clicked.connect(self.chart_update)
-        
-        self.ten_radio_btn.setChecked(True)
+
         
         self.one_radio_btn.clicked.connect(self.running_avr_time_settings_function)
         self.five_radio_btn.clicked.connect(self.running_avr_time_settings_function)
@@ -153,8 +154,7 @@ class ND01_Setting_Widget(QDialog):
         axis_x.setTickCount(7)
         axis_x.setLabelFormat("%i")
         axis_x.setTitleText("Distance(km)")
-        chart.addAxis(axis_x, Qt.AlignBottom)
-        
+        chart.addAxis(axis_x, Qt.AlignBottom)        
         
         axis_y = QValueAxis()
         axis_y.setTickCount(7)
