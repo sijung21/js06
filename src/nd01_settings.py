@@ -113,7 +113,7 @@ class ND01_Setting_Widget(QDialog):
         return c2 + (c1 - c2) * np.exp(-a * x)
     
     def chart_update(self):
-        
+        """세팅창 그래프를 업데이트 하는 함수"""
         if self.html_verticalLayout.count() == 0:
             self.chart_view = self.chart_draw()
             self.html_verticalLayout.addWidget(self.chart_view)        
@@ -127,6 +127,7 @@ class ND01_Setting_Widget(QDialog):
         print("update chart!")
         
     def chart_draw(self):
+        """세팅창 그래프 칸에 소산계수 차트를 그리는 함수"""
         # data
         global x   
         
