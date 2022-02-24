@@ -20,10 +20,10 @@ def producer(q):
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         
         # 2초에 한번
-        if int(epoch[-2:]) % 2 == 00:
+        # if int(epoch[-2:]) % 2 == 00:
         
         # 1분에 한번
-        # if epoch[-2:] == "00":
+        if epoch[-2:] == "00":
             print(epoch)
             try:
                 cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
