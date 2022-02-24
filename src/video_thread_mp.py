@@ -20,15 +20,22 @@ def producer(q):
         epoch = time.strftime("%Y%m%d%H%M%S", time.localtime(time.time()))
         
         # 2초에 한번
-        # if int(epoch[-2:]) % 2 == 00:
+        if int(epoch[-2:]) % 2 == 00:
         
         # 1분에 한번
-        if epoch[-2:] == "00":
+        # if epoch[-2:] == "00":
             print(epoch)
             try:
+                left_range, right_range, distance = get_target("PNM_9030V")
+                
+                if len(left_range) < 4:
+                    continue
+                else:
+                    pass
+                
                 cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
                 ret, cv_img = cap.read()
-                left_range, right_range, distance = get_target("PNM_9030V")
+                
                 if ret:
                     visibility = minprint(epoch[:-2], left_range, right_range, distance, cv_img)
                     visibility = visibility
@@ -179,7 +186,10 @@ def get_target(camera_name: str):
         right_range = target_df["right_range"].tolist()
         right_range = str_to_tuple(right_range)
         distance = target_df["distance"].tolist()
-    return left_range, right_range, distance
+        return left_range, right_range, distance
+    else:
+        print("Target Information Not Found")
+        return [], [], []
 
 def str_to_tuple(before_list):
     """A function that converts the tuple list, which is the location information of the stored targets, 
