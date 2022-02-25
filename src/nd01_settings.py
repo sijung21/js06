@@ -26,7 +26,7 @@ from PyQt5 import QtWebEngineCore
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings
 from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
 
-
+import target_info
 
 class ND01_Setting_Widget(QDialog):
 
@@ -87,23 +87,33 @@ class ND01_Setting_Widget(QDialog):
         elif self.radio_flag == "Mile":
             self.mile_radio_btn.setChecked(True)
         
-        self.km_radio_btn.clicked.connect(self.radio_function)
-        self.mile_radio_btn.clicked.connect(self.radio_function)
+        self.target_name, self.left_range, self.right_range, self.distance = target_info.get_target("PNM_9030V")
         
-        self.get_target("PNM_9030V")
+        if len(self.left_range) > 0:
+            self.show_target_table()
+        else:
+            pass
         
-        self.show_target_table()
-        
+        if len(self.left_range) > 4:
+            self.chart_update()
+        else:
+            pass
+                
+        self.ten_radio_btn.setChecked(True)
         self.red_checkBox.setChecked(True)
         self.green_checkBox.setChecked(True)
         self.blue_checkBox.setChecked(True)
-        self.chart_update()        
+        
+        
+        ## 라디오 버튼, 체크박스 이벤트시 함수와 연동 설정
+        
+        self.km_radio_btn.clicked.connect(self.radio_function)
+        self.mile_radio_btn.clicked.connect(self.radio_function)  
         
         self.red_checkBox.clicked.connect(self.chart_update)
         self.green_checkBox.clicked.connect(self.chart_update)
         self.blue_checkBox.clicked.connect(self.chart_update)
-        
-        self.ten_radio_btn.setChecked(True)
+
         
         self.one_radio_btn.clicked.connect(self.running_avr_time_settings_function)
         self.five_radio_btn.clicked.connect(self.running_avr_time_settings_function)
@@ -132,6 +142,7 @@ class ND01_Setting_Widget(QDialog):
         global x   
         
         # if self.x is None:
+        print("distance 리스트", self.distance)
         self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
         self.x.sort()
         
@@ -153,8 +164,7 @@ class ND01_Setting_Widget(QDialog):
         axis_x.setTickCount(7)
         axis_x.setLabelFormat("%i")
         axis_x.setTitleText("Distance(km)")
-        chart.addAxis(axis_x, Qt.AlignBottom)
-        
+        chart.addAxis(axis_x, Qt.AlignBottom)        
         
         axis_y = QValueAxis()
         axis_y.setTickCount(7)
@@ -312,20 +322,6 @@ class ND01_Setting_Widget(QDialog):
             self.isDrawing = False
             self.blank_lbl.update()
         painter.end()
-                
-    def get_target(self, camera_name: str):
-        """특정 카메라의 타겟 정보들을 불러온다."""
-
-        save_path = os.path.join(f"target/{camera_name}")
-        # print("타겟을 불러옵니다.")
-        if os.path.isfile(f"{save_path}/{camera_name}.csv"):
-            target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
-            self.target_name = target_df["target_name"].tolist()
-            self.left_range = target_df["left_range"].tolist()
-            self.left_range = self.str_to_tuple(self.left_range)
-            self.right_range = target_df["right_range"].tolist()
-            self.right_range = self.str_to_tuple(self.right_range)
-            self.distance = target_df["distance"].tolist()
             
     def str_to_tuple(self, before_list):
         """저장된 타겟들의 위치정보인 튜플 리스트가 문자열로 바뀌어 다시 튜플형태로 변환하는 함수"""
@@ -392,7 +388,7 @@ class ND01_Setting_Widget(QDialog):
             if ok:
                 self.left_range.append(self.upper_left)
                 self.right_range.append(self.lower_right)
-                self.distance.append(text)
+                self.distance.append(float(text))
                 self.target_name.append("target_" + str(len(self.left_range)))
                 self.save_target()
                 self.isDrawing = False
@@ -401,6 +397,9 @@ class ND01_Setting_Widget(QDialog):
             else:
                 self.isDrawing = False
                 self.blank_lbl.update()
+            
+            if len(self.left_range) > 4:
+                self.chart_update()
     
     def save_target(self):
         """Save the target information for each camera."""
@@ -410,7 +409,10 @@ class ND01_Setting_Widget(QDialog):
 
         except Exception as e:
             pass
-
+        
+        
+        print("target name 갯수 : ", len(self.target_name))
+        print("left 좌표 갯수 : ", len(self.left_range))
         if self.left_range:
             col = ["target_name", "left_range", "right_range", "distance"]
             result = pd.DataFrame(columns=col)
@@ -424,6 +426,10 @@ class ND01_Setting_Widget(QDialog):
         """ Target의 정보들을 테이블로 보여준다 """
         min_x = []
         min_y = []
+        self.r_list = []
+        self.g_list = []
+        self.b_list = []
+        
         
         copy_image = self.cp_image.copy()
         row_count = len(self.distance)
@@ -432,7 +438,7 @@ class ND01_Setting_Widget(QDialog):
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)        
         
         for upper_left, lower_right in zip(self.left_range, self.right_range):
-            result = self.minrgb(upper_left, lower_right, copy_image)
+            result = target_info.minrgb(upper_left, lower_right, copy_image)
             min_x.append(result[0])
             min_y.append(result[1])
             
@@ -476,33 +482,7 @@ class ND01_Setting_Widget(QDialog):
         
         imageLabel_1.setPixmap(QPixmap.fromImage(qImg))
         return imageLabel_1
-            
-    def minrgb(self, upper_left, lower_right, cp_image):
-        """Extracts the minimum RGB value of the dragged area"""
-
-        up_y = min(upper_left[1], lower_right[1])
-        down_y = max(upper_left[1], lower_right[1])
-
-        left_x = min(upper_left[0], lower_right[0])
-        right_x = max(upper_left[0], lower_right[0])
-
-        test = cp_image[up_y:down_y, left_x:right_x, :]
-
-        r = test[:, :, 0]
-        g = test[:, :, 1]
-        b = test[:, :, 2]
-
-        r = np.clip(r, 0, 765)
-        sum_rgb = r + g + b
-
-        t_idx = np.where(sum_rgb == np.min(sum_rgb))
-        
-        show_min_y = t_idx[0][0] + up_y
-        show_min_x = t_idx[1][0] + left_x
-
-        return (show_min_x, show_min_y)        
-        # return
-                
+    
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     # MainWindow = QMainWindow()
