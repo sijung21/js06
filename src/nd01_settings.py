@@ -91,9 +91,13 @@ class ND01_Setting_Widget(QDialog):
         
         if len(self.left_range) > 0:
             self.show_target_table()
+        else:
+            pass
         
         if len(self.left_range) > 4:
             self.chart_update()
+        else:
+            pass
                 
         self.ten_radio_btn.setChecked(True)
         self.red_checkBox.setChecked(True)
