@@ -145,7 +145,7 @@ def get_target(camera_name: str):
         right_range = target_df["right_range"].tolist()
         right_range = str_to_tuple(right_range)
         distance = target_df["distance"].tolist()
-        return left_range, right_range, distance
+        return target_name, left_range, right_range, distance
     else:
         print("Target Information Not Found")
         return [], [], []

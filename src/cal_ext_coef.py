@@ -125,5 +125,5 @@ def print_result(opt_r, opt_g, opt_b, err_r, err_g, err_b):
             f"C2: {opt_b[1]:.2f} ± {err_b[1]:.2f}, ",
             f"alpha: {opt_b[2]:.2f} ± {err_b[2]:.2f})")
 
-def extcoeff_to_vis(optimal, error, coeff=3.291):
+def extcoeff_to_vis(optimal, error, coeff=3.912):
     return coeff / (optimal + np.array((1, 0, -1)) * error)

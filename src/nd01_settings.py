@@ -87,12 +87,16 @@ class ND01_Setting_Widget(QDialog):
         elif self.radio_flag == "Mile":
             self.mile_radio_btn.setChecked(True)
         
-        self.left_range, self.right_range, self.distance = target_info.get_target("PNM_9030V")
-        self.show_target_table()
-        self.red_checkBox.setChecked(True)
-        self.green_checkBox.setChecked(True)
-        self.blue_checkBox.setChecked(True)
-        self.chart_update()
+        self.target_name, self.left_range, self.right_range, self.distance = target_info.get_target("PNM_9030V")
+        
+        if len(self.left_range) > 0:
+            self.show_target_table()
+        
+        if len(self.left_range) > 4:
+            self.red_checkBox.setChecked(True)
+            self.green_checkBox.setChecked(True)
+            self.blue_checkBox.setChecked(True)
+            self.chart_update()
                 
         self.ten_radio_btn.setChecked(True)
         
@@ -397,7 +401,10 @@ class ND01_Setting_Widget(QDialog):
 
         except Exception as e:
             pass
-
+        
+        
+        print("target name 갯수 : ", len(self.target_name))
+        print("left 좌표 갯수 : ", len(self.left_range))
         if self.left_range:
             col = ["target_name", "left_range", "right_range", "distance"]
             result = pd.DataFrame(columns=col)
@@ -411,6 +418,10 @@ class ND01_Setting_Widget(QDialog):
         """ Target의 정보들을 테이블로 보여준다 """
         min_x = []
         min_y = []
+        self.r_list = []
+        self.g_list = []
+        self.b_list = []
+        
         
         copy_image = self.cp_image.copy()
         row_count = len(self.distance)
@@ -419,7 +430,7 @@ class ND01_Setting_Widget(QDialog):
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)        
         
         for upper_left, lower_right in zip(self.left_range, self.right_range):
-            result = self.minrgb(upper_left, lower_right, copy_image)
+            result = target_info.minrgb(upper_left, lower_right, copy_image)
             min_x.append(result[0])
             min_y.append(result[1])
             
@@ -463,33 +474,7 @@ class ND01_Setting_Widget(QDialog):
         
         imageLabel_1.setPixmap(QPixmap.fromImage(qImg))
         return imageLabel_1
-            
-    def minrgb(self, upper_left, lower_right, cp_image):
-        """Extracts the minimum RGB value of the dragged area"""
-
-        up_y = min(upper_left[1], lower_right[1])
-        down_y = max(upper_left[1], lower_right[1])
-
-        left_x = min(upper_left[0], lower_right[0])
-        right_x = max(upper_left[0], lower_right[0])
-
-        test = cp_image[up_y:down_y, left_x:right_x, :]
-
-        r = test[:, :, 0]
-        g = test[:, :, 1]
-        b = test[:, :, 2]
-
-        r = np.clip(r, 0, 765)
-        sum_rgb = r + g + b
-
-        t_idx = np.where(sum_rgb == np.min(sum_rgb))
-        
-        show_min_y = t_idx[0][0] + up_y
-        show_min_x = t_idx[1][0] + left_x
-
-        return (show_min_x, show_min_y)        
-        # return
-                
+    
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     # MainWindow = QMainWindow()
