@@ -88,6 +88,11 @@ class ND01_Setting_Widget(QDialog):
             self.mile_radio_btn.setChecked(True)
         
         self.target_name, self.left_range, self.right_range, self.distance = target_info.get_target("PNM_9030V")
+    
+        self.ten_radio_btn.setChecked(True)
+        self.red_checkBox.setChecked(True)
+        self.green_checkBox.setChecked(True)
+        self.blue_checkBox.setChecked(True)
         
         if len(self.left_range) > 0:
             self.show_target_table()
@@ -98,12 +103,6 @@ class ND01_Setting_Widget(QDialog):
             self.chart_update()
         else:
             pass
-                
-        self.ten_radio_btn.setChecked(True)
-        self.red_checkBox.setChecked(True)
-        self.green_checkBox.setChecked(True)
-        self.blue_checkBox.setChecked(True)
-        
         
         ## 라디오 버튼, 체크박스 이벤트시 함수와 연동 설정
         
