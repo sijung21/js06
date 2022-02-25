@@ -93,12 +93,12 @@ class ND01_Setting_Widget(QDialog):
             self.show_target_table()
         
         if len(self.left_range) > 4:
-            self.red_checkBox.setChecked(True)
-            self.green_checkBox.setChecked(True)
-            self.blue_checkBox.setChecked(True)
             self.chart_update()
                 
         self.ten_radio_btn.setChecked(True)
+        self.red_checkBox.setChecked(True)
+        self.green_checkBox.setChecked(True)
+        self.blue_checkBox.setChecked(True)
         
         
         ## 라디오 버튼, 체크박스 이벤트시 함수와 연동 설정
@@ -138,6 +138,7 @@ class ND01_Setting_Widget(QDialog):
         global x   
         
         # if self.x is None:
+        print("distance 리스트", self.distance)
         self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
         self.x.sort()
         
@@ -383,7 +384,7 @@ class ND01_Setting_Widget(QDialog):
             if ok:
                 self.left_range.append(self.upper_left)
                 self.right_range.append(self.lower_right)
-                self.distance.append(text)
+                self.distance.append(float(text))
                 self.target_name.append("target_" + str(len(self.left_range)))
                 self.save_target()
                 self.isDrawing = False
@@ -392,6 +393,9 @@ class ND01_Setting_Widget(QDialog):
             else:
                 self.isDrawing = False
                 self.blank_lbl.update()
+            
+            if len(self.left_range) > 4:
+                self.chart_update()
     
     def save_target(self):
         """Save the target information for each camera."""

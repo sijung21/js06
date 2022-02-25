@@ -148,7 +148,7 @@ def get_target(camera_name: str):
         return target_name, left_range, right_range, distance
     else:
         print("Target Information Not Found")
-        return [], [], []
+        return [], [], [], []
 
 def str_to_tuple(before_list):
     """A function that converts the tuple list, which is the location information of the stored targets, 
