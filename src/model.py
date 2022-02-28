@@ -7,7 +7,7 @@
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import os
-from PyQt5.QtCore import (QSettings, QStandardPaths, QRect)
+from PyQt5.QtCore import (QSettings, QRect)
 from PyQt5.QtGui import (QImage)
 
 

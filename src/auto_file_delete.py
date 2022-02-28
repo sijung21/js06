@@ -9,10 +9,7 @@ import os
 import psutil
 import shutil
 
-from PyQt5.QtWidgets import (QDialog, QApplication, QMenuBar,
-                             QAction, QFileDialog, QMessageBox,
-                             qApp)
-from PyQt5.QtCore import QDate
+from PyQt5.QtWidgets import (QDialog, QApplication, QMessageBox)
 from PyQt5 import uic
 
 from model import JS06Settings
@@ -89,7 +86,7 @@ class FileAutoDelete(QDialog):
 
         for i in range(len(folder)):
             a = os.path.join(path, str(folder[i]))
-            # shutil.rmtree(a)
+            shutil.rmtree(a)
             print(f'{a} delete complete.')
 
 

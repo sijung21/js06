@@ -11,18 +11,13 @@ import traceback
 import cv2
 import pandas as pd
 from PyQt5 import uic
-from PyQt5.QtCore import (QPoint, QRect, Qt,
-                          QPointF)
+from PyQt5.QtCore import (QPoint, QRect, Qt)
 from PyQt5.QtGui import (QPixmap, QPainter, QBrush,
                          QColor, QPen, QImage,
                          QIcon)
-from PyQt5.QtWidgets import (QApplication, QLabel, QInputDialog,
-                             QDialog, QAbstractItemView, QVBoxLayout,
-                             QGridLayout, QPushButton, QMessageBox,
-                             QFileDialog)
-from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
-                           QPolarChart, QScatterSeries, QValueAxis,
-                           QChart)
+from PyQt5.QtWidgets import (QApplication, QInputDialog, QDialog,
+                             QMessageBox, QFileDialog)
+
 from model import JS06Settings
 from efficiency_chart import EfficiencyChart
 from auto_file_delete import FileAutoDelete
@@ -30,9 +25,9 @@ from auto_file_delete import FileAutoDelete
 
 class ND01SettingWidget(QDialog):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
 
-        super().__init__(*args, **kwargs)
+        super().__init__()
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                "resources/settings.ui")
         uic.loadUi(ui_path, self)
@@ -44,7 +39,6 @@ class ND01SettingWidget(QDialog):
 
         self.upper_left = ()
         self.lower_right = ()
-        # self.min_xy = ()
 
         self.target_name = []
         self.left_range = []
@@ -64,15 +58,6 @@ class ND01SettingWidget(QDialog):
         self.current_camera = ""
 
         self.image_load()
-
-        # 그림 그리는 삐뮤디 생성
-        # self.blank_lbl = QLabel(self.image_label)
-        # # self.blank_lbl.setGeometry(0, 0, 1200, 500)
-        # self.blank_lbl.paintEvent = self.lbl_paintEvent
-        #
-        # self.blank_lbl.mousePressEvent = self.lbl_mousePressEvent
-        # self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
-        # self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
 
         self.efficiencyChart = EfficiencyChart(self)
         self.value_verticalLayout.addWidget(self.efficiencyChart)
@@ -181,8 +166,7 @@ class ND01SettingWidget(QDialog):
                 corner1_2 = int(corner1[1] / self.video_height * self.image_label.height())
                 corner2_1 = int((corner2[0] - corner1[0]) / self.video_width * self.image_label.width())
                 corner2_2 = int((corner2[1] - corner1[1]) / self.video_height * self.image_label.height())
-                self.target = QRect(corner1_1, corner1_2, corner2_1, corner2_2)
-                painter.drawRect(self.target)
+                painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
 
         if self.isDrawing:
             br = QBrush(QColor(100, 10, 10, 40))
