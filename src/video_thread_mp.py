@@ -15,7 +15,6 @@ import pandas as pd
 
 import curve_save
 from model import JS06Settings
-from auto_file_delete import AutoFileDelete
 
 
 def producer(q):
@@ -25,7 +24,7 @@ def producer(q):
     if cap.isOpened():
         while True:
             epoch = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
-            date = epoch[2:6]
+            date = epoch[2:8]
 
             if epoch[-2:] == '00':
                 try:
@@ -46,9 +45,6 @@ def producer(q):
                         cv2.imwrite(f'{image_save_path}/vista/{date}/{epoch}.png', frame)
                     frame = cv2.resize(frame, (315, 131), interpolation=cv2.INTER_NEAREST)  # Thumbnail size
                     cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
-
-                    if JS06Settings.get('afd_activate'):
-                        AutoFileDelete(JS06Settings.get('need_storage'))
 
                     time.sleep(1)
 

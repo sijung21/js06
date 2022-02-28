@@ -25,6 +25,7 @@ from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
                            QChart)
 from model import JS06Settings
 from efficiency_chart import EfficiencyChart
+from auto_file_delete import FileAutoDelete
 
 
 class ND01SettingWidget(QDialog):
@@ -35,7 +36,8 @@ class ND01SettingWidget(QDialog):
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                "resources/settings.ui")
         uic.loadUi(ui_path, self)
-        # self.setWindowFlag(Qt.FramelessWindowHint)
+        self.showFullScreen()
+        self.setWindowFlag(Qt.FramelessWindowHint)
 
         self.begin = QPoint()
         self.end = QPoint()
@@ -82,6 +84,7 @@ class ND01SettingWidget(QDialog):
         self.data_csv_path_button.clicked.connect(self.data_csv_path)
         self.target_csv_path_button.clicked.connect(self.target_csv_path)
         self.image_save_path_button.clicked.connect(self.image_save_path)
+        self.afd_button.clicked.connect(self.afd_btn_click)
 
         self.data_csv_path_textBrowser.setPlainText(JS06Settings.get('data_csv_path'))
         self.target_csv_path_textBrowser.setPlainText(JS06Settings.get('target_csv_path'))
@@ -92,9 +95,6 @@ class ND01SettingWidget(QDialog):
         self.pw_lineEdit.setText(JS06Settings.get('login_pw'))
 
         self.image_size_comboBox.setCurrentIndex(JS06Settings.get('image_size'))
-
-        self.afd_checkBox.setChecked(JS06Settings.get('afd_activate'))
-        self.afd_spinBox.setValue(JS06Settings.get('need_storage'))
 
         self.image_label.paintEvent = self.lbl_paintEvent
         self.image_label.mousePressEvent = self.lbl_mousePressEvent
@@ -299,6 +299,11 @@ class ND01SettingWidget(QDialog):
         else:
             pass
 
+    def afd_btn_click(self):
+        dlg = FileAutoDelete()
+        dlg.show()
+        dlg.exec_()
+
     def save_vis(self):
 
         col = ['datetime', 'camera_direction',
@@ -358,8 +363,6 @@ class ND01SettingWidget(QDialog):
         JS06Settings.set('visibility_alert_limit', self.vis_limit_spinBox.value())
         JS06Settings.set('login_id', self.id_lineEdit.text())
         JS06Settings.set('login_pw', self.pw_lineEdit.text())
-        JS06Settings.set('afd_activate', self.afd_checkBox.isChecked())
-        JS06Settings.set('need_storage', self.afd_spinBox.value())
 
         self.close()
 
