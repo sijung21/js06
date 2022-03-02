@@ -88,6 +88,11 @@ class ND01_Setting_Widget(QDialog):
             self.mile_radio_btn.setChecked(True)
         
         self.target_name, self.left_range, self.right_range, self.distance = target_info.get_target("PNM_9030V")
+    
+        self.ten_radio_btn.setChecked(True)
+        self.red_checkBox.setChecked(True)
+        self.green_checkBox.setChecked(True)
+        self.blue_checkBox.setChecked(True)
         
         if len(self.left_range) > 0:
             self.show_target_table()
@@ -98,12 +103,6 @@ class ND01_Setting_Widget(QDialog):
             self.chart_update()
         else:
             pass
-                
-        self.ten_radio_btn.setChecked(True)
-        self.red_checkBox.setChecked(True)
-        self.green_checkBox.setChecked(True)
-        self.blue_checkBox.setChecked(True)
-        
         
         ## 라디오 버튼, 체크박스 이벤트시 함수와 연동 설정
         
@@ -164,12 +163,14 @@ class ND01_Setting_Widget(QDialog):
         axis_x.setTickCount(7)
         axis_x.setLabelFormat("%i")
         axis_x.setTitleText("Distance(km)")
+        axis_x.setRange(0,20)        
         chart.addAxis(axis_x, Qt.AlignBottom)        
         
         axis_y = QValueAxis()
         axis_y.setTickCount(7)
         axis_y.setLabelFormat("%i")
         axis_y.setTitleText("Intensity")
+        axis_y.setRange(0, 255)                
         chart.addAxis(axis_y, Qt.AlignLeft)
         
         # Red Graph
@@ -186,7 +187,7 @@ class ND01_Setting_Widget(QDialog):
                 series1.append(*(dis, self.func(dis, *hanhwa_opt_r)))
             chart.addSeries(series1) # data feeding  
             series1.attachAxis(axis_x)
-            series1.attachAxis(axis_y)     
+            series1.attachAxis(axis_y)
         
         # Green Graph
         if self.green_checkBox.isChecked():
@@ -219,8 +220,7 @@ class ND01_Setting_Widget(QDialog):
             
             series3.attachAxis(axis_x)
             series3.attachAxis(axis_y)  
-        
-        
+
         chart.legend().setAlignment(Qt.AlignRight)
         
         # displaying chart
