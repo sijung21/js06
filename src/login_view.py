@@ -30,6 +30,7 @@ class LoginWindow(QDialog):
         self.show()
 
         self.login_button.clicked.connect(self.login_click)
+        self.login_button.setShortcut('Return')
 
         self.id = JS06Settings.get('login_id')
         self.pw = JS06Settings.get('login_pw')
