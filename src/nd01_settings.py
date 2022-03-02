@@ -163,16 +163,14 @@ class ND01_Setting_Widget(QDialog):
         axis_x.setTickCount(7)
         axis_x.setLabelFormat("%i")
         axis_x.setTitleText("Distance(km)")
-        axis_x.setRange(0,20)
-        chart.setAxisX(axis_x)
+        axis_x.setRange(0,20)        
         chart.addAxis(axis_x, Qt.AlignBottom)        
         
         axis_y = QValueAxis()
         axis_y.setTickCount(7)
         axis_y.setLabelFormat("%i")
         axis_y.setTitleText("Intensity")
-        axis_y.setRange(0, 255)
-        chart.setAxisY(axis_y)        
+        axis_y.setRange(0, 255)                
         chart.addAxis(axis_y, Qt.AlignLeft)
         
         # Red Graph
@@ -222,8 +220,7 @@ class ND01_Setting_Widget(QDialog):
             
             series3.attachAxis(axis_x)
             series3.attachAxis(axis_y)  
-        
-        
+
         chart.legend().setAlignment(Qt.AlignRight)
         
         # displaying chart
