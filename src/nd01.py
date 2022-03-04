@@ -19,8 +19,8 @@ from multiprocessing import Process, Queue
 
 from PyQt5.QtGui import (QPixmap, QIcon, QPainter,
                          QColor)
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QGraphicsScene,
-                             QFrame, QVBoxLayout, QStyle)
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QFrame,
+                             QVBoxLayout)
 from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal,
                           QRect, QTimer, QObject,
                           QThread, QPointF, QDateTime)
@@ -30,10 +30,9 @@ from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
 from PyQt5 import uic
 
 from login_view import LoginWindow
-from video_thread_mp import video_read, video_write, producer
+from video_thread_mp import producer
 from nd01_settings import ND01SettingWidget
 from model import JS06Settings
-from save_db import main
 from controller import JS08MainCtrl
 
 
@@ -84,86 +83,6 @@ class TimeAxisItem(pg.AxisItem):
         숫자로 이루어진 Iterable data(하나씩 차례로 반환 가능한 object -> ex) List[int]) list, str, tuple 등등
         """
         return [time.strftime("%H:%M:%S", time.localtime(local_time)) for local_time in values]
-
-
-# class PlotWidget(QWidget):
-#
-#     def __init__(self, parent=None):
-#         QWidget.__init__(self, parent)
-#
-#         self.pw = pg.PlotWidget(
-#             labels={'left': 'Visibility (km)'},
-#             axisItems={'bottom': TimeAxisItem(orientation='bottom')}
-#         )
-#         # self.setMaximumSize(600, 400)
-#
-#         self.pw.showGrid(x=True, y=True)
-#         self.pdi = self.pw.plot(pen='w')   # PlotDataItem obj 반환.
-#
-#         self.p1 = self.pw.plotItem
-#
-#         self.p2 = pg.ViewBox()
-#         self.p1.showAxis('right')
-#         self.p1.scene().addItem(self.p2)
-#         self.p1.getAxis('right').linkToView(self.p2)
-#         self.p2.setXLink(self.p1)
-#         self.p1.getAxis('right').setLabel('Axis 2', color='#ffff00')
-#
-#         self.p2.setGeometry(self.p1.vb.sceneBoundingRect())
-#         # self.p2.addItem(pg.PlotCurveItem([10, 20, 40, 80, 400, 2000], pen='y'))
-#         # self.pdi.sigClicked.connect(self.onclick)
-#
-#         self.plotData = {'x': [], 'y': []}
-#         self.pre_plotData = {'x': [], 'y': []}
-#
-#     def update_plot(self, new_time_data: int):
-#         self.plotData['x'].append(new_time_data)
-#         self.plotData['y'].append(np.random.randint(10000, 15000))
-#
-#         # 항상 x축 시간을 설정한 범위 ( -3 시간 전 ~ 10 분 후 )만 보여줌.
-#         # self.pw.setXRange(new_time_data - 3600 * 3, new_time_data + 600, padding=0)
-#         # self.pw.setYRange(-1, 21, padding=0)
-#
-#         data = []
-#         for i in self.plotData['y']:
-#             i = i / 1000
-#             data.append(i)
-#         self.pdi.setData(self.plotData['x'], data)
-#
-#         # self.pdi.setData([1643873584, 1643873585, 1643873586, 1643873587, 1643873588],
-#         #                  [12, 11, 10, 14, 13])
-#
-#     def onclick(self, plot, points):
-#         for point in points:
-#             print(point.pos())
-
-
-# class PolarWidget(QWidget):
-#
-#     def __init__(self, parent=None):
-#         QWidget.__init__(self, parent)
-#
-#         self.pw = pg.plot(
-#             labels={'left': 'Visibility (km)'},
-#             axisItems={'bottom': TimeAxisItem(orientation='bottom')}
-#         )
-#
-#         self.pw.showGrid(x=True, y=True)
-#         self.pdi = self.pw.plot(pen='w')
-#
-#         self.pw.addLine(x=0, pen=0.2)
-#         self.pw.addLine(y=0, pen=0.2)
-#         for r in range(2, 20, 2):
-#             circle = pg.QtGui.QGraphicsEllipseItem(-r, -r, r * 2, r * 2)
-#             circle.setPen(pg.mkPen(0.2))
-#             self.pw.addItem(circle)
-#
-#         theta = np.linspace(0, 2 * np.pi, 8)
-#         radius = np.random.normal(loc=10, size=8)
-#
-#         x = radius * np.cos(theta)
-#         y = radius * np.sin(theta)
-#         self.pw.plot(x, y)
 
 
 class VisibilityView(QChartView):
@@ -535,8 +454,8 @@ class ND01MainWindow(QMainWindow):
         p_vis = np.random.randint(10000, 15000)
 
         if self.km_mile_convert:
-            self.c_vis_label.setText(f'{format(round(vis / 1609, 2), ",")} mile')
-            self.p_vis_label.setText(f'{format(round(p_vis / 1609, 2), ",")} mile')
+            self.c_vis_label.setText(f'{format(round(vis / 1609, 2), ",")} NM')
+            self.p_vis_label.setText(f'{format(round(p_vis / 1609, 2), ",")} NM')
 
         elif self.km_mile_convert is False:
             self.c_vis_label.setText(f'{format(vis, ",")} m')
@@ -665,22 +584,14 @@ if __name__ == '__main__':
     mp.freeze_support()
     q = Queue()
     _q = Queue()
-    # _qr = Queue()
-    # _qw = Queue()
 
     _producer = producer
-    # _read = video_read
-    # _write = video_write
 
     p = Process(name='clock', target=clock, args=(q,), daemon=True)
     _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
-    # _r = Process(name='read', target=_read, args=(_qr,), daemon=True)
-    # _w = Process(name='write', target=_write, args=(_qw,), daemon=True)
 
     p.start()
     _p.start()
-    # _r.start()
-    # _w.start()
 
     os.makedirs(f'{JS06Settings.get("data_csv_path")}', exist_ok=True)
     os.makedirs(f'{JS06Settings.get("target_csv_path")}', exist_ok=True)
