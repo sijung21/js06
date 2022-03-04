@@ -13,34 +13,26 @@ from typing import List
 
 import cv2
 import numpy as np
-# import onnxruntime as ort
 
 from PyQt5.QtCore import (QDateTime, QDir, QObject, QRect, QThread,
                           QThreadPool, QTime, QTimer, pyqtSignal, pyqtSlot)
 from PyQt5.QtGui import QImage
-from PyQt5.QtMultimedia import QVideoFrame
-
-from model import (Js08AttrModel, Js08CameraTableModel, Js08IoRunner,
-                   Js08Settings, Js08SimpleTarget, Js08Wedge)
 
 
-class JS06MainCtrl(QObject):
+class JS08MainCtrl(QObject):
     abnormal_shutdown = pyqtSignal()
-    front_camera_changed = pyqtSignal(str) # uri
-    rear_camera_changed = pyqtSignal(str) # uri
+    front_camera_changed = pyqtSignal(str)  # uri
+    rear_camera_changed = pyqtSignal(str)  # uri
     front_target_decomposed = pyqtSignal()
     rear_target_decomposed = pyqtSignal()
-    target_assorted = pyqtSignal(list, list) # positives, negatives
-    wedge_vis_ready = pyqtSignal(int, dict) # epoch, wedge visibility
+    target_assorted = pyqtSignal(list, list)  # positives, negatives
+    wedge_vis_ready = pyqtSignal(int, dict)  # epoch, wedge visibility
 
-    # def __init__(self, model: Js08AttrModel):
     def __init__(self):
         super().__init__()
 
         self.writer_pool = QThreadPool.globalInstance()
         self.writer_pool.setMaxThreadCount(1)
-
-        self._model = model
 
         self.num_working_cam = 0
 
@@ -50,33 +42,10 @@ class JS06MainCtrl(QObject):
         self.front_target_prepared = False
         self.rear_target_prepared = False
 
-        self.init_db()
-
         self.observation_timer = QTimer(self)
-        # self.front_camera_changed.connect(self.decompose_front_targets)
-        # self.rear_camera_changed.connect(self.decompose_rear_targets)
 
         self.worker_running = False
         self.start_observation_timer()
-
-    def init_db(self):
-        # db_host = Js08Settings.get('db_host')
-        # db_port = Js08Settings.get('db_port')
-        # db_name = Js08Settings.get('db_name')
-        # self._model.connect_to_db(db_host, db_port, db_name)
-
-        if getattr(sys, 'frozen', False):
-            directory = sys._MEIPASS
-        else:
-            directory = os.path.dirname(__file__)
-        attr_path = os.path.join(directory, 'resources', 'attr.json')
-        with open(attr_path, 'r') as f:
-            attr_json = json.load(f)
-        camera_path = os.path.join(directory, 'resources', 'camera.json')
-        with open(camera_path, 'r') as f:
-            camera_json = json.load(f)
-
-        self._model.setup_db(attr_json, camera_json)
 
     @pyqtSlot(str)
     def decompose_front_targets(self, _: str) -> None:
@@ -85,7 +54,6 @@ class JS06MainCtrl(QObject):
         Parameters:
         """
         self.front_target_prepared = False
-        # self.decompose_targets('front')
         self.front_target_prepared = True
 
     @pyqtSlot(str)
@@ -112,9 +80,9 @@ class JS06MainCtrl(QObject):
         elif direction == 'rear':
             targets = attr['rear_camera']['targets']
             id = str(attr['rear_camera']['camera_id'])
-        
-        base_path = Js08Settings.get('image_base_path') 
-        
+
+        base_path = Js08Settings.get('image_base_path')
+
         # Prepare model.
         # TODO(Kyungwon): Put the model file into Qt Resource Collection.
         if getattr(sys, 'frozen', False):
@@ -127,7 +95,7 @@ class JS06MainCtrl(QObject):
         input_shape = sess.get_inputs()[0].shape
         input_height = input_shape[1]
         input_width = input_shape[2]
-        
+
         for tg in targets:
             wedge = tg['wedge']
             azimuth = tg['azimuth']
@@ -172,7 +140,7 @@ class JS06MainCtrl(QObject):
 
     def start_observation_timer(self) -> None:
         print('DEBUG(start_observation_timer):', QTime.currentTime().toString())
-        self.observation_timer.setInterval(1000) # every one second
+        self.observation_timer.setInterval(1000)  # every one second
         self.observation_timer.timeout.connect(self.start_worker)
         self.observation_timer.start()
 
@@ -193,11 +161,11 @@ class JS06MainCtrl(QObject):
         rear_uri = self.get_rear_camera_uri()
         self.worker = Js08InferenceWorker(
             self.epoch,
-            front_uri, 
-            rear_uri, 
-            self.front_simple_targets, 
+            front_uri,
+            rear_uri,
+            self.front_simple_targets,
             self.rear_simple_targets
-            )
+        )
         self.worker_thread = QThread()
         self.worker.moveToThread(self.worker_thread)
         self.worker_thread.started.connect(self.worker.run)
@@ -216,7 +184,7 @@ class JS06MainCtrl(QObject):
         epoch: seconds since epoch
         """
         epoch = self.epoch
-            
+
         pos, neg = self.assort_discernment()
         self.target_assorted.emit(pos, neg)
         wedge_vis = self.wedge_visibility()
@@ -286,7 +254,7 @@ class JS06MainCtrl(QObject):
         path = QDir.cleanPath(os.path.join(dir, filename))
         runner = Js08IoRunner(path, image)
         self.writer_pool.start(runner)
-    
+
     def grab_image(self, direction: str) -> QImage:
         """
         Parameters:
@@ -320,7 +288,7 @@ class JS06MainCtrl(QObject):
 
     def get_camera_table_model(self) -> dict:
         cameras = self.get_cameras()
-        table_model =  Js08CameraTableModel(cameras)
+        table_model = Js08CameraTableModel(cameras)
         return table_model
 
     def check_exit_status(self) -> bool:
@@ -335,7 +303,7 @@ class JS06MainCtrl(QObject):
         for cam_id in cam_id_in_db:
             if cam_id not in cam_id_in_arg:
                 self._model.delete_camera(cam_id)
-    
+
         # if `cameras` does not have 'targets' field, add an empty list for it.
         for cam in cameras:
             if 'targets' not in cam:
@@ -349,7 +317,7 @@ class JS06MainCtrl(QObject):
                     if c_arg['_id'] == c_db['_id']:
                         c_arg['targets'] = c_db['targets']
                         continue
-        
+
         # if '_id' is empty, delete the field
         for cam in cameras:
             if not cam['_id']:
@@ -369,7 +337,7 @@ class JS06MainCtrl(QObject):
         # if self._attr.count_documents({}):
         #     attr_doc = list(self._attr.find().sort("_id", -1).limit(1))[0]
         return attr_doc
-    
+
     def insert_attr(self, model: dict) -> None:
         self._model.insert_attr(model)
 
@@ -379,7 +347,7 @@ class JS06MainCtrl(QObject):
 
     @pyqtSlot(bool)
     def set_normal_shutdown(self) -> None:
-         Js08Settings.set('normal_shutdown', True)
+        Js08Settings.set('normal_shutdown', True)
 
     def get_cameras(self) -> list:
         return self._model.read_cameras()
@@ -387,14 +355,15 @@ class JS06MainCtrl(QObject):
 
 class Js08InferenceWorker(QObject):
     finished = pyqtSignal()
-    
-    def __init__(self, epoch: int, front_uri: str, rear_uri: str, front_decomposed_targets: list, rear_decomposed_targets: list) -> None:
+
+    def __init__(self, epoch: int, front_uri: str, rear_uri: str, front_decomposed_targets: list,
+                 rear_decomposed_targets: list) -> None:
         """
         Parameters:
             ctrl:
         """
         super().__init__()
-        
+
         # TODO(Kyungwon): Put the model file into Qt Resource Collection.
         if getattr(sys, 'frozen', False):
             directory = sys._MEIPASS
@@ -470,7 +439,7 @@ class Js08InferenceWorker(QObject):
             self.save_image(dir, filename, front_image)
             filename = f'vista-rear-{now.toString("yyyy-MM-dd-hh-mm")}.png'
             self.save_image(dir, filename, rear_image)
-        
+
         # Discriminate the targets of front camera
         self.classify_batch(self.front_targets, front_image)
 
@@ -479,7 +448,7 @@ class Js08InferenceWorker(QObject):
 
         self.finished.emit()
 
-    def classify_batch(self, targets: List[Js08SimpleTarget], vista: QImage):
+    def classify_batch(self, targets: list, vista: QImage):
         """Discriminate image batch
 
         Parameters:
@@ -498,9 +467,9 @@ class Js08InferenceWorker(QObject):
         for i, target in enumerate(targets):
             if i % self.batch_size == 0:
                 data = np.zeros(
-                    (self.batch_size, self.input_height, self.input_width, 3), 
+                    (self.batch_size, self.input_height, self.input_width, 3),
                     dtype=np.float32
-                    )
+                )
 
             roi_image = target.clip_roi(vista)
             arr = target.img_to_arr(roi_image, self.input_width, self.input_height)

@@ -29,10 +29,12 @@ from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
                            QChart, QDateTimeAxis)
 from PyQt5 import uic
 
-from video_thread_mp import producer
+from login_view import LoginWindow
+from video_thread_mp import video_read, video_write, producer
 from nd01_settings import ND01SettingWidget
 from model import JS06Settings
 from save_db import main
+from controller import JS08MainCtrl
 
 
 def clock(queue):
@@ -205,10 +207,11 @@ class VisibilityView(QChartView):
         # data_point = [QPointF[t, v] for t, v in self.data]
         # self.series.append(data_point)
 
-    @pyqtSlot(int, dict)
-    def refresh_stats(self, epoch: int, wedge_vis: dict):
-        wedge_vis_list = list(wedge_vis.values())
-        prev_vis = self.prevailing_visibility(wedge_vis_list)
+    def refresh_stats(self):
+        # wedge_vis_list = list(wedge_vis.values())
+        # wedge_vis_list = [10, 10, 11, 12, 13, 14, 15]
+        prev_vis = self.prevailing_visibility()
+        epoch = QDateTime.currentSecsSinceEpoch()
         self.data.append((epoch * 1000, prev_vis))
 
         left = QDateTime.fromMSecsSinceEpoch(self.data[0][0])
@@ -218,9 +221,9 @@ class VisibilityView(QChartView):
         data_point = [QPointF[t, v] for t, v in self.data]
         self.series.replace(data_point)
 
-    def prevailing_visibility(self, wedge_vis: list) -> float:
-        if None in wedge_vis:
-            return 0
+    def prevailing_visibility(self) -> float:
+        wedge_vis = [10, 10, 11, 12, 13, 14, 15]
+
         sorted_vis = sorted(wedge_vis, reverse=True)
         prevailing = sorted_vis[(len(sorted_vis) - 1) // 2]
         return prevailing
@@ -270,8 +273,32 @@ class DiscernmentView(QChartView):
         chart.setAxisY(axis_y, self.positives)
         chart.setAxisY(axis_y, self.negatives)
 
-    @pyqtSlot(list, list)
-    def refresh_stats(self, positives: list, negatives: list):
+    def refresh_stats(self):
+        # negatives = [(0, 1.5), (0, 2), (0, 2.5), (0, 3), (0, 0.15), (0, 0.35), (0, 0.55), (0, 1), (0, 1.5), (0, 2),
+        #              (0, 2.5), (0, 3), (0, 0.15), (0, 0.35), (0, 0.55), (0, 1), (45, 1.5), (45, 2), (45, 2.5), (45, 3),
+        #              (45, 0.15), (45, 0.35), (45, 0.55), (45, 1), (45, 1.5), (45, 2), (45, 2.5), (45, 3), (45, 0.15),
+        #              (45, 0.35), (45, 0.55), (45, 1), (90, 1.5), (90, 2), (90, 2.5), (90, 3), (90, 0.15), (90, 0.35),
+        #              (90, 0.55), (90, 1), (90, 1.5), (90, 2), (90, 2.5), (90, 3), (90, 0.15), (90, 0.35), (90, 0.55),
+        #              (90, 1), (135, 1.5), (135, 2), (135, 2.5), (135, 3), (135, 0.15), (135, 0.35), (135, 0.55),
+        #              (135, 1), (135, 1.5), (135, 2), (135, 2.5), (135, 3), (135, 0.15), (135, 0.35), (135, 0.55),
+        #              (135, 1), (180, 1.5), (180, 2), (180, 2.5), (180, 3), (180, 0.15), (180, 0.35), (180, 0.55),
+        #              (180, 1), (180, 1.5), (180, 2), (180, 2.5), (180, 3), (180, 0.15), (180, 0.35), (180, 0.55),
+        #              (180, 1), (225, 1.5), (225, 2), (225, 2.5), (225, 3), (225, 0.15), (225, 0.35), (225, 0.55),
+        #              (225, 1), (225, 1.5), (225, 2), (225, 2.5), (225, 3), (225, 0.1), (225, 0.3), (225, 0.5),
+        #              (225, 1), (270, 1.5), (270, 2), (270, 2.5), (270, 3), (270, 0.15), (270, 0.35), (270, 0.55),
+        #              (270, 1), (270, 1.5), (270, 2), (270, 2.5), (270, 3), (270, 0.15), (270, 0.35), (270, 0.55),
+        #              (270, 1), (315, 1.5), (315, 2), (315, 2.5), (315, 3), (315, 0.15), (315, 0.35), (315, 0.55),
+        #              (315, 1), (315, 1.5), (315, 2), (315, 2.5), (315, 3), (315, 0.15), (315, 0.35), (315, 0.55),
+        #              (315, 1)]
+        positives = []
+        negatives = [(0, 4), (0, 9), (0, 14),
+                     (45, 5), (45, 10), (45, 15),
+                     (90, 5), (90, 10), (90, 15),
+                     (135, 5), (135, 10), (135, 15),
+                     (180, 5), (180, 10), (180, 15),
+                     (225, 5), (225, 10), (225, 15),
+                     (270, 5), (270, 10), (270, 15),
+                     (315, 5), (315, 10), (315, 15)]
         pos_point = [QPointF(a, d) for a, d in positives]
         self.positives.replace(pos_point)
         neg_point = [QPointF(a, d) for a, d in negatives]
@@ -305,12 +332,24 @@ class ND01MainWindow(QMainWindow):
     def __init__(self, q):
         super().__init__()
 
+        login_window = LoginWindow()
+        login_window.exec_()
+
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                "resources/main_window.ui")
         uic.loadUi(ui_path, self)
         self.showFullScreen()
+
+        self._ctrl = JS08MainCtrl
+
         self._plot = VisibilityView(self, 1440)
+        # self._ctrl.wedge_vis_ready.connect(self._plot.refresh_stats)
+        # self._plot.refresh_stats()
+
         self._polar = DiscernmentView(self)
+        # self._ctrl.target_assorted.connect(self._polar.refresh_stats)
+        self._polar.refresh_stats()
+
         self.view = None
         self.km_mile_convert = False
         self.date = None
@@ -492,13 +531,16 @@ class ND01MainWindow(QMainWindow):
         # p_vis_km = f'{format(round(int(result / len(self._plot.plotData["y"])), 2), ",")}'
         # p_vis_nm = f'{format(round(int(result / len(self._plot.plotData["y"])) / 1609, 2), ",")}'
 
-        # if self.km_mile_convert:
-        #     self.c_vis_label.setText(f'{format(round(self._plot.plotData["y"][-1] / 1609, 2), ",")} mile')
-        #     self.p_vis_label.setText(f'{p_vis_nm} mile')
-        #
-        # elif self.km_mile_convert is False:
-        #     self.c_vis_label.setText(f'{format(self._plot.plotData["y"][-1], ",")} m')
-        #     self.p_vis_label.setText(f'{p_vis_km} m')
+        vis = np.random.randint(10000, 15000)
+        p_vis = np.random.randint(10000, 15000)
+
+        if self.km_mile_convert:
+            self.c_vis_label.setText(f'{format(round(vis / 1609, 2), ",")} mile')
+            self.p_vis_label.setText(f'{format(round(p_vis / 1609, 2), ",")} mile')
+
+        elif self.km_mile_convert is False:
+            self.c_vis_label.setText(f'{format(vis, ",")} m')
+            self.p_vis_label.setText(f'{format(p_vis, ",")} m')
         #
         # data_time = self._plot.plotData['x']
         # if int(float(data)) - 3600 * 3 in self._plot.plotData['x']:
@@ -623,14 +665,22 @@ if __name__ == '__main__':
     mp.freeze_support()
     q = Queue()
     _q = Queue()
+    # _qr = Queue()
+    # _qw = Queue()
 
     _producer = producer
+    # _read = video_read
+    # _write = video_write
 
     p = Process(name='clock', target=clock, args=(q,), daemon=True)
     _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
+    # _r = Process(name='read', target=_read, args=(_qr,), daemon=True)
+    # _w = Process(name='write', target=_write, args=(_qw,), daemon=True)
 
     p.start()
     _p.start()
+    # _r.start()
+    # _w.start()
 
     os.makedirs(f'{JS06Settings.get("data_csv_path")}', exist_ok=True)
     os.makedirs(f'{JS06Settings.get("target_csv_path")}', exist_ok=True)
@@ -639,8 +689,3 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = ND01MainWindow(q)
     sys.exit(app.exec_())
-
-    # MainWindow = QMainWindow()
-    # ui = ND01MainWindow()
-    # ui.show()
-    # sys.exit(app.exec_())

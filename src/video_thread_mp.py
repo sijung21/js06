@@ -7,11 +7,11 @@
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import os
+
 import cv2
 import time
 import numpy as np
 import pandas as pd
-
 
 import curve_save
 from model import JS06Settings
@@ -47,6 +47,8 @@ def producer(q):
                     cv2.imwrite(f'{image_save_path}/resize/{date}/{epoch}.jpg', cv2.resize(frame, (315, 131)))
 
                     time.sleep(1)
+                    cap.release()
+                    cap = cv2.VideoCapture("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
 
                 except:
                     print(traceback.format_exc())
