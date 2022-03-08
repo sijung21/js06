@@ -599,4 +599,4 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     window = ND01MainWindow(q)
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

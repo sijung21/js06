@@ -73,6 +73,7 @@ class ND01SettingWidget(QDialog):
             self.value_verticalLayout.addWidget(self.chart_view)
 
         if len(self.left_range) > 0:
+            self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
             self.show_target_table()
 
         self.red_checkBox.clicked.connect(self.chart_update)
