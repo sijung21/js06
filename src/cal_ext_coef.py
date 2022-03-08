@@ -6,22 +6,16 @@ import pandas as pd
 
 import scipy
 from scipy.optimize import curve_fit
-from PyQt5 import QtWidgets, QtGui, QtCore
 
 curved_flag = True
-# cam_name = cam_name
 hanhwa_dist = []
 hanhwa_x = []
 hanhwa_r = []
 hanhwa_g = []
 hanhwa_b = []
-# epoch = epoch
-# rgbsavedir = os.path.join(f"rgb/{cam_name}")
-# extsavedir = os.path.join(f"extinction/{cam_name}")
+
 
 def select_max_rgb(r, g, b):
-
-    select_color = ""
     c_list = [r, g, b]
 
     c_index = c_list.index(max(c_list))
@@ -30,9 +24,11 @@ def select_max_rgb(r, g, b):
         select_color = "red"
     elif c_index == 1:
         select_color = "green"
-    else :
+    else:
         select_color = "blue"
+
     return select_color
+
 
 def cal_curve(hanhwa: pd.DataFrame):
     # hanhwa = pd.read_csv(f"{rgbsavedir}/{epoch}.csv")
@@ -45,6 +41,10 @@ def cal_curve(hanhwa: pd.DataFrame):
     hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
     hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
 
+    print("오리지날 green", hanhwa_g)
+
+    print("소산계수 산출용 green 리스트 :  ", hanhwa_g)
+
     r1_init = hanhwa_r[0] * 0.7
     g1_init = hanhwa_g[0] * 0.7
     b1_init = hanhwa_b[0] * 0.7
@@ -52,9 +52,9 @@ def cal_curve(hanhwa: pd.DataFrame):
     r2_init = hanhwa_r[-1] * 1.3
     g2_init = hanhwa_g[-1] * 1.3
     b2_init = hanhwa_b[-1] * 1.3
-    
+
     select_color = select_max_rgb(r2_init, g2_init, b2_init)
-    
+
     r_ext_init = [r1_init, r2_init, 1]
     g_ext_init = [g1_init, g2_init, 1]
     b_ext_init = [b1_init, b2_init, 1]
@@ -68,6 +68,7 @@ def cal_curve(hanhwa: pd.DataFrame):
     except Exception as e:
         print("error msg: ", e)
         return
+
     list1 = []
     list2 = []
     list3 = []
@@ -94,31 +95,30 @@ def cal_curve(hanhwa: pd.DataFrame):
     print(f"Green channel: {extcoeff_to_vis(hanhwa_opt_g[2], hanhwa_err_g[2], 3)} km")
     print(f"Blue channel: {extcoeff_to_vis(hanhwa_opt_b[2], hanhwa_err_b[2], 3)} km")
 
-    return list1, list2, list3, select_color
-    # update_extinc_signal.emit(list1, list2, list3, select_color)
+    os.makedirs(extsavedir, exist_ok=True)
 
-    try:
-        os.mkdir(extsavedir)
-    except Exception as e:
-        pass
+    return list1, list2, list3, select_color
+
 
 # @staticmethod
 def func(x, c1, c2, a):
     return c2 + (c1 - c2) * np.exp(-a * x)
 
-def print_result(opt_r, opt_g, opt_b, err_r, err_g, err_b):
-    print(f"Red channel: (",
-            f"C1: {opt_r[0]:.2f} ± {err_r[0]:.2f}, ",
-            f"C2: {opt_r[1]:.2f} ± {err_r[1]:.2f}, ",
-            f"alpha: {opt_r[2]:.2f} ± {err_r[2]:.2f})")
-    print(f"Green channel: (",
-            f"C1: {opt_g[0]:.2f} ± {err_g[0]:.2f}, ",
-            f"C2: {opt_g[1]:.2f} ± {err_g[1]:.2f}, ",
-            f"alpha: {opt_g[2]:.2f} ± {err_g[2]:.2f})")
-    print(f"Blue channel: (",
-            f"C1: {opt_b[0]:.2f} ± {err_b[0]:.2f}, ",
-            f"C2: {opt_b[1]:.2f} ± {err_b[1]:.2f}, ",
-            f"alpha: {opt_b[2]:.2f} ± {err_b[2]:.2f})")
 
-def extcoeff_to_vis(optimal, error, coeff=3.291):
+def print_result(opt_r, opt_g, opt_b, err_r, err_g, err_b):
+    print(f'Red channel: (',
+          f'C1: {opt_r[0]:.2f} ± {err_r[0]:.2f}, ',
+          f'C2: {opt_r[1]:.2f} ± {err_r[1]:.2f}, ',
+          f'alpha: {opt_r[2]:.2f} ± {err_r[2]:.2f})')
+    print(f'Green channel: (',
+          f'C1: {opt_g[0]:.2f} ± {err_g[0]:.2f}, ',
+          f'C2: {opt_g[1]:.2f} ± {err_g[1]:.2f}, ',
+          f'alpha: {opt_g[2]:.2f} ± {err_g[2]:.2f})')
+    print(f'Blue channel: (',
+          f'C1: {opt_b[0]:.2f} ± {err_b[0]:.2f}, ',
+          f'C2: {opt_b[1]:.2f} ± {err_b[1]:.2f}, ',
+          f'alpha: {opt_b[2]:.2f} ± {err_b[2]:.2f})')
+
+
+def extcoeff_to_vis(optimal, error, coeff=3.912):
     return coeff / (optimal + np.array((1, 0, -1)) * error)

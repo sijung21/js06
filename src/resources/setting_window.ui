@@ -180,18 +180,12 @@ color: #ffffff;</string>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="target_list">
-              <property name="minimumSize">
+             <widget class="QTableWidget" name="tableWidget">
+              <property name="maximumSize">
                <size>
-                <width>0</width>
-                <height>250</height>
+                <width>700</width>
+                <height>500</height>
                </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">background-color:rgb(25,39,52);</string>
-              </property>
-              <property name="text">
-               <string/>
               </property>
              </widget>
             </item>
@@ -463,6 +457,99 @@ color: #ffffff;</string>
                 </property>
                 <property name="text">
                  <string>↩</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="graph_setting_horizontalLayout">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="sizeConstraint">
+               <enum>QLayout::SetMaximumSize</enum>
+              </property>
+              <item>
+               <widget class="QLabel" name="vis_limit_label_3">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Noto Sans</family>
+                  <pointsize>10</pointsize>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">background-color:rgb(27,49,70);
+color: #ffffff;</string>
+                </property>
+                <property name="text">
+                 <string> Graph setting: </string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="red_checkBox">
+                <property name="font">
+                 <font>
+                  <family>Noto Sans</family>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">color: rgb(255, 255, 255);</string>
+                </property>
+                <property name="text">
+                 <string>Red</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="green_checkBox">
+                <property name="font">
+                 <font>
+                  <family>Noto Sans</family>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">color: rgb(255, 255, 255);</string>
+                </property>
+                <property name="text">
+                 <string>Green</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="blue_checkBox">
+                <property name="font">
+                 <font>
+                  <family>Noto Sans</family>
+                  <weight>50</weight>
+                  <bold>false</bold>
+                 </font>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true">color: rgb(255, 255, 255);</string>
+                </property>
+                <property name="text">
+                 <string>Blue</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
