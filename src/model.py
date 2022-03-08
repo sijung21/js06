@@ -7,7 +7,8 @@
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import os
-from PyQt5.QtCore import QSettings, QStandardPaths
+from PyQt5.QtCore import (QSettings, QRect)
+from PyQt5.QtGui import (QImage)
 
 
 class JS06Settings:
@@ -39,3 +40,18 @@ class JS06Settings:
     def restore_defaults(cls):
         for key, value in cls.defaults.items():
             cls.set(key, value)
+
+
+class JS06SimpleTarget:
+
+    def __init__(self,
+                 label: str, wedge: str, azimuth: float,
+                 distance: float, roi: QRect, mask: QImage,
+                 input_width: int, input_height: int):
+        super().__init__()
+        self.label = label
+        self.wedge = wedge
+        self.azimuth = azimuth
+        self.distance = distance
+        self.roi = roi
+

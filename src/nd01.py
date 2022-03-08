@@ -6,7 +6,7 @@
 #     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
 
-
+import collections
 import sys
 import os
 import time
@@ -17,19 +17,23 @@ import pyqtgraph as pg
 import multiprocessing as mp
 from multiprocessing import Process, Queue
 
-from PyQt5.QtGui import (QPixmap, QIcon, QPainter, QColor)
-from PyQt5.QtWidgets import (QMainWindow, QWidget, QGraphicsScene,
-                             QFrame, QVBoxLayout)
-from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal, QRect,
-                          QTimer, QObject, QThread)
+from PyQt5.QtGui import (QPixmap, QIcon, QPainter,
+                         QColor)
+from PyQt5.QtWidgets import (QMainWindow, QWidget, QFrame,
+                             QVBoxLayout)
+from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal,
+                          QRect, QTimer, QObject,
+                          QThread, QPointF, QDateTime)
 from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
-                           QPolarChart, QScatterSeries, QValueAxis)
+                           QPolarChart, QScatterSeries, QValueAxis,
+                           QChart, QDateTimeAxis)
 from PyQt5 import uic
 
-from video_thread_mp import producer, VideoThread
+from login_view import LoginWindow
+from video_thread_mp import producer
 from nd01_settings import ND01SettingWidget
 from model import JS06Settings
-from save_db import main
+from controller import JS08MainCtrl
 
 
 def clock(queue):
@@ -81,83 +85,143 @@ class TimeAxisItem(pg.AxisItem):
         return [time.strftime("%H:%M:%S", time.localtime(local_time)) for local_time in values]
 
 
-class PlotWidget(QWidget):
+class VisibilityView(QChartView):
 
-    def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+    def __init__(self, parent: QWidget, maxlen: int):
+        super().__init__(parent)
+        self.setMinimumSize(200, 200)
+        self.setMaximumSize(600, 400)
 
-        self.pw = pg.PlotWidget(
-            labels={'left': 'Visibility (km)'},
-            axisItems={'bottom': TimeAxisItem(orientation='bottom')}
-        )
+        now = QDateTime.currentSecsSinceEpoch()
+        zeros = [(t * 1000, -1) for t in range(now - maxlen * 60, now, 60)]
+        self.data = collections.deque(zeros, maxlen=maxlen)
 
-        self.pw.showGrid(x=True, y=True)
-        self.pdi = self.pw.plot(pen='w')   # PlotDataItem obj 반환.
+        self.setRenderHint(QPainter.Antialiasing)
 
-        self.p1 = self.pw.plotItem
+        chart = QChart()
+        chart.legend().setVisible(False)
+        # chart.legend().setColor(QColor(255, 255, 255, 255))
+        # chart.setTitleBrush(QColor(255, 255, 255, 255))
+        # chart.setBackgroundBrush(QColor(0, 0, 0, 255))
+        self.setChart(chart)
+        self.series = QLineSeries(name='Prevailing Visibility')
+        chart.addSeries(self.series)
 
-        self.p2 = pg.ViewBox()
-        self.p1.showAxis('right')
-        self.p1.scene().addItem(self.p2)
-        self.p1.getAxis('right').linkToView(self.p2)
-        self.p2.setXLink(self.p1)
-        self.p1.getAxis('right').setLabel('Axis 2', color='#ffff00')
+        axis_x = QDateTimeAxis()
+        axis_x.setFormat('hh:mm')
+        axis_x.setTitleText('Time')
+        # axis_x.setLabelsColor(QColor(255, 255, 255, 255))
+        left = QDateTime.fromMSecsSinceEpoch(self.data[0][0])
+        right = QDateTime.fromMSecsSinceEpoch(self.data[-1][0])
+        axis_x.setRange(left, right)
+        chart.setAxisX(axis_x, self.series)
 
-        self.p2.setGeometry(self.p1.vb.sceneBoundingRect())
-        # self.p2.addItem(pg.PlotCurveItem([10, 20, 40, 80, 400, 2000], pen='y'))
-        # self.pdi.sigClicked.connect(self.onclick)
+        axis_y = QValueAxis()
+        axis_y.setRange(0, 20)
+        # axis_y.setLabelsColor(QColor(255, 255, 255, 255))
+        axis_y.setLabelFormat('%d')
+        axis_y.setTitleText('Distance (km)')
+        chart.setAxisY(axis_y, self.series)
 
-        self.plotData = {'x': [], 'y': []}
-        self.pre_plotData = {'x': [], 'y': []}
+        # data_point = [QPointF[t, v] for t, v in self.data]
+        # self.series.append(data_point)
 
-    def update_plot(self, new_time_data: int):
-        self.plotData['x'].append(new_time_data)
-        self.plotData['y'].append(np.random.randint(10000, 15000))
+    def refresh_stats(self):
+        # wedge_vis_list = list(wedge_vis.values())
+        # wedge_vis_list = [10, 10, 11, 12, 13, 14, 15]
+        prev_vis = self.prevailing_visibility()
+        epoch = QDateTime.currentSecsSinceEpoch()
+        self.data.append((epoch * 1000, prev_vis))
 
-        # 항상 x축 시간을 설정한 범위 ( -3 시간 전 ~ 10 분 후 )만 보여줌.
-        # self.pw.setXRange(new_time_data - 3600 * 3, new_time_data + 600, padding=0)
-        # self.pw.setYRange(-1, 21, padding=0)
+        left = QDateTime.fromMSecsSinceEpoch(self.data[0][0])
+        right = QDateTime.fromMSecsSinceEpoch(self.data[-1][0])
+        self.chart().axisX().setRange(left, right)
 
-        data = []
-        for i in self.plotData['y']:
-            i = i / 1000
-            data.append(i)
-        self.pdi.setData(self.plotData['x'], data)
+        data_point = [QPointF[t, v] for t, v in self.data]
+        self.series.replace(data_point)
 
-        # self.pdi.setData([1643873584, 1643873585, 1643873586, 1643873587, 1643873588],
-        #                  [12, 11, 10, 14, 13])
+    def prevailing_visibility(self) -> float:
+        wedge_vis = [10, 10, 11, 12, 13, 14, 15]
 
-    def onclick(self, plot, points):
-        for point in points:
-            print(point.pos())
+        sorted_vis = sorted(wedge_vis, reverse=True)
+        prevailing = sorted_vis[(len(sorted_vis) - 1) // 2]
+        return prevailing
 
 
-class PolarWidget(QWidget):
+class DiscernmentView(QChartView):
 
-    def __init__(self, parent=None):
-        QWidget.__init__(self, parent)
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self.setRenderHint(QPainter.Antialiasing)
+        self.setMinimumSize(200, 200)
+        self.setMaximumSize(600, 400)
 
-        self.pw = pg.plot(
-            labels={'left': 'Visibility (km)'},
-            axisItems={'bottom': TimeAxisItem(orientation='bottom')}
-        )
+        chart = QPolarChart(title='Discernment Visibility')
+        chart.legend().setAlignment(Qt.AlignRight)
+        chart.legend().setMarkerShape(QLegend.MarkerShapeCircle)
+        # chart.legend().setColor(QColor(255, 255, 255, 255))
+        # chart.setTitleBrush(QColor(255, 255, 255, 255))
+        # chart.setBackgroundBrush(QColor(0, 0, 0, 255))
+        self.setChart(chart)
 
-        self.pw.showGrid(x=True, y=True)
-        self.pdi = self.pw.plot(pen='w')
+        self.positives = QScatterSeries(name='Positive')
+        self.negatives = QScatterSeries(name='Negative')
+        self.positives.setColor(QColor('green'))
+        self.negatives.setColor(QColor('red'))
+        self.positives.setMarkerSize(10)
+        self.negatives.setMarkerSize(10)
+        chart.addSeries(self.positives)
+        chart.addSeries(self.negatives)
 
-        self.pw.addLine(x=0, pen=0.2)
-        self.pw.addLine(y=0, pen=0.2)
-        for r in range(2, 20, 2):
-            circle = pg.QtGui.QGraphicsEllipseItem(-r, -r, r * 2, r * 2)
-            circle.setPen(pg.mkPen(0.2))
-            self.pw.addItem(circle)
+        axis_x = QValueAxis()
+        axis_x.setTickCount(9)
+        # axis_x.setLabelsColor(QColor(255, 255, 255, 255))
+        axis_x.setRange(0, 360)
+        axis_x.setLabelFormat('%d \xc2\xb0')
+        axis_x.setTitleText('Azimuth (deg)')
+        axis_x.setTitleVisible(False)
+        chart.setAxisX(axis_x, self.positives)
+        chart.setAxisX(axis_x, self.negatives)
 
-        theta = np.linspace(0, 2 * np.pi, 8)
-        radius = np.random.normal(loc=10, size=8)
+        axis_y = QValueAxis()
+        # axis_y.setLabelsColor(QColor(255, 255, 255, 255))
+        axis_y.setRange(0, 20)
+        axis_y.setLabelFormat('%d km')
+        axis_y.setTitleText('Distance (km)')
+        axis_y.setTitleVisible(False)
+        chart.setAxisY(axis_y, self.positives)
+        chart.setAxisY(axis_y, self.negatives)
 
-        x = radius * np.cos(theta)
-        y = radius * np.sin(theta)
-        self.pw.plot(x, y)
+    def refresh_stats(self):
+        # negatives = [(0, 1.5), (0, 2), (0, 2.5), (0, 3), (0, 0.15), (0, 0.35), (0, 0.55), (0, 1), (0, 1.5), (0, 2),
+        #              (0, 2.5), (0, 3), (0, 0.15), (0, 0.35), (0, 0.55), (0, 1), (45, 1.5), (45, 2), (45, 2.5), (45, 3),
+        #              (45, 0.15), (45, 0.35), (45, 0.55), (45, 1), (45, 1.5), (45, 2), (45, 2.5), (45, 3), (45, 0.15),
+        #              (45, 0.35), (45, 0.55), (45, 1), (90, 1.5), (90, 2), (90, 2.5), (90, 3), (90, 0.15), (90, 0.35),
+        #              (90, 0.55), (90, 1), (90, 1.5), (90, 2), (90, 2.5), (90, 3), (90, 0.15), (90, 0.35), (90, 0.55),
+        #              (90, 1), (135, 1.5), (135, 2), (135, 2.5), (135, 3), (135, 0.15), (135, 0.35), (135, 0.55),
+        #              (135, 1), (135, 1.5), (135, 2), (135, 2.5), (135, 3), (135, 0.15), (135, 0.35), (135, 0.55),
+        #              (135, 1), (180, 1.5), (180, 2), (180, 2.5), (180, 3), (180, 0.15), (180, 0.35), (180, 0.55),
+        #              (180, 1), (180, 1.5), (180, 2), (180, 2.5), (180, 3), (180, 0.15), (180, 0.35), (180, 0.55),
+        #              (180, 1), (225, 1.5), (225, 2), (225, 2.5), (225, 3), (225, 0.15), (225, 0.35), (225, 0.55),
+        #              (225, 1), (225, 1.5), (225, 2), (225, 2.5), (225, 3), (225, 0.1), (225, 0.3), (225, 0.5),
+        #              (225, 1), (270, 1.5), (270, 2), (270, 2.5), (270, 3), (270, 0.15), (270, 0.35), (270, 0.55),
+        #              (270, 1), (270, 1.5), (270, 2), (270, 2.5), (270, 3), (270, 0.15), (270, 0.35), (270, 0.55),
+        #              (270, 1), (315, 1.5), (315, 2), (315, 2.5), (315, 3), (315, 0.15), (315, 0.35), (315, 0.55),
+        #              (315, 1), (315, 1.5), (315, 2), (315, 2.5), (315, 3), (315, 0.15), (315, 0.35), (315, 0.55),
+        #              (315, 1)]
+        positives = []
+        negatives = [(0, 4), (0, 9), (0, 14),
+                     (45, 5), (45, 10), (45, 15),
+                     (90, 5), (90, 10), (90, 15),
+                     (135, 5), (135, 10), (135, 15),
+                     (180, 5), (180, 10), (180, 15),
+                     (225, 5), (225, 10), (225, 15),
+                     (270, 5), (270, 10), (270, 15),
+                     (315, 5), (315, 10), (315, 15)]
+        pos_point = [QPointF(a, d) for a, d in positives]
+        self.positives.replace(pos_point)
+        neg_point = [QPointF(a, d) for a, d in negatives]
+        self.negatives.replace(neg_point)
 
 
 class ThumbnailView(QMainWindow):
@@ -166,13 +230,20 @@ class ThumbnailView(QMainWindow):
         super().__init__()
 
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "ui/thumbnail_view.ui")
+                               "resources/thumbnail_view.ui")
         uic.loadUi(ui_path, self)
+        print(f'{JS06Settings.get("image_save_path")}/vista/{date}/{image_file_name}.png')
 
-        self.front_image.setPixmap(QPixmap(f'D:/ND-01/vista/{date}/{image_file_name}.png')
-                                   .scaled(self.front_image.width(), self.front_image.height()))
-        self.rear_image.setPixmap(QPixmap(f'D:/ND-01/vista/{date}/{image_file_name}.png')
-                                  .scaled(self.rear_image.width(), self.rear_image.height()))
+        self.front_image.setPixmap(
+            QPixmap(
+                f'{JS06Settings.get("image_save_path")}/vista/{date}/{image_file_name}.png').scaled(
+                self.front_image.width(),
+                self.front_image.height()))
+        self.rear_image.setPixmap(
+            QPixmap(
+                f'{JS06Settings.get("image_save_path")}/vista/{date}/{image_file_name}.png').scaled(
+                self.rear_image.width(),
+                self.rear_image.height()))
 
 
 class ND01MainWindow(QMainWindow):
@@ -180,12 +251,24 @@ class ND01MainWindow(QMainWindow):
     def __init__(self, q):
         super().__init__()
 
+        login_window = LoginWindow()
+        login_window.exec_()
+
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                "resources/main_window.ui")
         uic.loadUi(ui_path, self)
         self.showFullScreen()
-        self._plot = PlotWidget()
-        self._polar = PolarWidget()
+
+        self._ctrl = JS08MainCtrl
+
+        self._plot = VisibilityView(self, 1440)
+        # self._ctrl.wedge_vis_ready.connect(self._plot.refresh_stats)
+        # self._plot.refresh_stats()
+
+        self._polar = DiscernmentView(self)
+        # self._ctrl.target_assorted.connect(self._polar.refresh_stats)
+        self._polar.refresh_stats()
+
         self.view = None
         self.km_mile_convert = False
         self.date = None
@@ -199,17 +282,8 @@ class ND01MainWindow(QMainWindow):
         self.video_horizontalLayout.addWidget(self.front_video_widget)
         self.video_horizontalLayout.addWidget(self.rear_video_widget)
 
-        self.scene = QGraphicsScene()
-        self.vis_plot.setScene(self.scene)
-        self.plotWidget = self._plot.pw
-        self.plotWidget.resize(600, 400)
-        self.scene.addWidget(self.plotWidget)
-
-        self.scene_polar = QGraphicsScene()
-        self.polar_plot.setScene(self.scene_polar)
-        self.polarWidget = self._polar.pw
-        self.polarWidget.resize(600, 400)
-        self.scene_polar.addWidget(self.polarWidget)
+        self.graph_horizontalLayout.addWidget(self._plot)
+        self.graph_horizontalLayout.addWidget(self._polar)
 
         self.setting_button.enterEvent = self.btn_on
         self.setting_button.leaveEvent = self.btn_off
@@ -235,6 +309,12 @@ class ND01MainWindow(QMainWindow):
         self.setting_button.clicked.connect(self.setting_btn_click)
 
         self.show()
+
+    def front_camera_pause(self, event):
+        self.front_video_widget.media_player.pause()
+
+    def rear_camera_pause(self, event):
+        self.rear_video_widget.media_player.pause()
 
     def alert_test(self):
         self.alert.setIcon(QIcon('resources/asset/red.png'))
@@ -359,44 +439,55 @@ class ND01MainWindow(QMainWindow):
     @pyqtSlot(str)
     def clock(self, data):
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
-        self.date = current_time[2:4] + current_time[5:7]
+        self.date = current_time[5:7] + current_time[8:10]
         self.real_time_label.setText(current_time)
-        self._plot.update_plot(int(float(data)))
 
-        result = 0
-        for i in self._plot.plotData['y']:
-            result += i
-        p_vis_km = f'{format(round(int(result / len(self._plot.plotData["y"])), 2), ",")}'
-        p_vis_nm = f'{format(round(int(result / len(self._plot.plotData["y"])) / 1609, 2), ",")}'
+        # self._plot.update_plot(int(float(data)))
+
+        # result = 0
+        # for i in self._plot.plotData['y']:
+        #     result += i
+        # p_vis_km = f'{format(round(int(result / len(self._plot.plotData["y"])), 2), ",")}'
+        # p_vis_nm = f'{format(round(int(result / len(self._plot.plotData["y"])) / 1609, 2), ",")}'
+
+        vis = np.random.randint(10000, 15000)
+        p_vis = np.random.randint(10000, 15000)
 
         if self.km_mile_convert:
-            self.c_vis_label.setText(f'{format(round(self._plot.plotData["y"][-1] / 1609, 2), ",")} mile')
-            self.p_vis_label.setText(f'{p_vis_nm} mile')
+            self.c_vis_label.setText(f'{format(round(vis / 1609, 2), ",")} NM')
+            self.p_vis_label.setText(f'{format(round(p_vis / 1609, 2), ",")} NM')
 
         elif self.km_mile_convert is False:
-            self.c_vis_label.setText(f'{format(self._plot.plotData["y"][-1], ",")} m')
-            self.p_vis_label.setText(f'{p_vis_km} m')
-
-        data_time = self._plot.plotData['x']
-        if int(float(data)) - 3600 * 3 in self._plot.plotData['x']:
-            index = data_time.index(int(float(data)) - 3600 * 3)
-            self._plot.plotData['x'].pop(index)
-            self._plot.plotData['y'].pop(index)
-
+            self.c_vis_label.setText(f'{format(vis, ",")} m')
+            self.p_vis_label.setText(f'{format(p_vis, ",")} m')
+        #
+        # data_time = self._plot.plotData['x']
+        # if int(float(data)) - 3600 * 3 in self._plot.plotData['x']:
+        #     index = data_time.index(int(float(data)) - 3600 * 3)
+        #     self._plot.plotData['x'].pop(index)
+        #     self._plot.plotData['y'].pop(index)
+        #
         self.thumbnail_refresh()
         if current_time[-2:] == "00":
             self.thumbnail_refresh()
-
-        if int(p_vis_km.replace(',', '')) <= JS06Settings.get('visibility_alert_limit'):
-            self.alert.setIcon(QIcon('resources/asset/red.png'))
+        #
+        # if int(p_vis_km.replace(',', '')) <= JS06Settings.get('visibility_alert_limit'):
+        #     self.alert.setIcon(QIcon('resources/asset/red.png'))
 
     def thumbnail_refresh(self):
-        one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600))
-        two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 2))
-        three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 3))
-        four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 4))
-        five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 5))
-        six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 6))
+        # one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600))
+        # two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 2))
+        # three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 3))
+        # four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 4))
+        # five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 5))
+        # six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 3600 * 6))
+
+        one_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60))
+        two_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 2))
+        three_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 3))
+        four_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 4))
+        five_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 5))
+        six_hour_ago = time.strftime('%Y%m%d%H%M00', time.localtime(time.time() - 60 * 6))
 
         self.label_1hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600)))
         self.label_2hour_time.setText(time.strftime('%H:%M', time.localtime(time.time() - 3600 * 2)))
@@ -462,6 +553,10 @@ class VideoWidget(QWidget):
         else:
             pass
 
+    def mouseDoubleClickEvent(self, event):
+        self.media_player.pause()
+        print('Mouse double click')
+
 
 class MainCtrl(QObject):
     front_camera_changed = pyqtSignal(str)
@@ -484,7 +579,6 @@ class MainCtrl(QObject):
 
 
 if __name__ == '__main__':
-
     from PyQt5.QtWidgets import QApplication
 
     mp.freeze_support()
@@ -493,20 +587,16 @@ if __name__ == '__main__':
 
     _producer = producer
 
-    p = Process(name='clock', target=clock, args=(q, ), daemon=True)
-    _p = Process(name="producer", target=_producer, args=(_q, ), daemon=True)
+    p = Process(name='clock', target=clock, args=(q,), daemon=True)
+    _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
 
     p.start()
     _p.start()
 
-    os.makedirs('D:/ND-01/vista', exist_ok=True)
-    os.makedirs('D:/ND-01/resize', exist_ok=True)
+    os.makedirs(f'{JS06Settings.get("data_csv_path")}', exist_ok=True)
+    os.makedirs(f'{JS06Settings.get("target_csv_path")}', exist_ok=True)
+    os.makedirs(f'{JS06Settings.get("image_save_path")}', exist_ok=True)
 
     app = QApplication(sys.argv)
     window = ND01MainWindow(q)
-    sys.exit(app.exec_())
-
-    # MainWindow = QMainWindow()
-    # ui = ND01MainWindow()
-    # ui.show()
-    # sys.exit(app.exec_())
+    sys.exit(app.exec())
