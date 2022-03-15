@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import pandas as pd
+import traceback
 
 import scipy
 from scipy.optimize import curve_fit
@@ -21,18 +22,19 @@ def select_max_rgb(r, g, b):
     c_index = c_list.index(max(c_list))
 
     if c_index == 0:
-        select_color = "red"
+        select_color = 'red'
     elif c_index == 1:
-        select_color = "green"
+        select_color = 'green'
     else:
-        select_color = "blue"
+        select_color = 'blue'
+    select_color = 'green'
 
     return select_color
 
 
 def cal_curve(hanhwa: pd.DataFrame):
     # hanhwa = pd.read_csv(f"{rgbsavedir}/{epoch}.csv")
-    print(hanhwa)
+    # print(hanhwa)
     hanhwa = hanhwa.sort_values(by=['distance'])
     hanhwa_dist = hanhwa[['distance']].squeeze().to_numpy()
     hanhwa_x = np.linspace(hanhwa_dist[0], hanhwa_dist[-1], 100, endpoint=True)
@@ -40,10 +42,6 @@ def cal_curve(hanhwa: pd.DataFrame):
     hanhwa_r = hanhwa[['r']].squeeze().to_numpy()
     hanhwa_g = hanhwa[['g']].squeeze().to_numpy()
     hanhwa_b = hanhwa[['b']].squeeze().to_numpy()
-
-    print("오리지날 green", hanhwa_g)
-
-    print("소산계수 산출용 green 리스트 :  ", hanhwa_g)
 
     r1_init = hanhwa_r[0] * 0.7
     g1_init = hanhwa_g[0] * 0.7
@@ -65,8 +63,8 @@ def cal_curve(hanhwa: pd.DataFrame):
         hanhwa_opt_g, hanhwa_cov_g = curve_fit(func, hanhwa_dist, hanhwa_g, p0=g_ext_init, maxfev=5000)
         hanhwa_opt_b, hanhwa_cov_b = curve_fit(func, hanhwa_dist, hanhwa_b, p0=b_ext_init, maxfev=5000)
 
-    except Exception as e:
-        print("error msg: ", e)
+    except Exception:
+        print(traceback.format_exc())
         return
 
     list1 = []
@@ -85,17 +83,17 @@ def cal_curve(hanhwa: pd.DataFrame):
     list3.append(hanhwa_opt_g[2])
     list3.append(hanhwa_opt_b[2])
 
-    hanhwa_err_r = np.sqrt(np.diag(hanhwa_cov_r))
-    hanhwa_err_g = np.sqrt(np.diag(hanhwa_cov_g))
-    hanhwa_err_b = np.sqrt(np.diag(hanhwa_cov_b))
+    # hanhwa_err_r = np.sqrt(np.diag(hanhwa_cov_r))
+    # hanhwa_err_g = np.sqrt(np.diag(hanhwa_cov_g))
+    # hanhwa_err_b = np.sqrt(np.diag(hanhwa_cov_b))
 
-    print_result(hanhwa_opt_r, hanhwa_opt_g, hanhwa_opt_b, hanhwa_err_r, hanhwa_err_g, hanhwa_err_b)
+    # print_result(hanhwa_opt_r, hanhwa_opt_g, hanhwa_opt_b, hanhwa_err_r, hanhwa_err_g, hanhwa_err_b)
 
-    print(f"Red channel: {extcoeff_to_vis(hanhwa_opt_r[2], hanhwa_err_r[2], 3)} km")
-    print(f"Green channel: {extcoeff_to_vis(hanhwa_opt_g[2], hanhwa_err_g[2], 3)} km")
-    print(f"Blue channel: {extcoeff_to_vis(hanhwa_opt_b[2], hanhwa_err_b[2], 3)} km")
+    # print(f"Red channel: {extcoeff_to_vis(hanhwa_opt_r[2], hanhwa_err_r[2], 3)} km")
+    # print(f"Green channel: {extcoeff_to_vis(hanhwa_opt_g[2], hanhwa_err_g[2], 3)} km")
+    # print(f"Blue channel: {extcoeff_to_vis(hanhwa_opt_b[2], hanhwa_err_b[2], 3)} km")
 
-    os.makedirs(extsavedir, exist_ok=True)
+    # os.makedirs(extsavedir, exist_ok=True)
 
     return list1, list2, list3, select_color
 

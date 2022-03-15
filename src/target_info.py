@@ -3,13 +3,11 @@ import os
 import pandas as pd
 import numpy as np
 
-import cv2
-import datetime
-import time
 import cal_ext_coef
+from model import JS06Settings
 
 
-def minprint(epoch, left_range, right_range, distance, cv_img):
+def minprint(epoch, left_range, right_range, distance, cv_img, camera):
     """A function that outputs pixels for calculating the dissipation coefficient in the specified areas"""
     cp_image = cv_img.copy()
     cnt = 1
@@ -22,7 +20,7 @@ def minprint(epoch, left_range, right_range, distance, cv_img):
         min_y.append(result[1])
         cnt += 1
 
-    visibility = get_rgb(epoch, min_x, min_y, cp_image, distance)
+    visibility = get_rgb(epoch, min_x, min_y, cp_image, distance, camera)
     return visibility
 
 
@@ -49,10 +47,10 @@ def minrgb(upper_left, lower_right, cp_image):
     show_min_y = t_idx[0][0] + up_y
     show_min_x = t_idx[1][0] + left_x
 
-    return show_min_x, show_min_y
+    return (show_min_x, show_min_y)
 
 
-def get_rgb(epoch: str, min_x, min_y, cp_image, distance):
+def get_rgb(epoch: str, min_x, min_y, cp_image, distance, camera):
     """Gets the RGB values of the coordinates."""
     r_list = []
     g_list = []
@@ -63,36 +61,33 @@ def get_rgb(epoch: str, min_x, min_y, cp_image, distance):
         g_list.append(cp_image[y, x, 1])
         b_list.append(cp_image[y, x, 2])
 
-    visibility = save_rgb(r_list, g_list, b_list, epoch, distance)
+    visibility = save_rgb(r_list, g_list, b_list, epoch, distance, camera)
+
     return visibility
 
 
-def save_rgb(r_list, g_list, b_list, epoch, distance):
+def save_rgb(r_list, g_list, b_list, epoch, distance, camera):
     """Save the rgb information for each target."""
-    try:
-        save_path = os.path.join(f"rgb/PNM_9030V")
-        os.mkdir(save_path)
 
-    except:
-        pass
+    save_path = os.path.join(f'rgb/{camera}')
+    os.makedirs(save_path, exist_ok=True)
 
     if r_list:
         r_list = list(map(int, r_list))
         g_list = list(map(int, g_list))
         b_list = list(map(int, b_list))
 
-        col = ["target_name", "r", "g", "b", "distance"]
+        col = ['target_name', 'r', 'g', 'b', 'distance']
         result = pd.DataFrame(columns=col)
-        result["target_name"] = [f"target_{num}" for num in range(1, len(r_list) + 1)]
-        result["r"] = r_list
-        result["g"] = g_list
-        result["b"] = b_list
-        result["distance"] = distance
-        result.to_csv(f"{save_path}/{epoch}.csv", mode="w", index=False)
+        result['target_name'] = [f'target_{num}' for num in range(1, len(r_list) + 1)]
+        result['r'] = r_list
+        result['g'] = g_list
+        result['b'] = b_list
+        result['distance'] = distance
+        result.to_csv(f'{save_path}/{epoch}.csv', mode="w", index=False)
         list1, list2, list3, select_color = cal_ext_coef.cal_curve(result)
+
         visibility = extinc_print(list1, list2, list3, select_color)
-        print(result)
-        print("Save rgb")
 
     return visibility
 
@@ -100,12 +95,14 @@ def save_rgb(r_list, g_list, b_list, epoch, distance):
 def extinc_print(c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0],
                  select_color: str = ""):
     """Select an appropriate value among visibility by wavelength."""
+    g_ext = round(alp_list[1], 1)
+    visibility = None
 
-    if select_color == "red":
+    if select_color == 'red':
         visibility = visibility_print(alp_list[0])
-    elif select_color == "green":
+    elif select_color == 'green':
         visibility = visibility_print(alp_list[1])
-    else:
+    elif select_color == 'blue':
         visibility = visibility_print(alp_list[2])
 
     return visibility
@@ -113,6 +110,7 @@ def extinc_print(c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list:
 
 def visibility_print(ext_g: float = 0.0):
     """Print the visibility"""
+    vis_value = 0
 
     vis_value = (3.912 / ext_g)
     if vis_value > 20:
@@ -120,17 +118,18 @@ def visibility_print(ext_g: float = 0.0):
     elif vis_value < 0.01:
         vis_value = 0.01
 
-    vis_value_str = f"{vis_value:.3f}"
+    vis_value_str = f'{vis_value:.3f}'
+
     return vis_value_str
 
 
 def get_target(camera_name: str):
     """Retrieves target information of a specific camera."""
 
-    save_path = os.path.join(f"target/{camera_name}")
-    # print("Get target information")
-    if os.path.isfile(f"{save_path}/{camera_name}.csv"):
-        target_df = pd.read_csv(f"{save_path}/{camera_name}.csv")
+    save_path = JS06Settings.get('target_csv_path')
+    # save_path = os.path.join(f"target/{camera_name}")
+    if os.path.isfile(f'{save_path}/{camera_name}/{camera_name}.csv'):
+        target_df = pd.read_csv(f'{save_path}/{camera_name}/{camera_name}.csv')
         target_name = target_df["target_name"].tolist()
         left_range = target_df["left_range"].tolist()
         left_range = str_to_tuple(left_range)
@@ -139,7 +138,6 @@ def get_target(camera_name: str):
         distance = target_df["distance"].tolist()
         return target_name, left_range, right_range, distance
     else:
-        # print("Target Information Not Found")
         return [], [], [], []
 
 

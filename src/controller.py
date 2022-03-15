@@ -140,7 +140,7 @@ class JS08MainCtrl(QObject):
 
     def start_observation_timer(self) -> None:
         print('DEBUG(start_observation_timer):', QTime.currentTime().toString())
-        self.observation_timer.setInterval(1000)  # every one second
+        self.observation_timer.setInterval(10000)  # every 10 seconds
         self.observation_timer.timeout.connect(self.start_worker)
         self.observation_timer.start()
 
@@ -230,13 +230,13 @@ class JS08MainCtrl(QObject):
         wedge_vis = {w: None for w in Js08Wedge}
         for t in self.front_simple_targets:
             if t.discernment:
-                if wedge_vis[t.wedge] == None:
+                if wedge_vis[t.wedge] is None:
                     wedge_vis[t.wedge] = t.distance
                 elif wedge_vis[t.wedge] < t.distance:
                     wedge_vis[t.wedge] = t.distance
         for t in self.rear_simple_targets:
             if t.discernment:
-                if wedge_vis[t.wedge] == None:
+                if wedge_vis[t.wedge] is None:
                     wedge_vis[t.wedge] = t.distance
                 elif wedge_vis[t.wedge] < t.distance:
                     wedge_vis[t.wedge] = t.distance

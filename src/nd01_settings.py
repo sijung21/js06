@@ -54,7 +54,7 @@ class ND01SettingWidget(QDialog):
 
         self.isDrawing = False
         self.draw_flag = False
-        self.cam_flag = False
+        self.cam_flag = True
 
         self.video_width = 0
         self.video_height = 0
@@ -62,19 +62,26 @@ class ND01SettingWidget(QDialog):
         self.cp_image = None
         self.end_drawing = None
 
-        self.current_camera = "PNM_9022V"
+        self.chart_view = None
+
+        self.r_list = []
+        self.g_list = []
+        self.b_list = []
+
+        self.current_camera = "PNM_9030V"
 
         self.image_load()
-        self.get_target(self.current_camera)
+        # self.get_target(self.current_camera)
 
         # Add QChart Widget in value_verticalLayout
-        if len(self.distance) > 4:
-            self.chart_view = self.chart_draw()
-            self.value_verticalLayout.addWidget(self.chart_view)
-
         if len(self.left_range) > 0:
             self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
             self.show_target_table()
+
+        if len(self.distance) > 4:
+            # self.chart_view = self.chart_draw()
+            # self.value_verticalLayout.addWidget(self.chart_view)
+            self.chart_update()
 
         self.red_checkBox.clicked.connect(self.chart_update)
         self.green_checkBox.clicked.connect(self.chart_update)
@@ -110,6 +117,9 @@ class ND01SettingWidget(QDialog):
     def show_target_table(self):
         min_x = []
         min_y = []
+        self.r_list = []
+        self.g_list = []
+        self.b_list = []
 
         copy_image = self.cp_image.copy()
         row_count = len(self.distance)
@@ -156,6 +166,9 @@ class ND01SettingWidget(QDialog):
         return c2 + (c1 - c2) * np.exp(-a * x)
 
     def chart_update(self):
+        if self.chart_view is None:
+            self.chart_view = self.chart_draw()
+
         if self.value_verticalLayout.count() == 0:
             self.chart_view = self.chart_draw()
             self.value_verticalLayout.addWidget(self.chart_view)
@@ -174,9 +187,9 @@ class ND01SettingWidget(QDialog):
         self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
         self.x.sort()
 
-        self.r_list = [13, 43, 71, 67, 82]
-        self.g_list = [9, 27, 76, 71, 114]
-        self.b_list = [9, 23, 87, 82, 149]
+        # self.r_list = [13, 43, 71, 67, 82]
+        # self.g_list = [9, 27, 76, 71, 114]
+        # self.b_list = [9, 23, 87, 82, 149]
 
         hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
         hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.distance, self.g_list, maxfev=5000)
@@ -289,13 +302,13 @@ class ND01SettingWidget(QDialog):
         self.left_range = None
         self.right_range = None
 
-        if self.cam_flag:
+        if self.cam_flag:   # cam_flag is True = PNM_9030V = Rear
             src = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
             self.target_setting_label.setText('  Rear Target Setting')
             self.current_camera = 'PNM_9030V'
             self.get_target(self.current_camera)
 
-        else:
+        else:   # cam_flag is False = PNM_9022V = Front
             src = "rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp"
             self.target_setting_label.setText('  Front Target Setting')
             self.current_camera = 'PNM_9022V'
@@ -305,6 +318,7 @@ class ND01SettingWidget(QDialog):
             print(f'Current camera - {self.current_camera.replace("_", " ")}')
 
             os.makedirs(f'{JS06Settings.get("target_csv_path")}/{self.current_camera}', exist_ok=True)
+            # os.makedirs(f'{JS06Settings.get("target_csv_path")}/rgb/{self.current_camera}', exist_ok=True)
             cap = cv2.VideoCapture(src)
             ret, cv_img = cap.read()
             cp_image = cv_img.copy()
@@ -340,6 +354,25 @@ class ND01SettingWidget(QDialog):
         painter.drawPixmap(QRect(0, 0, self.image_label.width(),
                                  self.image_label.height()), bk_image)
 
+        painter.setPen(QPen(Qt.white, 1, Qt.DotLine))
+        painter.drawLine(self.image_label.width() / 4, 0,
+                         self.image_label.width() / 4, self.image_label.height())
+        painter.drawLine(self.image_label.width() / 2, 0,
+                         self.image_label.width() / 2, self.image_label.height())
+        painter.drawLine(self.image_label.width() * 3 / 4, 0,
+                         self.image_label.width() * 3 / 4, self.image_label.height())
+
+        if self.cam_flag:
+            painter.drawText(0 + 10, 20, '0 °')
+            painter.drawText(self.image_label.width() / 4 + 10, 20, '45 °')
+            painter.drawText(self.image_label.width() / 2 + 10, 20, '90 °')
+            painter.drawText(self.image_label.width() * 3 / 4 + 10, 20, '135 °')
+        elif self.cam_flag is False:
+            painter.drawText(0 + 10, 20, '180 °')
+            painter.drawText(self.image_label.width() / 4 + 10, 20, '225 °')
+            painter.drawText(self.image_label.width() / 2 + 10, 20, '270 °')
+            painter.drawText(self.image_label.width() * 3 / 4 + 10, 20, '315 °')
+
         if self.left_range and self.right_range:
             for corner1, corner2, in zip(self.left_range, self.right_range):
                 br = QBrush(QColor(100, 10, 10, 40))
@@ -367,6 +400,13 @@ class ND01SettingWidget(QDialog):
             self.end_drawing = False
             self.isDrawing = False
             painter.end()
+
+    def drawLines(self, qp):
+        pen = QPen(Qt.white, 1, Qt.DotLine)
+        qp.setPen(qp)
+        # qp.drawLines()
+        # print(self.geometry())
+        # print(self.size())
 
     def str_to_tuple(self, before_list):
         """저장된 타겟들의 위치정보인 튜플 리스트가 문자열로 바뀌어 다시 튜플형태로 변환하는 함수"""
@@ -434,16 +474,10 @@ class ND01SettingWidget(QDialog):
                 # self.min_xy = self.minrgb(self.upper_left, self.lower_right)
                 self.target_name.append("target_" + str(len(self.left_range)))
 
-                print(self.left_range)
-                print(self.right_range)
-                print(self.distance)
-                print(self.target_name)
-
                 self.save_target(self.current_camera)
                 self.isDrawing = False
                 self.end_drawing = True
 
-                print(f'{text} km')
             else:
                 self.isDrawing = False
                 self.image_label.update()

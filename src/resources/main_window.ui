@@ -917,7 +917,7 @@ background-color: #1b3146;</string>
 color: #ffffff;</string>
               </property>
               <property name="text">
-               <string>  Prediction Visibility</string>
+               <string>  PM 2.5</string>
               </property>
              </widget>
             </item>
@@ -974,7 +974,7 @@ background-color: #1b3146;</string>
              <string notr="true">color:#ffffff</string>
             </property>
             <property name="text">
-             <string>- km</string>
+             <string>- ㎍/㎥</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
