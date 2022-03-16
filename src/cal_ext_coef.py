@@ -27,7 +27,7 @@ def select_max_rgb(r, g, b):
         select_color = 'green'
     else:
         select_color = 'blue'
-    select_color = 'green'
+    # select_color = 'green'
 
     return select_color
 
@@ -45,8 +45,8 @@ def cal_curve(hanhwa: pd.DataFrame):
 
     r1_init = hanhwa_r[0] * 0.7
     g1_init = hanhwa_g[0] * 0.7
-    b1_init = hanhwa_b[0] * 0.7
 
+    b1_init = hanhwa_b[0] * 0.7
     r2_init = hanhwa_r[-1] * 1.3
     g2_init = hanhwa_g[-1] * 1.3
     b2_init = hanhwa_b[-1] * 1.3
