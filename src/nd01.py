@@ -439,19 +439,11 @@ class ND01MainWindow(QMainWindow):
     @pyqtSlot(str)
     def clock(self, data):
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
-        # self.date = current_time[5:7] + current_time[8:10]
         self.year_date = current_time[2:4] + current_time[5:7] + current_time[8:10]
         self.real_time_label.setText(current_time)
+        self.p_vis_label.setText(f'{self.pm_text} ㎍/㎥')
 
         self._plot.refresh_stats(QDateTime.currentSecsSinceEpoch(), self.q_list)
-
-        # self._plot.update_plot(int(float(data)))
-
-        # result = 0
-        # for i in self._plot.plotData['y']:
-        #     result += i
-        # p_vis_km = f'{format(round(int(result / len(self._plot.plotData["y"])), 2), ",")}'
-        # p_vis_nm = f'{format(round(int(result / len(self._plot.plotData["y"])) / 1609, 2), ",")}'
 
         if self.visibility != 0:
             ext = 3.912 / self.visibility
@@ -459,20 +451,12 @@ class ND01MainWindow(QMainWindow):
             self.pm_text = round((ext * 1000 / 4 / 2.5) / (1 + 5.67 * ((hd / 100) ** 5.8)), 2)
 
         if self.km_mile_convert:
-            self.c_vis_label.setText(f'{format(round(self.visibility / 1609, 2), ",")} mile')
+            self.c_vis_label.setText(f'{format(round(self.visibility / 1.609, 2), ",")} mile')
 
         elif self.km_mile_convert is False:
             self.c_vis_label.setText(f'{format(int(self.visibility * 1000), ",")} m')
-            self.p_vis_label.setText(f'{self.pm_text} ㎍/㎥')
 
-        # data_time = self._plot.plotData['x']
-        # if int(float(data)) - 3600 * 3 in self._plot.plotData['x']:
-        #     index = data_time.index(int(float(data)) - 3600 * 3)
-        #     self._plot.plotData['x'].pop(index)
-        #     self._plot.plotData['y'].pop(index)
-
-        # self.thumbnail_refresh()
-        if current_time[-2:] == "00":
+        if current_time[-2:] == '00':
             self.thumbnail_refresh()
 
         if int(self.visibility * 1000) <= JS06Settings.get('visibility_alert_limit'):
@@ -528,21 +512,6 @@ class ND01MainWindow(QMainWindow):
             self.showFullScreen()
         if e.key() == Qt.Key_D:
             self.showNormal()
-
-    # def paintEvent(self, event: QPaintEvent):
-    #     qp = QPainter()
-    #     qp.begin(self)
-    #     self.drawLines(qp)
-    #     qp.end()
-    #
-    # def drawLines(self, qp):
-    #     pen = QPen(Qt.black, 20, Qt.SolidLine)
-    #
-    #     qp.setPen(pen)
-    #     qp.drawLine(240, 0, 240, 1070)
-    #     qp.drawLine(480, 0, 480, 411)
-    #     qp.drawLine(720, 0, 720, 411)
-    #     print('paint')
 
 
 class VideoWidget(QWidget):

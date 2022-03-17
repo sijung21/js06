@@ -10,7 +10,6 @@ from model import JS06Settings
 def minprint(epoch, left_range, right_range, distance, cv_img, camera):
     """A function that outputs pixels for calculating the dissipation coefficient in the specified areas"""
     cp_image = cv_img.copy()
-    cnt = 1
     min_x = []
     min_y = []
 
@@ -18,9 +17,9 @@ def minprint(epoch, left_range, right_range, distance, cv_img, camera):
         result = minrgb(upper_left, lower_right, cp_image)
         min_x.append(result[0])
         min_y.append(result[1])
-        cnt += 1
 
     visibility = get_rgb(epoch, min_x, min_y, cp_image, distance, camera)
+
     return visibility
 
 
@@ -33,11 +32,11 @@ def minrgb(upper_left, lower_right, cp_image):
     left_x = min(upper_left[0], lower_right[0])
     right_x = max(upper_left[0], lower_right[0])
 
-    test = cp_image[up_y:down_y, left_x:right_x, :]
+    target = cp_image[up_y:down_y, left_x:right_x, :]
 
-    r = test[:, :, 0]
-    g = test[:, :, 1]
-    b = test[:, :, 2]
+    r = target[:, :, 0]
+    g = target[:, :, 1]
+    b = target[:, :, 2]
 
     r = np.clip(r, 0, 765)
     sum_rgb = r + g + b
@@ -47,7 +46,7 @@ def minrgb(upper_left, lower_right, cp_image):
     show_min_y = t_idx[0][0] + up_y
     show_min_x = t_idx[1][0] + left_x
 
-    return (show_min_x, show_min_y)
+    return show_min_x, show_min_y
 
 
 def get_rgb(epoch: str, min_x, min_y, cp_image, distance, camera):
@@ -84,7 +83,7 @@ def save_rgb(r_list, g_list, b_list, epoch, distance, camera):
         result['g'] = g_list
         result['b'] = b_list
         result['distance'] = distance
-        result.to_csv(f'{save_path}/{epoch}.csv', mode="w", index=False)
+        result.to_csv(f'{save_path}/{epoch}.csv', mode='w', index=False)
         list1, list2, list3, select_color = cal_ext_coef.cal_curve(result)
 
         visibility = extinc_print(list1, list2, list3, select_color)
@@ -95,8 +94,6 @@ def save_rgb(r_list, g_list, b_list, epoch, distance, camera):
 def extinc_print(c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list: list = [0, 0, 0],
                  select_color: str = ""):
     """Select an appropriate value among visibility by wavelength."""
-    g_ext = round(alp_list[1], 1)
-    visibility = None
 
     if select_color == 'red':
         visibility = visibility_print(alp_list[0])
@@ -110,7 +107,6 @@ def extinc_print(c1_list: list = [0, 0, 0], c2_list: list = [0, 0, 0], alp_list:
 
 def visibility_print(ext_g: float = 0.0):
     """Print the visibility"""
-    vis_value = 0
 
     vis_value = (3.912 / ext_g)
     if vis_value > 20:
@@ -127,7 +123,7 @@ def get_target(camera_name: str):
     """Retrieves target information of a specific camera."""
 
     save_path = JS06Settings.get('target_csv_path')
-    # save_path = os.path.join(f"target/{camera_name}")
+
     if os.path.isfile(f'{save_path}/{camera_name}/{camera_name}.csv'):
         target_df = pd.read_csv(f'{save_path}/{camera_name}/{camera_name}.csv')
         target_name = target_df["target_name"].tolist()
@@ -137,6 +133,7 @@ def get_target(camera_name: str):
         right_range = str_to_tuple(right_range)
         distance = target_df["distance"].tolist()
         return target_name, left_range, right_range, distance
+
     else:
         return [], [], [], []
 

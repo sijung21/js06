@@ -69,7 +69,7 @@ def producer(q):
 
                 q.put(visibility_front)
 
-                print('*****')
+                # print('*****')
                 # print(f'Front Visibility: {format(int(float(visibility_front) * 1000), ",")} m')
                 # print(f'Rear Visibility: {format(int(float(visibility_rear) * 1000), ",")} m')
 
