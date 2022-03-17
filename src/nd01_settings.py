@@ -7,42 +7,45 @@
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import os
-
+import traceback
 import cv2
+import numpy as np
 import pandas as pd
+from scipy.optimize import curve_fit
+
 from PyQt5 import uic
 from PyQt5.QtCore import (QPoint, QRect, Qt,
                           QPointF)
 from PyQt5.QtGui import (QPixmap, QPainter, QBrush,
                          QColor, QPen, QImage,
-                         QIcon)
-from PyQt5.QtWidgets import (QApplication, QLabel, QInputDialog,
-                             QDialog, QAbstractItemView, QVBoxLayout,
-                             QGridLayout, QPushButton, QMessageBox,
-                             QFileDialog)
-from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
-                           QPolarChart, QScatterSeries, QValueAxis,
-                           QChart)
+                         QIcon, QFont, QPalette,
+                         QLinearGradient, qRgb)
+from PyQt5.QtWidgets import (QApplication, QInputDialog, QDialog,
+                             QMessageBox, QFileDialog, QHeaderView,
+                             QTableWidget, QTableWidgetItem, QLabel)
+from PyQt5.QtChart import QChart, QChartView, QLineSeries, QValueAxis
+
 from model import JS06Settings
-from efficiency_chart import EfficiencyChart
+import target_info
+from auto_file_delete import FileAutoDelete
 
 
 class ND01SettingWidget(QDialog):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
 
-        super().__init__(*args, **kwargs)
+        super().__init__()
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "resources/settings.ui")
+                               "resources/setting_window.ui")
         uic.loadUi(ui_path, self)
-        # self.setWindowFlag(Qt.FramelessWindowHint)
+        self.showFullScreen()
+        self.setWindowFlag(Qt.FramelessWindowHint)
 
         self.begin = QPoint()
         self.end = QPoint()
 
         self.upper_left = ()
         self.lower_right = ()
-        # self.min_xy = ()
 
         self.target_name = []
         self.left_range = []
@@ -51,7 +54,7 @@ class ND01SettingWidget(QDialog):
 
         self.isDrawing = False
         self.draw_flag = False
-        self.cam_flag = False
+        self.cam_flag = True
 
         self.video_width = 0
         self.video_height = 0
@@ -59,21 +62,30 @@ class ND01SettingWidget(QDialog):
         self.cp_image = None
         self.end_drawing = None
 
-        self.current_camera = ""
+        self.chart_view = None
+
+        self.r_list = []
+        self.g_list = []
+        self.b_list = []
+
+        self.current_camera = "PNM_9030V"
 
         self.image_load()
+        # self.get_target(self.current_camera)
 
-        # 그림 그리는 삐뮤디 생성
-        # self.blank_lbl = QLabel(self.image_label)
-        # # self.blank_lbl.setGeometry(0, 0, 1200, 500)
-        # self.blank_lbl.paintEvent = self.lbl_paintEvent
-        #
-        # self.blank_lbl.mousePressEvent = self.lbl_mousePressEvent
-        # self.blank_lbl.mouseMoveEvent = self.lbl_mouseMoveEvent
-        # self.blank_lbl.mouseReleaseEvent = self.lbl_mouseReleaseEvent
+        # Add QChart Widget in value_verticalLayout
+        if len(self.left_range) > 0:
+            self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
+            self.show_target_table()
 
-        self.efficiencyChart = EfficiencyChart(self)
-        self.value_verticalLayout.addWidget(self.efficiencyChart)
+        if len(self.distance) > 4:
+            # self.chart_view = self.chart_draw()
+            # self.value_verticalLayout.addWidget(self.chart_view)
+            self.chart_update()
+
+        self.red_checkBox.clicked.connect(self.chart_update)
+        self.green_checkBox.clicked.connect(self.chart_update)
+        self.blue_checkBox.clicked.connect(self.chart_update)
 
         self.flip_button.clicked.connect(self.camera_flip)
         self.flip_button.enterEvent = self.btn_on
@@ -82,6 +94,7 @@ class ND01SettingWidget(QDialog):
         self.data_csv_path_button.clicked.connect(self.data_csv_path)
         self.target_csv_path_button.clicked.connect(self.target_csv_path)
         self.image_save_path_button.clicked.connect(self.image_save_path)
+        self.afd_button.clicked.connect(self.afd_btn_click)
 
         self.data_csv_path_textBrowser.setPlainText(JS06Settings.get('data_csv_path'))
         self.target_csv_path_textBrowser.setPlainText(JS06Settings.get('target_csv_path'))
@@ -92,7 +105,6 @@ class ND01SettingWidget(QDialog):
         self.pw_lineEdit.setText(JS06Settings.get('login_pw'))
 
         self.image_size_comboBox.setCurrentIndex(JS06Settings.get('image_size'))
-        # self.image_size_comboBox.currentTextChanged.connect(self.image_size_changed)
 
         self.image_label.paintEvent = self.lbl_paintEvent
         self.image_label.mousePressEvent = self.lbl_mousePressEvent
@@ -101,6 +113,177 @@ class ND01SettingWidget(QDialog):
 
         self.buttonBox.accepted.connect(self.accept_click)
         self.buttonBox.rejected.connect(self.reject)
+
+    def show_target_table(self):
+        min_x = []
+        min_y = []
+        self.r_list = []
+        self.g_list = []
+        self.b_list = []
+
+        copy_image = self.cp_image.copy()
+        row_count = len(self.distance)
+        self.tableWidget.setRowCount(row_count)
+        self.tableWidget.setColumnCount(3)
+        self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        for upper_left, lower_right in zip(self.left_range, self.right_range):
+            result = target_info.minrgb(upper_left, lower_right, copy_image)
+            min_x.append(result[0])
+            min_y.append(result[1])
+
+            self.r_list.append(copy_image[result[1], result[0], 0])
+            self.g_list.append(copy_image[result[1], result[0], 1])
+            self.b_list.append(copy_image[result[1], result[0], 2])
+
+        for i in range(0, row_count):
+            crop_image = copy_image[min_y[i] - 50: min_y[i] + 50, min_x[i] - 50: min_x[i] + 50, :].copy()
+            item = self.getImageLabel(crop_image)
+            self.tableWidget.setCellWidget(i, 0, item)
+
+            item2 = QTableWidgetItem(f'target {i + 1}')
+            item2.setTextAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+            item2.setForeground(QBrush(QColor(255, 255, 255)))
+            self.tableWidget.setItem(i, 1, item2)
+
+            item3 = QTableWidgetItem(f'{self.distance[i]} km')
+            item3.setTextAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
+            item3.setForeground(QBrush(QColor(255, 255, 255)))
+            self.tableWidget.setItem(i, 2, item3)
+
+    def getImageLabel(self, image):
+        imageLabel = QLabel()
+        imageLabel.setScaledContents(True)
+        height, width, channel = image.shape
+        bytesPerLine = channel * width
+
+        qImage = QImage(image.data.tobytes(), 100, 100, bytesPerLine, QImage.Format_RGB888)
+        imageLabel.setPixmap(QPixmap.fromImage(qImage))
+
+        return imageLabel
+
+    def func(self, x, c1, c2, a):
+        return c2 + (c1 - c2) * np.exp(-a * x)
+
+    def chart_update(self):
+        if self.chart_view is None:
+            self.chart_view = self.chart_draw()
+
+        if self.value_verticalLayout.count() == 0:
+            self.chart_view = self.chart_draw()
+            self.value_verticalLayout.addWidget(self.chart_view)
+        else:
+            new_chart_view = self.chart_draw()
+            self.value_verticalLayout.removeWidget(self.chart_view)
+            self.value_verticalLayout.addWidget(new_chart_view, 0)
+            self.value_verticalLayout.update()
+            self.chart_view = new_chart_view
+
+    def chart_draw(self):
+        """세팅창 그래프 칸에 소산계수 차트를 그리는 함수"""
+
+        # self.distance = [0.22, 1.6, 2.5, 6.0, 20.0]
+        # self.distance = [0.22, 1.6, 2.5, 6.0, 20.0]
+        self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
+        self.x.sort()
+
+        # self.r_list = [13, 43, 71, 67, 82]
+        # self.g_list = [9, 27, 76, 71, 114]
+        # self.b_list = [9, 23, 87, 82, 149]
+
+        hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
+        hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.distance, self.g_list, maxfev=5000)
+        hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.distance, self.b_list, maxfev=5000)
+
+        # chart object
+        chart = QChart()
+        font = QFont()
+        font.setPixelSize(20)
+        font.setBold(3)
+        # palette = QPalette()
+        # palette.setColor(QPalette.Window, QColor('red'))
+        chart.setTitleFont(font)
+        # chart.setPalette(palette)
+        chart.setTitle('Extinction coefficient Graph')
+        chart.setAnimationOptions(QChart.SeriesAnimations)
+        chart.setBackgroundBrush(QBrush(QColor(255, 255, 255)))
+
+        # backgroundGradient = QLinearGradient()
+        # backgroundGradient.setStart(QPointF(0, 0))
+        # backgroundGradient.setFinalStop(QPointF(0, 1))
+        # backgroundGradient.setColorAt(0.0, qRgb(255, 0, 0))
+        # backgroundGradient.setColorAt(1.0, qRgb(0, 255, 0))
+        # chart.setBackgroundBrush(backgroundGradient)
+
+        # chart.createDefaultAxes()
+        axis_x = QValueAxis()
+        axis_x.setTickCount(7)
+        axis_x.setLabelFormat('%i')
+        axis_x.setTitleText('Distance(km)')
+        axis_x.setRange(0, 20)
+        chart.addAxis(axis_x, Qt.AlignBottom)
+
+        axis_y = QValueAxis()
+        axis_y.setTickCount(7)
+        axis_y.setLabelFormat('%i')
+        axis_y.setTitleText('Intensity')
+        axis_y.setRange(0, 255)
+        chart.addAxis(axis_y, Qt.AlignLeft)
+
+        # Red Graph
+        if self.red_checkBox.isChecked():
+            series1 = QLineSeries()
+            series1.setName('Red')
+            pen = QPen()
+            pen.setWidth(2)
+            series1.setPen(pen)
+            series1.setColor(QColor('Red'))
+
+            for dis in self.x:
+                series1.append(*(dis, self.func(dis, *hanhwa_opt_r)))
+            chart.addSeries(series1)  # data feeding
+            series1.attachAxis(axis_x)
+            series1.attachAxis(axis_y)
+
+        # Green Graph
+        if self.green_checkBox.isChecked():
+            series2 = QLineSeries()
+            series2.setName('Green')
+            pen = QPen()
+            pen.setWidth(2)
+            series2.setPen(pen)
+            series2.setColor(QColor('Green'))
+            for dis in self.x:
+                series2.append(*(dis, self.func(dis, *hanhwa_opt_g)))
+            chart.addSeries(series2)  # data feeding
+
+            series2.attachAxis(axis_x)
+            series2.attachAxis(axis_y)
+
+        # Blue Graph
+        if self.blue_checkBox.isChecked():
+            series3 = QLineSeries()
+            series3.setName('Blue')
+            pen = QPen()
+            pen.setWidth(2)
+            series3.setPen(pen)
+            series3.setColor(QColor('Blue'))
+            for dis in self.x:
+                series3.append(*(dis, self.func(dis, *hanhwa_opt_b)))
+            chart.addSeries(series3)  # data feeding
+
+            series3.attachAxis(axis_x)
+            series3.attachAxis(axis_y)
+
+        chart.legend().setAlignment(Qt.AlignRight)
+
+        # displaying chart
+        chart.setBackgroundBrush(QBrush(QColor(22, 32, 42)))
+        chart_view = QChartView(chart)
+        chart_view.setRenderHint(QPainter.Antialiasing)
+        chart_view.setMaximumSize(800, 500)
+
+        return chart_view
 
     def camera_flip(self):
         if self.cam_flag:
@@ -119,13 +302,13 @@ class ND01SettingWidget(QDialog):
         self.left_range = None
         self.right_range = None
 
-        if self.cam_flag:
+        if self.cam_flag:   # cam_flag is True = PNM_9030V = Rear
             src = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
             self.target_setting_label.setText('  Rear Target Setting')
             self.current_camera = 'PNM_9030V'
             self.get_target(self.current_camera)
 
-        else:
+        else:   # cam_flag is False = PNM_9022V = Front
             src = "rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp"
             self.target_setting_label.setText('  Front Target Setting')
             self.current_camera = 'PNM_9022V'
@@ -135,6 +318,7 @@ class ND01SettingWidget(QDialog):
             print(f'Current camera - {self.current_camera.replace("_", " ")}')
 
             os.makedirs(f'{JS06Settings.get("target_csv_path")}/{self.current_camera}', exist_ok=True)
+            # os.makedirs(f'{JS06Settings.get("target_csv_path")}/rgb/{self.current_camera}', exist_ok=True)
             cap = cv2.VideoCapture(src)
             ret, cv_img = cap.read()
             cp_image = cv_img.copy()
@@ -170,6 +354,25 @@ class ND01SettingWidget(QDialog):
         painter.drawPixmap(QRect(0, 0, self.image_label.width(),
                                  self.image_label.height()), bk_image)
 
+        painter.setPen(QPen(Qt.white, 1, Qt.DotLine))
+        painter.drawLine(self.image_label.width() / 4, 0,
+                         self.image_label.width() / 4, self.image_label.height())
+        painter.drawLine(self.image_label.width() / 2, 0,
+                         self.image_label.width() / 2, self.image_label.height())
+        painter.drawLine(self.image_label.width() * 3 / 4, 0,
+                         self.image_label.width() * 3 / 4, self.image_label.height())
+
+        if self.cam_flag:
+            painter.drawText(0 + 10, 20, '0 °')
+            painter.drawText(self.image_label.width() / 4 + 10, 20, '45 °')
+            painter.drawText(self.image_label.width() / 2 + 10, 20, '90 °')
+            painter.drawText(self.image_label.width() * 3 / 4 + 10, 20, '135 °')
+        elif self.cam_flag is False:
+            painter.drawText(0 + 10, 20, '180 °')
+            painter.drawText(self.image_label.width() / 4 + 10, 20, '225 °')
+            painter.drawText(self.image_label.width() / 2 + 10, 20, '270 °')
+            painter.drawText(self.image_label.width() * 3 / 4 + 10, 20, '315 °')
+
         if self.left_range and self.right_range:
             for corner1, corner2, in zip(self.left_range, self.right_range):
                 br = QBrush(QColor(100, 10, 10, 40))
@@ -179,8 +382,7 @@ class ND01SettingWidget(QDialog):
                 corner1_2 = int(corner1[1] / self.video_height * self.image_label.height())
                 corner2_1 = int((corner2[0] - corner1[0]) / self.video_width * self.image_label.width())
                 corner2_2 = int((corner2[1] - corner1[1]) / self.video_height * self.image_label.height())
-                self.target = QRect(corner1_1, corner1_2, corner2_1, corner2_2)
-                painter.drawRect(self.target)
+                painter.drawRect(QRect(corner1_1, corner1_2, corner2_1, corner2_2))
 
         if self.isDrawing:
             br = QBrush(QColor(100, 10, 10, 40))
@@ -198,6 +400,13 @@ class ND01SettingWidget(QDialog):
             self.end_drawing = False
             self.isDrawing = False
             painter.end()
+
+    def drawLines(self, qp):
+        pen = QPen(Qt.white, 1, Qt.DotLine)
+        qp.setPen(qp)
+        # qp.drawLines()
+        # print(self.geometry())
+        # print(self.size())
 
     def str_to_tuple(self, before_list):
         """저장된 타겟들의 위치정보인 튜플 리스트가 문자열로 바뀌어 다시 튜플형태로 변환하는 함수"""
@@ -264,11 +473,11 @@ class ND01SettingWidget(QDialog):
                 self.distance.append(text)
                 # self.min_xy = self.minrgb(self.upper_left, self.lower_right)
                 self.target_name.append("target_" + str(len(self.left_range)))
+
                 self.save_target(self.current_camera)
                 self.isDrawing = False
                 self.end_drawing = True
 
-                print(f'{text} km')
             else:
                 self.isDrawing = False
                 self.image_label.update()
@@ -296,6 +505,11 @@ class ND01SettingWidget(QDialog):
             self.image_save_path_textBrowser.setPlainText(fName)
         else:
             pass
+
+    def afd_btn_click(self):
+        dlg = FileAutoDelete()
+        dlg.show()
+        dlg.exec_()
 
     def save_vis(self):
 
