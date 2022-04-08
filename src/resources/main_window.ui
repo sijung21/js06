@@ -262,6 +262,12 @@ background-color: #1b3146;</string>
           <property name="spacing">
            <number>0</number>
           </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
          </layout>
         </item>
        </layout>

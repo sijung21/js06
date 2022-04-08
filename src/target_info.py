@@ -9,6 +9,7 @@ from model import JS06Settings
 
 def minprint(epoch, left_range, right_range, distance, cv_img, camera):
     """A function that outputs pixels for calculating the dissipation coefficient in the specified areas"""
+
     cp_image = cv_img.copy()
     min_x = []
     min_y = []
@@ -51,6 +52,7 @@ def minrgb(upper_left, lower_right, cp_image):
 
 def get_rgb(epoch: str, min_x, min_y, cp_image, distance, camera):
     """Gets the RGB values of the coordinates."""
+
     r_list = []
     g_list = []
     b_list = []
@@ -111,7 +113,7 @@ def visibility_print(ext_g: float = 0.0):
     vis_value = (3.912 / ext_g)
     if vis_value > 20:
         vis_value = 20
-    elif vis_value < 0.01:
+    elif vis_value <= 0.01:
         vis_value = 0.01
 
     vis_value_str = f'{vis_value:.3f}'
@@ -126,16 +128,17 @@ def get_target(camera_name: str):
 
     if os.path.isfile(f'{save_path}/{camera_name}/{camera_name}.csv'):
         target_df = pd.read_csv(f'{save_path}/{camera_name}/{camera_name}.csv')
-        target_name = target_df["target_name"].tolist()
-        left_range = target_df["left_range"].tolist()
-        left_range = str_to_tuple(left_range)
-        right_range = target_df["right_range"].tolist()
-        right_range = str_to_tuple(right_range)
-        distance = target_df["distance"].tolist()
-        return target_name, left_range, right_range, distance
+        target_name = target_df['target_name'].tolist()
+        left_range = str_to_tuple(target_df['left_range'].tolist())
+        # left_range = str_to_tuple(left_range)
+        right_range = str_to_tuple(target_df['right_range'].tolist())
+        # right_range = str_to_tuple(right_range)
+        azimuth = target_df['azimuth'].tolist()
+        distance = target_df['distance'].tolist()
+        return target_name, left_range, right_range, distance, azimuth
 
     else:
-        return [], [], [], []
+        return [], [], [], [], []
 
 
 def str_to_tuple(before_list):

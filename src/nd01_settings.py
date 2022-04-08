@@ -36,7 +36,7 @@ class ND01SettingWidget(QDialog):
 
         super().__init__()
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "resources/setting_window.ui")
+                               'resources/setting_window.ui')
         uic.loadUi(ui_path, self)
         self.showFullScreen()
         self.setWindowFlag(Qt.FramelessWindowHint)
@@ -51,6 +51,7 @@ class ND01SettingWidget(QDialog):
         self.left_range = []
         self.right_range = []
         self.distance = []
+        self.azimuth = []
 
         self.isDrawing = False
         self.draw_flag = False
@@ -68,9 +69,11 @@ class ND01SettingWidget(QDialog):
         self.g_list = []
         self.b_list = []
 
-        self.current_camera = "PNM_9030V"
+        self.current_camera = 'PNM_9030V'
 
         self.image_load()
+
+        self.flag = 0
         # self.get_target(self.current_camera)
 
         # Add QChart Widget in value_verticalLayout
@@ -182,14 +185,8 @@ class ND01SettingWidget(QDialog):
     def chart_draw(self):
         """세팅창 그래프 칸에 소산계수 차트를 그리는 함수"""
 
-        # self.distance = [0.22, 1.6, 2.5, 6.0, 20.0]
-        # self.distance = [0.22, 1.6, 2.5, 6.0, 20.0]
         self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
         self.x.sort()
-
-        # self.r_list = [13, 43, 71, 67, 82]
-        # self.g_list = [9, 27, 76, 71, 114]
-        # self.b_list = [9, 23, 87, 82, 149]
 
         hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
         hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.distance, self.g_list, maxfev=5000)
@@ -208,14 +205,6 @@ class ND01SettingWidget(QDialog):
         chart.setAnimationOptions(QChart.SeriesAnimations)
         chart.setBackgroundBrush(QBrush(QColor(255, 255, 255)))
 
-        # backgroundGradient = QLinearGradient()
-        # backgroundGradient.setStart(QPointF(0, 0))
-        # backgroundGradient.setFinalStop(QPointF(0, 1))
-        # backgroundGradient.setColorAt(0.0, qRgb(255, 0, 0))
-        # backgroundGradient.setColorAt(1.0, qRgb(0, 255, 0))
-        # chart.setBackgroundBrush(backgroundGradient)
-
-        # chart.createDefaultAxes()
         axis_x = QValueAxis()
         axis_x.setTickCount(7)
         axis_x.setLabelFormat('%i')
@@ -303,13 +292,13 @@ class ND01SettingWidget(QDialog):
         self.right_range = None
 
         if self.cam_flag:   # cam_flag is True = PNM_9030V = Rear
-            src = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
+            src = 'rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp'
             self.target_setting_label.setText('  Rear Target Setting')
             self.current_camera = 'PNM_9030V'
             self.get_target(self.current_camera)
 
         else:   # cam_flag is False = PNM_9022V = Front
-            src = "rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp"
+            src = 'rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp'
             self.target_setting_label.setText('  Front Target Setting')
             self.current_camera = 'PNM_9022V'
             self.get_target(self.current_camera)
@@ -317,12 +306,12 @@ class ND01SettingWidget(QDialog):
         try:
             print(f'Current camera - {self.current_camera.replace("_", " ")}')
 
-            os.makedirs(f'{JS06Settings.get("target_csv_path")}/{self.current_camera}', exist_ok=True)
-            # os.makedirs(f'{JS06Settings.get("target_csv_path")}/rgb/{self.current_camera}', exist_ok=True)
+            # os.makedirs(f'{JS06Settings.get("target_csv_path")}/{self.current_camera}', exist_ok=True)
             cap = cv2.VideoCapture(src)
             ret, cv_img = cap.read()
             cp_image = cv_img.copy()
             cap.release()
+
         except Exception as e:
             QMessageBox.about(self, 'Error', f'{e}')
 
@@ -401,13 +390,6 @@ class ND01SettingWidget(QDialog):
             self.isDrawing = False
             painter.end()
 
-    def drawLines(self, qp):
-        pen = QPen(Qt.white, 1, Qt.DotLine)
-        qp.setPen(qp)
-        # qp.drawLines()
-        # print(self.geometry())
-        # print(self.size())
-
     def str_to_tuple(self, before_list):
         """저장된 타겟들의 위치정보인 튜플 리스트가 문자열로 바뀌어 다시 튜플형태로 변환하는 함수"""
         tuple_list = [i.split(',') for i in before_list]
@@ -448,6 +430,7 @@ class ND01SettingWidget(QDialog):
                 del self.target_name[-1]
                 del self.left_range[-1]
                 del self.right_range[-1]
+                # del self.azimuth[-1]
                 self.save_target(self.current_camera)
             self.draw_flag = False
             self.image_label.update()
@@ -466,18 +449,26 @@ class ND01SettingWidget(QDialog):
             self.image_label.update()
             self.lower_right = (int((self.end.x() / self.image_label.width()) * self.video_width),
                                 int((self.end.y() / self.image_label.height()) * self.video_height))
+
             text, ok = QInputDialog.getText(self, '거리 입력', '거리(km)')
             if ok:
                 self.left_range.append(self.upper_left)
                 self.right_range.append(self.lower_right)
                 self.distance.append(text)
-                # self.min_xy = self.minrgb(self.upper_left, self.lower_right)
-                self.target_name.append("target_" + str(len(self.left_range)))
+                self.target_name.append('target_' + str(len(self.left_range)))
+
+                if 0 < self.upper_left[0] <= 1524:
+                    self.azimuth.append(0)
+                elif 1524 < self.upper_left[0] <= 3048:
+                    self.azimuth.append(1)
+                elif 3048 < self.upper_left[0] <= 4572:
+                    self.azimuth.append(2)
+                elif 4572 < self.upper_left[0] <= 6096:
+                    self.azimuth.append(3)
 
                 self.save_target(self.current_camera)
                 self.isDrawing = False
                 self.end_drawing = True
-
             else:
                 self.isDrawing = False
                 self.image_label.update()
@@ -537,29 +528,32 @@ class ND01SettingWidget(QDialog):
 
         file = f'{JS06Settings.get("target_csv_path")}/{camera}/{camera}.csv'
         if self.left_range and os.path.isfile(file):
-            col = ['target_name', 'left_range', 'right_range', 'distance']
+            col = ['target_name', 'left_range', 'right_range', 'distance', 'azimuth']
             result = pd.DataFrame(columns=col)
             result['target_name'] = self.target_name
             result['left_range'] = self.left_range
             result['right_range'] = self.right_range
             result['distance'] = self.distance
+            # result['azimuth'] = self.azimuth
             result.to_csv(file, mode='w', index=False)
             print(f'[{camera}.csv SAVED]')
 
     def get_target(self, camera: str):
 
         save_path = os.path.join(f'{JS06Settings.get("target_csv_path")}/{camera}')
+        file = f'{save_path}/{camera}.csv'
 
         if os.path.isfile(f'{save_path}/{camera}.csv') is False:
             os.makedirs(f'{save_path}', exist_ok=True)
-            makeFile = pd.DataFrame(columns=['target_name', 'left_range', 'right_range', 'distance'])
-            makeFile.to_csv(f'{save_path}/{camera}.csv', mode='w', index=False)
+            makeFile = pd.DataFrame(columns=['target_name', 'left_range', 'right_range', 'distance', 'azimuth'])
+            makeFile.to_csv(file, mode='w', index=False)
 
         target_df = pd.read_csv(f'{save_path}/{camera}.csv')
-        self.target_name = target_df["target_name"].tolist()
-        self.left_range = self.str_to_tuple(target_df["left_range"].tolist())
-        self.right_range = self.str_to_tuple(target_df["right_range"].tolist())
-        self.distance = target_df["distance"].tolist()
+        self.target_name = target_df['target_name'].tolist()
+        self.left_range = self.str_to_tuple(target_df['left_range'].tolist())
+        self.right_range = self.str_to_tuple(target_df['right_range'].tolist())
+        self.distance = target_df['distance'].tolist()
+        # self.azimuth = target_df['azimuth'].tolist()
 
     def accept_click(self):
 

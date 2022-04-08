@@ -23,21 +23,20 @@ def producer(q):
     rear_cap_name = 'PNM_9022V'
 
     front_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
-    rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp')
+    rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.231/profile2/media.smp')
 
-    # if front_cap.isOpened():
     if rear_cap.isOpened() and front_cap.isOpened():
         while True:
             epoch = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             date = epoch[2:8]
 
-            if epoch[-2:] == '00':
-                front_target_name, front_left_range, front_right_range, front_distance = \
+            if epoch[-1:] == '0':
+                front_target_name, front_left_range, front_right_range, front_distance, front_azimuth = \
                     target_info.get_target(front_cap_name)
-                rear_target_name, rear_left_range, rear_right_range, rear_distance = \
+
+                rear_target_name, rear_left_range, rear_right_range, rear_distance, rear_azimuth = \
                     target_info.get_target(rear_cap_name)
 
-                # if len(front_left_range) < 4:
                 if len(front_left_range) < 4 and len(rear_left_range) < 4:
                     continue
                 else:
@@ -52,25 +51,29 @@ def producer(q):
                 front_ret, front_frame = front_cap.read()
                 rear_ret, rear_frame = rear_cap.read()
 
-                # if not front_ret:
                 if not front_ret or not rear_ret:
+                    print('Found Error; Rebuilding stream')
+
                     front_cap.release()
                     rear_cap.release()
                     front_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
-                    rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp')
-                    print('Found Error; Rebuilding stream')
+                    rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.231/profile2/media.smp')
+                    front_ret, front_frame = front_cap.read()
+                    rear_ret, rear_frame = rear_cap.read()
 
-                visibility_front = target_info.minprint(epoch[:-2], front_left_range, front_right_range,
-                                                        front_distance, front_frame, front_cap_name)
-                visibility_rear = target_info.minprint(epoch[:-2], rear_left_range, rear_right_range,
-                                                       rear_distance, rear_frame, front_cap_name)
-                visibility_front = visibility_front
-                # visibility_rear = visibility_rear
+                visibility_front_0 = target_info.minprint(epoch[:-2], front_left_range, front_right_range,
+                                                          front_distance, front_frame, front_cap_name)
+                # visibility_front_1 = target_info.minprint(epoch[:-2], )
+
+                # visibility_rear_0 = target_info.minprint(epoch[:-2], rear_left_range, rear_right_range,
+                #                                        rear_distance, rear_frame, front_cap_name)
+                visibility_front = visibility_front_0
+                # visibility_rear = visibility_rear_0
 
                 q.put(visibility_front)
 
                 # print('*****')
-                # print(f'Front Visibility: {format(int(float(visibility_front) * 1000), ",")} m')
+                #                 # print(f'Front Visibility: {format(int(float(visibility_front) * 1000), ",")} m')
                 # print(f'Rear Visibility: {format(int(float(visibility_rear) * 1000), ",")} m')
 
                 if JS06Settings.get('image_size') == 0:  # Original size
@@ -97,7 +100,7 @@ def producer(q):
                 front_cap.release()
                 rear_cap.release()
                 front_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
-                rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp')
+                rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.231/profile2/media.smp')
 
             cv2.destroyAllWindows()
     else:

@@ -12,18 +12,25 @@ import os
 import time
 
 import vlc
+import random
 import numpy as np
+import pandas as pd
 import pyqtgraph as pg
 import multiprocessing as mp
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from multiprocessing import Process, Queue
 
 from PyQt5.QtGui import (QPixmap, QIcon, QPainter,
-                         QColor, QPaintEvent, QPen)
+                         QColor, QPaintEvent, QPen,
+                         QFont)
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QFrame,
-                             QVBoxLayout, QLabel)
+                             QVBoxLayout, QLabel, QGraphicsOpacityEffect,
+                             QInputDialog)
 from PyQt5.QtCore import (Qt, pyqtSlot, pyqtSignal,
                           QRect, QTimer, QObject,
-                          QThread, QPointF, QDateTime)
+                          QThread, QPointF, QDateTime,
+                          QPoint)
 from PyQt5.QtChart import (QChartView, QLegend, QLineSeries,
                            QPolarChart, QScatterSeries, QValueAxis,
                            QChart, QDateTimeAxis)
@@ -77,6 +84,9 @@ class VisibilityView(QChartView):
         self.setMinimumSize(200, 200)
         self.setMaximumSize(600, 400)
 
+        self.epoch = None
+        self.vis = None
+
         now = QDateTime.currentSecsSinceEpoch()
         zeros = [(t * 1000, -1) for t in range(now - maxlen * 60, now, 60)]
         self.data = collections.deque(zeros, maxlen=maxlen)
@@ -85,11 +95,9 @@ class VisibilityView(QChartView):
 
         chart = QChart()
         chart.legend().setVisible(False)
-        # chart.legend().setColor(QColor(255, 255, 255, 255))
-        # chart.setTitleBrush(QColor(255, 255, 255, 255))
-        # chart.setBackgroundBrush(QColor(0, 0, 0, 255))
+        self.series = QLineSeries()
+
         self.setChart(chart)
-        self.series = QLineSeries(name='Prevailing Visibility')
         chart.addSeries(self.series)
 
         axis_x = QDateTimeAxis()
@@ -108,25 +116,37 @@ class VisibilityView(QChartView):
         axis_y.setTitleText('Distance (km)')
         chart.setAxisY(axis_y, self.series)
 
-        data_point = [QPointF(t, v) for t, v in self.data]
-        self.series.append(data_point)
+        # data_point = [QPointF(t, v) for t, v in self.data]
+        # self.series.append(data_point)
 
-    # @pyqtSlot(int, dict)
-    def refresh_stats(self, epoch: int, vis_list: list):
-        # vis_list = list(vis.values())
+    @pyqtSlot(list, list)
+    # def refresh_stats(self, epoch: int, vis_list: list):
+    def refresh_stats(self, epoch: list, vis: list):
 
-        if len(vis_list) == 0:
-            vis_list = [0]
-        prev_vis = self.prevailing_visibility(vis_list)
-        # epoch = QDateTime.currentSecsSinceEpoch()
-        self.data.append((epoch * 1000, prev_vis))
+        # if len(data) == 0:
+        #     vis_list = [0]
+        # prev_vis = self.prevailing_visibility(vis_list)
 
-        left = QDateTime.fromMSecsSinceEpoch(self.data[0][0])
-        right = QDateTime.fromMSecsSinceEpoch(self.data[-1][0])
-        self.chart().axisX().setRange(left, right)
+        # for i in range(len(epoch)):
+        #     self.data.append((epoch[i] * 1000, prev_vis))
 
-        data_point = [QPointF(t, v) for t, v in self.data]
-        self.series.replace(data_point)
+        # self.data.append((epoch * 1000, prev_vis))
+        # print(data)
+
+        # self.series.append(epoch, vis)
+        self.epoch = epoch
+        self.vis = vis
+
+        # self.data.append((1649141890000, 5))
+        # self.data.append((1649144490000, 20))
+
+        # left = QDateTime.fromMSecsSinceEpoch(self.data[0][0])
+        # right = QDateTime.fromMSecsSinceEpoch(self.data[-1][0])
+        # self.chart().axisX().setRange(left, right)
+        #
+        # data_point = [QPointF(t, v) for t, v in self.data]
+        # self.series.replace(data_point)
+        pass
 
     def prevailing_visibility(self, vis: list) -> float:
         if None in vis:
@@ -136,6 +156,9 @@ class VisibilityView(QChartView):
         prevailing = sorted_vis[(len(sorted_vis) - 1) // 2]
 
         return prevailing
+
+    def mouseDoubleClickEvent(self, event):
+        print('hi')
 
 
 class DiscernmentView(QChartView):
@@ -183,20 +206,99 @@ class DiscernmentView(QChartView):
         chart.setAxisY(axis_y, self.negatives)
 
     def refresh_stats(self):
+        az0 = 22.5      # 0 ~ 45°
+        az1 = 67.5      # 45 ~ 90°
+        az2 = 112.5     # 90 ~ 135°
+        az3 = 157.5     # 135 ~ 180°
+        az4 = 202.5     # 180 ~ 225°
+        az5 = 247.5     # 225 ~ 270°
+        az6 = 292.5     # 270 ~ 315°
+        az7 = 337.5     # 315 ~ 360°
 
         positives = []
-        negatives = [(0, 4), (0, 9), (0, 14),
-                     (45, 5), (45, 10), (45, 15),
-                     (90, 5), (90, 10), (90, 15),
-                     (135, 5), (135, 10), (135, 15),
-                     (180, 5), (180, 10), (180, 15),
-                     (225, 5), (225, 10), (225, 15),
-                     (270, 5), (270, 10), (270, 15),
-                     (315, 5), (315, 10), (315, 15)]
+        # negatives = [(0, 4), (0, 9), (0, 14),
+        #              (45, 5), (45, 10), (45, 15),
+        #              (90, 5), (90, 10), (90, 15),
+        #              (135, 5), (135, 10), (135, 15),
+        #              (180, 5), (180, 10), (180, 15),
+        #              (225, 5), (225, 10), (225, 15),
+        #              (270, 5), (270, 10), (270, 15),
+        #              (315, 5), (315, 10), (315, 15)]
+        negatives = [(az0, 4), (az1, 7), (az2, 8), (az3, 6), (az4, 8), (az5, 7), (az6, 8), (az7, 9)]
+
         pos_point = [QPointF(a, d) for a, d in positives]
         self.positives.replace(pos_point)
         neg_point = [QPointF(a, d) for a, d in negatives]
         self.negatives.replace(neg_point)
+
+
+class PolarPlot(QChartView):
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+        self.setRenderHint(QPainter.Antialiasing)
+        self.setMinimumSize(200, 200)
+        self.setMaximumSize(600, 400)
+
+        data = pd.DataFrame({'distance': [5, 10, 15, 20, 15, 10, 5, 10]})
+        compass = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+        # index = []
+
+        dist = data['distance']
+        dist_list = dist.values.tolist()
+        min_value = min(dist_list)
+
+        # for i in range(len(dist_list)):
+        #     if dist_list[i] == min_value:
+        #         index.append(i)
+
+        self.fig, self.ax = plt.subplots(1, 1, subplot_kw={'projection': 'polar'})
+        self.ax.set_theta_zero_location('N')
+        self.ax.set_theta_direction(-1)
+
+        # for i in range(len(dist_list)):
+        #     if i in index:
+        #         plt.bar(0.25 * np.pi * (1 + 2 * i) / 2, int(dist_list[i]), width=0.25 * np.pi, color=['red'])
+        #     else:
+        #         plt.bar(0.25 * np.pi * (1 + 2 * i) / 2, int(dist_list[i]), width=0.25 * np.pi, color=['green'])
+
+        self.canvas = FigureCanvas(self.fig)
+        self.canvas.resize(600, 400)
+
+        self.ax.set_xlabel('Visibility', fontsize=10)
+        self.ax.set_rgrids(np.arange(0, 20, 5))
+        # self.ax.set_xticklabels(compass)
+        self.ax.set_rorigin(-10)
+
+        self.refresh_stats(dist_list)
+
+    @pyqtSlot(list)
+    def refresh_stats(self, distance: list):
+        self.ax.clear()
+
+        self.ax.set_theta_zero_location('N')
+        self.ax.set_theta_direction(-1)
+        self.ax.set_xlabel('Visibility', fontsize=10)
+
+        # self.ax.set_rgrids(np.arange(0, 20, 5))
+        self.ax.set_rgrids([0, 5, 10, 15, 20])
+        self.ax.set_xticklabels(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'])
+        self.ax.set_rorigin(-10)
+
+        # index = []
+        min_value = min(distance)
+
+        for i in range(len(distance)):
+            if distance[i] == min_value:
+                # index.append(i)
+            # if i in index:
+                plt.bar(0.25 * np.pi * (1 + 2 * i) / 2, int(distance[i]), width=0.25 * np.pi, color=['red'])
+            else:
+                plt.bar(0.25 * np.pi * (1 + 2 * i) / 2, int(distance[i]), width=0.25 * np.pi, color=['green'])
+
+        self.canvas.draw()
+
+    def mouseDoubleClickEvent(self, event):
+        print('hi22')
 
 
 class ThumbnailView(QMainWindow):
@@ -204,18 +306,20 @@ class ThumbnailView(QMainWindow):
     def __init__(self, image_file_name: str, date: int):
         super().__init__()
 
+        print(f'{JS06Settings.get("image_save_path")}/vista/PNM_9030V/{date}/{image_file_name}_PNM_9030V.png')
+
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "resources/thumbnail_view.ui")
+                               'resources/thumbnail_view.ui')
         uic.loadUi(ui_path, self)
 
         self.front_image.setPixmap(
             QPixmap(
-                f'{JS06Settings.get("image_save_path")}/vista/{image_file_name}/{date}/.png').scaled(
+                f'{JS06Settings.get("image_save_path")}/vista/PNM_9030V/{date}/{image_file_name}_PNM_9030V.png').scaled(
                 self.front_image.width(),
                 self.front_image.height()))
         self.rear_image.setPixmap(
             QPixmap(
-                f'{JS06Settings.get("image_save_path")}/vista/{image_file_name}/{date}.png').scaled(
+                f'{JS06Settings.get("image_save_path")}/vista/PNM_9030V/{date}/{image_file_name}_PNM_9030V.png').scaled(
                 self.rear_image.width(),
                 self.rear_image.height()))
 
@@ -229,39 +333,52 @@ class ND01MainWindow(QMainWindow):
         # login_window.exec_()
 
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "resources/main_window.ui")
+                               'resources/main_window.ui')
         uic.loadUi(ui_path, self)
         self.showFullScreen()
 
         # self._ctrl = JS08MainCtrl
 
         self._plot = VisibilityView(self, 1440)
-        # self._ctrl.wedge_vis_ready.connect(self._plot.refresh_stats)
-        # self._plot.refresh_stats()
-
-        self._polar = DiscernmentView(self)
-        # self._ctrl.target_assorted.connect(self._polar.refresh_stats)
-        # self._polar.refresh_stats()
+        # self._polar = DiscernmentView(self)
+        self._polar = PolarPlot(self)
 
         self.view = None
         self.km_mile_convert = False
         self.visibility = 0
         self.pm_text = 0
         self.year_date = None
+        self.epoch = []
         self.q_list = []
-        self.q_list_scale = 300
+        self.q_list_scale = 1440
+        self.data_date = []
+        self.data_time = []
+        self.data_vis = []
+
+        self.blank_label_front = QLabel()
+        self.blank_label_rear = QLabel()
+        self.blank_label_front.setStyleSheet('background-color: #FFFFFF')
+        self.blank_label_rear.setStyleSheet('background-color: #FFFFFF')
+        # self.blank_label_front.raise_()
+        # self.blank_label_rear.raise_()
+
+        # self.blank_label_front.paintEvent = self.blank_label_paintEvent
 
         self.front_video_widget = VideoWidget(self)
-        self.front_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
+        self.front_video_widget.on_camera_change('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
 
         self.rear_video_widget = VideoWidget(self)
-        self.rear_video_widget.on_camera_change("rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp")
+        self.rear_video_widget.on_camera_change('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
 
         self.video_horizontalLayout.addWidget(self.front_video_widget)
         self.video_horizontalLayout.addWidget(self.rear_video_widget)
+        # self.video_horizontalLayout.addWidget(self.blank_label_front)
+        # self.video_horizontalLayout.addWidget(self.blank_label_rear)
+        # self.video_horizontalLayout.setSpacing(1)
 
         self.graph_horizontalLayout.addWidget(self._plot)
-        self.graph_horizontalLayout.addWidget(self._polar)
+        # self._polar를 addWidget 하면
+        self.graph_horizontalLayout.addWidget(self._polar.canvas)
 
         self.setting_button.enterEvent = self.btn_on
         self.setting_button.leaveEvent = self.btn_off
@@ -300,6 +417,10 @@ class ND01MainWindow(QMainWindow):
 
     def alert_test(self):
         self.alert.setIcon(QIcon('resources/asset/red.png'))
+        print(len(self.data_date))
+        a = [5, 10, 15, 20, 15, 10, 5, 10]
+        random.shuffle(a)
+        self._polar.refresh_stats(a)
 
     def reset_StyleSheet(self):
         self.label_1hour.setStyleSheet('')
@@ -419,9 +540,36 @@ class ND01MainWindow(QMainWindow):
         elif self.km_mile_convert is False:
             self.km_mile_convert = True
 
+    def get_data(self, year, month_day):
+        save_path = os.path.join(f'{JS06Settings.get("data_csv_path")}/PNM_9030V/{year}')
+
+        if os.path.isfile(f'{save_path}/{month_day}.csv'):
+            result = pd.read_csv(f'{save_path}/{month_day}.csv')
+            data_datetime = result['date'].tolist()
+            data_epoch = result['epoch'].tolist()
+            data_visibility = result['visibility'].tolist()
+
+            return data_datetime, data_epoch, data_visibility
+
+        else:
+            return [], [], []
+
     @pyqtSlot(str)
     def print_data(self, visibility):
+        # self.data_date, self.data_time, self.data_vis = [], [], []
+        # self.epoch, self.q_list = [], []
+
         visibility_float = round(float(visibility), 3)
+        epoch = QDateTime.currentSecsSinceEpoch()
+        current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
+        year = current_time[:4]
+        md = current_time[5:7] + current_time[8:10]
+
+        get_date, get_epoch, self.q_list = self.get_data(year, md)
+        for i in range(len(get_date)):
+            get_epoch[i] = get_epoch[i] * 1000
+            # print(f'{get_date[i]} - {get_epoch[i]} - {self.q_list[i]}')
+            self._plot.refresh_stats(get_epoch[i], self.q_list[i])
 
         if len(self.q_list) == 0 or self.q_list_scale != len(self.q_list):
             self.q_list = []
@@ -433,17 +581,43 @@ class ND01MainWindow(QMainWindow):
             self.q_list.append(visibility_float)
             result_vis = np.mean(self.q_list)
 
+        if len(self.data_date) >= self.q_list_scale or len(self.data_vis) >= self.q_list_scale:
+            print('data scale over!')
+            self.data_date.pop(0)
+            self.data_time.pop(0)
+            self.data_vis.pop(0)
+
+        self.data_date.append(current_time)
+        self.data_time.append(epoch)
+        self.data_vis.append(visibility_float)
+
+        save_path = os.path.join(f'{JS06Settings.get("data_csv_path")}/PNM_9030V/{year}')
+        file = f'{save_path}/{md}.csv'
+
+        if os.path.isfile(f'{file}') is False:
+            os.makedirs(f'{save_path}', exist_ok=True)
+            result = pd.DataFrame(columns=['date', 'epoch', 'visibility'])
+            result.to_csv(f'{file}', mode='w', index=False)
+
+        result = pd.DataFrame(columns=['date', 'epoch', 'visibility'])
+        result['date'] = [self.data_date[-1]]
+        result['epoch'] = [self.data_time[-1]]
+        result['visibility'] = [self.data_vis[-1]]
+        result.to_csv(f'{file}', mode='a', index=False, header=False)
+
         self.visibility = round(float(result_vis), 3)
-        print(f'Visibility: {self.visibility} km = {int(self.visibility * 1000)} m')
+
+        # self._plot.refresh_stats(epoch, self.q_list)
 
     @pyqtSlot(str)
     def clock(self, data):
+        self.blank_label_front.setGeometry(self.front_video_widget.geometry())
+        self.blank_label_rear.setGeometry(self.rear_video_widget.geometry())
+
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
         self.year_date = current_time[2:4] + current_time[5:7] + current_time[8:10]
         self.real_time_label.setText(current_time)
         self.p_vis_label.setText(f'{self.pm_text} ㎍/㎥')
-
-        self._plot.refresh_stats(QDateTime.currentSecsSinceEpoch(), self.q_list)
 
         if self.visibility != 0:
             ext = 3.912 / self.visibility
@@ -456,8 +630,9 @@ class ND01MainWindow(QMainWindow):
         elif self.km_mile_convert is False:
             self.c_vis_label.setText(f'{format(int(self.visibility * 1000), ",")} m')
 
-        if current_time[-2:] == '00':
+        if current_time[-1:] == '0':
             self.thumbnail_refresh()
+            # self._plot.refresh_stats(QDateTime.currentSecsSinceEpoch(), self.q_list)
 
         if int(self.visibility * 1000) <= JS06Settings.get('visibility_alert_limit'):
             self.alert.setIcon(QIcon('resources/asset/red.png'))
@@ -513,6 +688,20 @@ class ND01MainWindow(QMainWindow):
         if e.key() == Qt.Key_D:
             self.showNormal()
 
+    def blank_label_paintEvent(self, event: QPaintEvent):
+        qp = QPainter()
+        qp.begin(self)
+        self.drawLines(qp)
+        qp.end()
+
+    def drawLines(self, qp):
+        pen = QPen(Qt.white, 1, Qt.DotLine)
+
+        qp.setPen(pen)
+        qp.drawLine(240, 0, 240, 411)
+        qp.drawLine(480, 0, 480, 411)
+        qp.drawLine(720, 0, 720, 411)
+
 
 class VideoWidget(QWidget):
     """Video stream player using QVideoWidget"""
@@ -521,20 +710,22 @@ class VideoWidget(QWidget):
     def __init__(self, parent: QObject = None):
         super().__init__(parent)
 
+        self.begin = QPoint()
+        self.end = QPoint()
+        self.flag = False
+
         args = [
-            "--rtsp-frame-buffer-size",
-            "1000000"
+            '--rtsp-frame-buffer-size',
+            '1000000'
         ]
 
         self.instance = vlc.Instance(args)
         self.instance.log_unset()
         self.media_player = self.instance.media_player_new()
 
-        self.image_player = self.instance.media_list_player_new()
-        self.image_media = self.instance.media_list_new('')
-
         self.video_frame = QFrame()
         self.blank_label = QLabel()
+        self.blank_label.setStyleSheet('background-color: #83BCD4')
 
         if sys.platform == 'win32':
             self.media_player.set_hwnd(self.video_frame.winId())
@@ -542,24 +733,98 @@ class VideoWidget(QWidget):
         layout = QVBoxLayout(self)
         layout.addWidget(self.video_frame)
 
-    # def paintEvent(self, event: QPaintEvent):
-    #     qp = QPainter()
-    #     qp.begin(self)
-    #     self.drawLines(qp)
-    #     qp.end()
-    #
-    # def drawLines(self, qp):
-    #     pen = QPen(Qt.white, 1, Qt.DotLine)
-    #
-    #     qp.setPen(pen)
-    #     qp.drawLine(240, 0, 240, 411)
-    #     qp.drawLine(480, 0, 480, 411)
-    #     qp.drawLine(720, 0, 720, 411)
+    def mouseDoubleClickEvent(self, event):
+        if self.flag is not True:
+            self.flag = True
+            self.end.setX(event.pos().x() - 120)
+        else:
+            self.flag = False
+
+    def mousePressEvent(self, event):
+
+        if event.buttons() == Qt.LeftButton:
+            self.begin = event.pos()
+            self.end.setX(event.pos().x() - 120)
+
+    def mouseMoveEvent(self, event):
+
+        if event.buttons() == Qt.LeftButton:
+            self.end = event.pos()
+            self.end.setX(event.pos().x() - 120)
+            self.update()
+
+    def mouseReleaseEvent(self, event):
+
+        self.end = event.pos()
+        self.end.setX(event.pos().x() - 120)
+        self.update()
+
+    def paintEvent(self, event):
+
+        qp = QPainter()
+        qp.begin(self)
+        self.drawLines(qp)
+        qp.end()
+
+    def drawLines(self, qp):
+
+        pen = QPen(Qt.white, 1, Qt.DotLine)
+
+        qp.setPen(pen)
+        qp.setFont(QFont('Arial', 6))
+
+        if self.flag:
+            if self.end.x() >= 600:
+                self.end.setX(600)
+
+            elif self.end.x() <= 360:
+                self.end.setX(360)
+
+            qp.drawLine(self.end.x() - int(self.width() / 4) * 2, 0,
+                        self.end.x() - int(self.width() / 4) * 2, self.height())
+            qp.drawLine(self.end.x() - int(self.width() / 4), 0,
+                        self.end.x() - int(self.width() / 4), self.height())
+            qp.drawLine(self.end.x(), 0, self.end.x(), self.height())
+            qp.drawLine(self.end.x() + int(self.width() / 4), 0,
+                        self.end.x() + int(self.width() / 4), self.height())
+            qp.drawLine(self.end.x() + int(self.width() / 4) * 2, 0,
+                        self.end.x() + int(self.width() / 4) * 2, self.height())
+
+            if self.geometry().x() == 0:
+                qp.drawText(self.end.x() - int(self.width() / 4 + 60), 7, 'W')
+                qp.drawText(self.end.x() - int(self.width() / 4) + 120, 7, 'NW')
+                qp.drawText(self.end.x() + 120, 7, 'N')
+                qp.drawText(self.end.x() + int(self.width() / 4) + 120, 7, 'NE')
+                qp.drawText(self.end.x() + int(self.width() / 4 * 2) + 60, 7, 'E')
+
+                qp.drawText(self.end.x() - int(self.width() / 4 + 60), self.height() - 2, 'W')
+                qp.drawText(self.end.x() - int(self.width() / 4) + 120, self.height() - 2, 'NW')
+                qp.drawText(self.end.x() + 120, self.height() - 2, 'N')
+                qp.drawText(self.end.x() + int(self.width() / 4) + 120, self.height() - 2, 'NE')
+                qp.drawText(self.end.x() + int(self.width() / 4 * 2) + 60, self.height() - 2, 'E')
+
+            elif self.geometry().x() == 960:
+                qp.drawText(self.end.x() - int(self.width() / 4 + 60), 7, 'E')
+                qp.drawText(self.end.x() - int(self.width() / 4) + 120, 7, 'SE')
+                qp.drawText(self.end.x() + 120, 7, 'S')
+                qp.drawText(self.end.x() + int(self.width() / 4) + 120, 7, 'SW')
+                qp.drawText(self.end.x() + int(self.width() / 4 * 2) + 60, 7, 'W')
+
+                qp.drawText(self.end.x() - int(self.width() / 4 + 60), self.height() - 2, 'E')
+                qp.drawText(self.end.x() - int(self.width() / 4) + 120, self.height() - 2, 'SE')
+                qp.drawText(self.end.x() + 120, self.height() - 2, 'S')
+                qp.drawText(self.end.x() + int(self.width() / 4) + 120, self.height() - 2, 'SW')
+                qp.drawText(self.end.x() + int(self.width() / 4 * 2) + 60, self.height() - 2, 'W')
+
+            # pen = QPen(Qt.white, 1, Qt.SolidLine)
+            # qp.setPen(pen)
+            # qp.drawLine(0, 0, self.width(), 0)
+            # qp.drawLine(0, 0, 0, self.height())
+            # qp.drawLine(0, self.height() - 1, self.width(), self.height() - 1)
 
     @pyqtSlot(str)
     def on_camera_change(self, uri: str):
-        # uri = "rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp"
-        if uri[:4] == "rtsp":
+        if uri[:4] == 'rtsp':
             self.media_player.set_media(self.instance.media_new(uri))
             self.media_player.play()
         else:

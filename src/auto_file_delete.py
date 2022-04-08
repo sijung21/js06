@@ -34,7 +34,7 @@ class FileAutoDelete(QDialog):
         super().__init__()
 
         ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "resources/auto_file_delete.ui")
+                               'resources/auto_file_delete.ui')
         uic.loadUi(ui_path, self)
 
         # self.setFixedSize(self.width(), self.height())
@@ -65,6 +65,7 @@ class FileAutoDelete(QDialog):
         is_old = []
 
         for f in os.listdir(path):
+            print(f)
             if int(f) <= int(self.date):
                 is_old.append(int(f))
 
