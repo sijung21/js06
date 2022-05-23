@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.QtCore import Qt
 from PyQt5 import uic
 
-from model import JS06Settings
+from model import JS08Settings
 
 
 class LoginWindow(QDialog):
@@ -32,8 +32,8 @@ class LoginWindow(QDialog):
         self.login_button.clicked.connect(self.login_click)
         self.login_button.setShortcut('Return')
 
-        self.id = JS06Settings.get('login_id')
-        self.pw = JS06Settings.get('login_pw')
+        self.id = JS08Settings.get('login_id')
+        self.pw = JS08Settings.get('login_pw')
 
         self.flag = 0
 

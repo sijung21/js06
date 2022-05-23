@@ -12,15 +12,14 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class CurveThread(QThread):
-    poped = pyqtSignal(str)
+    poped = pyqtSignal(dict)
 
-    def __init__(self, _q: Queue = None):
+    def __init__(self, _q: Queue):
         super().__init__()
         self._run_flag = False
         self.q = _q
 
     def run(self):
-
         self._run_flag = True
         while self._run_flag:
             if not self.q.empty():

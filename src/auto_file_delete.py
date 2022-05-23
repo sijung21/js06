@@ -12,7 +12,7 @@ import shutil
 from PyQt5.QtWidgets import (QDialog, QApplication, QMessageBox)
 from PyQt5 import uic
 
-from model import JS06Settings
+from model import JS08Settings
 
 
 def byte_transform(bytes, to, bsize=1024):
@@ -58,7 +58,7 @@ class FileAutoDelete(QDialog):
     def showDate(self, date):
         self.date = date.toString('yyMMdd')
         self.date_convert = date.toString('yyyy/MM/dd')
-        self.check_file_date(os.path.join(JS06Settings.get('image_save_path'),
+        self.check_file_date(os.path.join(JS08Settings.get('image_save_path'),
                                           'vista'))
 
     def check_file_date(self, path: str):
