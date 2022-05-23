@@ -11,10 +11,16 @@ from PyQt5.QtCore import (QSettings, QRect)
 from PyQt5.QtGui import (QImage)
 
 
-class JS06Settings:
-    settings = QSettings('sijung', 'js06')
+class JS08Settings:
+    settings = QSettings('sijung', 'js08')
 
     defaults = {
+        'front_camera_name': 'PNM_9031RV_front',
+        'front_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.131/profile2/media.smp',
+        'front_main': 'rtsp://admin:sijung5520@192.168.100.131/profile5/media.smp',
+        'rear_camera_name': 'PNM_9031RV_rear',
+        'rear_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.132/profile2/media.smp',
+        'rear_main': 'rtsp://admin:sijung5520@192.168.100.132/profile5/media.smp',
         'data_csv_path': os.path.join('D:\\JS06', 'data'),
         'target_csv_path': os.path.join('D:\\JS06', 'target'),
         'image_save_path': os.path.join('D:\\JS06', 'image'),
