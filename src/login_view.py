@@ -10,21 +10,19 @@ import os
 import sys
 import time
 
-from PyQt5.QtWidgets import QDialog
-from PyQt5.QtCore import Qt
-from PyQt5 import uic
+from PySide6.QtWidgets import QDialog
+from PySide6.QtCore import Qt
 
-from model import JS06Settings
+from model import JS08Settings
+from resources.login_window import Ui_Dialog
 
 
-class LoginWindow(QDialog):
+class LoginWindow(QDialog, Ui_Dialog):
 
     def __init__(self):
-        super().__init__()
+        super(LoginWindow, self).__init__()
 
-        ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               'resources/login_window.ui')
-        uic.loadUi(ui_path, self)
+        self.setupUi(self)
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.show()
@@ -32,8 +30,8 @@ class LoginWindow(QDialog):
         self.login_button.clicked.connect(self.login_click)
         self.login_button.setShortcut('Return')
 
-        self.id = JS06Settings.get('login_id')
-        self.pw = JS06Settings.get('login_pw')
+        self.id = JS08Settings.get('login_id')
+        self.pw = JS08Settings.get('login_pw')
 
         self.flag = 0
 
@@ -43,8 +41,13 @@ class LoginWindow(QDialog):
         else:
             self.alert_label.setText('ID or P/W is not correct')
             self.flag = self.flag + 1
+
             if self.flag >= 5:
                 self.alert_label.setText('P/W = 1 + 2 + 3 + 4')
+
+                if self.flag > 10:
+                    self.close()
+                    sys.exit()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:
@@ -52,7 +55,7 @@ class LoginWindow(QDialog):
 
 
 if __name__ == '__main__':
-    from PyQt5.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     window = LoginWindow()

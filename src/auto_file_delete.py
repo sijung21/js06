@@ -9,10 +9,10 @@ import os
 import psutil
 import shutil
 
-from PyQt5.QtWidgets import (QDialog, QApplication, QMessageBox)
-from PyQt5 import uic
+from PySide6.QtWidgets import (QDialog, QApplication, QMessageBox)
 
-from model import JS06Settings
+from model import JS08Settings
+from resources.auto_file_delete import Ui_Form
 
 
 def byte_transform(bytes, to, bsize=1024):
@@ -28,14 +28,15 @@ def byte_transform(bytes, to, bsize=1024):
     return int(r)
 
 
-class FileAutoDelete(QDialog):
+class FileAutoDelete(QDialog, Ui_Form):
 
     def __init__(self):
         super().__init__()
 
-        ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                               "resources/auto_file_delete.ui")
-        uic.loadUi(ui_path, self)
+        # ui_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+        #                        "resources/auto_file_delete.ui")
+        # uic.loadUi(ui_path, self)
+        self.setupUi(self)
 
         # self.setFixedSize(self.width(), self.height())
 
@@ -58,8 +59,8 @@ class FileAutoDelete(QDialog):
     def showDate(self, date):
         self.date = date.toString('yyMMdd')
         self.date_convert = date.toString('yyyy/MM/dd')
-        self.check_file_date(os.path.join(JS06Settings.get('image_save_path'),
-                                          'vista'))
+        self.check_file_date(os.path.join(JS08Settings.get('image_save_path'), 'vista',
+                                          JS08Settings.get('front_camera_name')))
 
     def check_file_date(self, path: str):
         is_old = []

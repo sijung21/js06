@@ -1,8 +1,7 @@
-PyQt5 >= 5.13
+PySide6
 python-vlc
-PyQtGraph
-pyechart
-influxdb
-opencv-python
+opencv-contrib-python
 pandas
+scipy
 psutil
+pyinstaller

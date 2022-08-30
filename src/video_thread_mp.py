@@ -7,97 +7,201 @@
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import os
-import sys
 
 import cv2
 import time
 import numpy as np
-import pandas as pd
 
-from model import JS06Settings
-import target_info
+from model import JS08Settings
+from target_info import TargetInfo
 
 
-def producer(q):
-    front_cap_name = 'PNM_9030V'
-    rear_cap_name = 'PNM_9022V'
+def producer(queue):
+    front_cap_name = JS08Settings.get('front_camera_name')
+    rear_cap_name = JS08Settings.get('rear_camera_name')
 
-    front_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
-    rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp')
+    front_cap = cv2.VideoCapture(JS08Settings.get('front_camera_rtsp'))
+    rear_cap = cv2.VideoCapture(JS08Settings.get('rear_camera_rtsp'))
 
-    # if front_cap.isOpened():
+    previous_vis = {}
+    NE, EN, ES, SE, SW, WS, WN, NW = [], [], [], [], [], [], [], []
+
     if rear_cap.isOpened() and front_cap.isOpened():
+        print('Video thread start.')
+        target_info = TargetInfo()
         while True:
             epoch = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             date = epoch[2:8]
 
             if epoch[-2:] == '00':
-                front_target_name, front_left_range, front_right_range, front_distance = \
+                front_target_name, front_left_range, front_right_range, front_distance, front_azimuth = \
                     target_info.get_target(front_cap_name)
-                rear_target_name, rear_left_range, rear_right_range, rear_distance = \
+
+                rear_target_name, rear_left_range, rear_right_range, rear_distance, rear_azimuth = \
                     target_info.get_target(rear_cap_name)
 
-                # if len(front_left_range) < 4:
-                if len(front_left_range) < 4 and len(rear_left_range) < 4:
+                front_target_name_NE, front_left_range_NE, front_right_range_NE, front_distance_NE, front_azimuth_NE = \
+                    target_info.get_target_from_azimuth(front_cap_name, 'NE')
+
+                front_target_name_EN, front_left_range_EN, front_right_range_EN, front_distance_EN, front_azimuth_EN = \
+                    target_info.get_target_from_azimuth(front_cap_name, 'EN')
+
+                front_target_name_ES, front_left_range_ES, front_right_range_ES, front_distance_ES, front_azimuth_ES = \
+                    target_info.get_target_from_azimuth(front_cap_name, 'ES')
+
+                front_target_name_SE, front_left_range_SE, front_right_range_SE, front_distance_SE, front_azimuth_SE = \
+                    target_info.get_target_from_azimuth(front_cap_name, 'SE')
+
+                rear_target_name_SW, rear_left_range_SW, rear_right_range_SW, rear_distance_SW, rear_azimuth_SW = \
+                    target_info.get_target_from_azimuth(rear_cap_name, 'SW')
+
+                rear_target_name_WS, rear_left_range_WS, rear_right_range_WS, rear_distance_WS, rear_azimuth_WS = \
+                    target_info.get_target_from_azimuth(rear_cap_name, 'WS')
+
+                rear_target_name_WN, rear_left_range_WN, rear_right_range_WN, rear_distance_WN, rear_azimuth_WN = \
+                    target_info.get_target_from_azimuth(rear_cap_name, 'WN')
+
+                rear_target_name_NW, rear_left_range_NW, rear_right_range_NW, rear_distance_NW, rear_azimuth_NW = \
+                    target_info.get_target_from_azimuth(rear_cap_name, 'NW')
+
+                if len(front_left_range_NE) < 4 and len(rear_left_range_SW) < 4:
                     continue
                 else:
                     pass
 
-                image_save_path = JS06Settings.get('image_save_path')
+                image_save_path = JS08Settings.get('image_save_path')
                 os.makedirs(f'{image_save_path}/vista/{front_cap_name}/{date}', exist_ok=True)
                 os.makedirs(f'{image_save_path}/vista/{rear_cap_name}/{date}', exist_ok=True)
-                os.makedirs(f'{image_save_path}/resize/{front_cap_name}/{date}', exist_ok=True)
-                os.makedirs(f'{image_save_path}/resize/{rear_cap_name}/{date}', exist_ok=True)
+                os.makedirs(f'{image_save_path}/thumbnail/{front_cap_name}/{date}', exist_ok=True)
+                os.makedirs(f'{image_save_path}/thumbnail/{rear_cap_name}/{date}', exist_ok=True)
 
                 front_ret, front_frame = front_cap.read()
                 rear_ret, rear_frame = rear_cap.read()
 
-                # if not front_ret:
                 if not front_ret or not rear_ret:
-                    front_cap.release()
-                    rear_cap.release()
-                    front_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
-                    rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp')
                     print('Found Error; Rebuilding stream')
+
+                front_cap.release()
+                rear_cap.release()
+                front_cap = cv2.VideoCapture(JS08Settings.get('front_camera_rtsp'))
+                rear_cap = cv2.VideoCapture(JS08Settings.get('rear_camera_rtsp'))
+                front_ret, front_frame = front_cap.read()
+                rear_ret, rear_frame = rear_cap.read()
 
                 visibility_front = target_info.minprint(epoch[:-2], front_left_range, front_right_range,
                                                         front_distance, front_frame, front_cap_name)
                 visibility_rear = target_info.minprint(epoch[:-2], rear_left_range, rear_right_range,
-                                                       rear_distance, rear_frame, front_cap_name)
-                visibility_front = visibility_front
-                # visibility_rear = visibility_rear
+                                                       rear_distance, rear_frame, rear_cap_name)
 
-                q.put(visibility_front)
+                visibility_front_NE = target_info.minprint(epoch[:-2], front_left_range_NE, front_right_range_NE,
+                                                           front_distance_NE, front_frame, front_cap_name)
+                visibility_front_EN = target_info.minprint(epoch[:-2], front_left_range_EN, front_right_range_EN,
+                                                           front_distance_EN, front_frame, front_cap_name)
+                visibility_front_ES = target_info.minprint(epoch[:-2], front_left_range_ES, front_right_range_ES,
+                                                           front_distance_ES, front_frame, front_cap_name)
+                visibility_front_SE = target_info.minprint(epoch[:-2], front_left_range_SE, front_right_range_SE,
+                                                           front_distance_SE, front_frame, front_cap_name)
 
-                # print('*****')
-                # print(f'Front Visibility: {format(int(float(visibility_front) * 1000), ",")} m')
-                # print(f'Rear Visibility: {format(int(float(visibility_rear) * 1000), ",")} m')
+                visibility_rear_SW = target_info.minprint(epoch[:-2], rear_left_range_SW, rear_right_range_SW,
+                                                          rear_distance_SW, rear_frame, rear_cap_name)
+                visibility_rear_WS = target_info.minprint(epoch[:-2], rear_left_range_WS, rear_right_range_WS,
+                                                          rear_distance_WS, rear_frame, rear_cap_name)
+                visibility_rear_WN = target_info.minprint(epoch[:-2], rear_left_range_WN, rear_right_range_WN,
+                                                          rear_distance_WN, rear_frame, rear_cap_name)
+                visibility_rear_NW = target_info.minprint(epoch[:-2], rear_left_range_NW, rear_right_range_NW,
+                                                          rear_distance_NW, rear_frame, rear_cap_name)
 
-                if JS06Settings.get('image_size') == 0:  # Original size
+                # for Moving Average
+                if len(NE) >= 20:
+                    del NE[0]
+                    del EN[0]
+                    del ES[0]
+                    del SE[0]
+                    del SW[0]
+                    del WS[0]
+                    del WN[0]
+                    del NW[0]
+
+                NE.append(float(visibility_front_NE))
+                EN.append(float(visibility_front_EN))
+                ES.append(float(visibility_front_ES))
+                SE.append(float(visibility_front_SE))
+                SW.append(float(visibility_rear_SW))
+                WS.append(float(visibility_rear_WS))
+                WN.append(float(visibility_rear_WN))
+                NW.append(float(visibility_rear_NW))
+
+                NE_average = round(float(np.mean(NE)))
+                EN_average = round(float(np.mean(EN)))
+                ES_average = round(float(np.mean(ES)))
+                SE_average = round(float(np.mean(SE)))
+                SW_average = round(float(np.mean(SW)))
+                WS_average = round(float(np.mean(WS)))
+                WN_average = round(float(np.mean(WN)))
+                NW_average = round(float(np.mean(NW)))
+
+                # print('-' * 20)
+                # print(f'NE({round(float(NE_average), 3)}): {NE}')
+                # print(f'EN({round(float(EN_average), 3)}): {EN}')
+                # print(f'ES({round(float(ES_average), 3)}): {ES}')
+                # print(f'SE({round(float(SE_average), 3)}): {SE}')
+                # print(f'SW({round(float(SW_average), 3)}): {SW}')
+                # print(f'WS({round(float(WS_average), 3)}): {WS}')
+                # print(f'WN({round(float(WN_average), 3)}): {WN}')
+                # print(f'NW({round(float(NW_average), 3)}): {NW}')
+                # print('-' * 20)
+
+                # visibility = {'visibility_front': visibility_front, 'visibility_rear': visibility_rear,
+                #               'NE': visibility_front_NE, 'EN': visibility_front_EN,
+                #               'ES': visibility_front_ES, 'SE': visibility_front_SE,
+                #               'SW': visibility_rear_SW, 'WS': visibility_rear_WS,
+                #               'WN': visibility_rear_WN, 'NW': visibility_rear_NW}
+
+                visibility = {'visibility_front': visibility_front, 'visibility_rear': visibility_rear,
+                              'NE': NE_average, 'EN': EN_average,
+                              'ES': ES_average, 'SE': SE_average,
+                              'SW': SW_average, 'WS': WS_average,
+                              'WN': WN_average, 'NW': NW_average}
+
+                for i in previous_vis.keys():
+                    if int(float(visibility[i])) == 20:
+                        if int(float(previous_vis[i])) == 0:
+                            visibility[i] = previous_vis[i]
+
+                    elif int(float(visibility[i])) == 0:
+                        if int(float(previous_vis[i])) > 1:
+                            visibility[i] = previous_vis[i]
+
+                queue.put(visibility)
+                previous_vis = visibility
+
+                if JS08Settings.get('image_size') == 0:  # Original size
                     cv2.imwrite(f'{image_save_path}/vista/{front_cap_name}/{date}/{epoch}.png', front_frame)
                     cv2.imwrite(f'{image_save_path}/vista/{rear_cap_name}/{date}/{epoch}.png', rear_frame)
 
-                elif JS06Settings.get('image_size') == 1:  # FHD size
-                    front_frame = cv2.resize(front_frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
-                    rear_frame = cv2.resize(rear_frame, (1920, 840), interpolation=cv2.INTER_LINEAR)
+                elif JS08Settings.get('image_size') == 1:  # FHD size
+                    front_frame = cv2.resize(front_frame, (1920, 640), interpolation=cv2.INTER_AREA)
+                    rear_frame = cv2.resize(rear_frame, (1920, 640), interpolation=cv2.INTER_AREA)
 
                     cv2.imwrite(
-                        f'{image_save_path}/vista/{front_cap_name}/{date}/{epoch}_{front_cap_name}.png', front_frame)
+                        f'{image_save_path}/vista/{front_cap_name}/{date}/{epoch}.png', front_frame)
                     cv2.imwrite(
-                        f'{image_save_path}/vista/{rear_cap_name}/{date}/{epoch}_{rear_cap_name}.png', rear_frame)
+                        f'{image_save_path}/vista/{rear_cap_name}/{date}/{epoch}.png', rear_frame)
 
-                front_frame = cv2.resize(front_frame, (315, 131), interpolation=cv2.INTER_NEAREST)  # Thumbnail size
-                rear_frame = cv2.resize(rear_frame, (315, 131), interpolation=cv2.INTER_LINEAR)
+                # Save thumbnail image
+                # epoch = time.strftime('%Y-%m-%d %H:%M:00', time.localtime(time.time()))
+                front_frame = cv2.resize(front_frame, (314, 105), interpolation=cv2.INTER_AREA)  # Thumbnail size
+                rear_frame = cv2.resize(rear_frame, (314, 105), interpolation=cv2.INTER_AREA)
                 cv2.imwrite(
-                    f'{image_save_path}/resize/{front_cap_name}/{date}/{epoch}.jpg', front_frame)
+                    f'{image_save_path}/thumbnail/{front_cap_name}/{date}/{epoch}.jpg', front_frame)
                 cv2.imwrite(
-                    f'{image_save_path}/resize/{rear_cap_name}/{date}/{epoch}.jpg', rear_frame)
+                    f'{image_save_path}/thumbnail/{rear_cap_name}/{date}/{epoch}.jpg', rear_frame)
 
                 time.sleep(1)
                 front_cap.release()
                 rear_cap.release()
-                front_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.100/profile2/media.smp')
-                rear_cap = cv2.VideoCapture('rtsp://admin:sijung5520@192.168.100.101/profile2/media.smp')
+                front_cap = cv2.VideoCapture(JS08Settings.get('front_camera_rtsp'))
+                rear_cap = cv2.VideoCapture(JS08Settings.get('rear_camera_rtsp'))
 
             cv2.destroyAllWindows()
     else:

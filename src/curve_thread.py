@@ -8,28 +8,22 @@
 
 from multiprocessing import Queue
 
-from PyQt5.QtCore import QThread, pyqtSignal
+from PySide6.QtCore import QThread, Signal
 
 
 class CurveThread(QThread):
-    poped = pyqtSignal(str)
+    poped = Signal(dict)
 
     def __init__(self, _q: Queue = None):
         super().__init__()
-        self._run_flag = False
         self.q = _q
 
     def run(self):
-
-        self._run_flag = True
-        while self._run_flag:
+        while True:
             if not self.q.empty():
                 visibility = self.q.get()
                 self.poped.emit(visibility)
-            # shut down capture system
 
     def stop(self):
         """Sets run flag to False and waits for thread to finish"""
-        self._run_flag = False
-        self.quit()
-        self.wait()
+        self.terminate()

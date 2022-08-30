@@ -7,21 +7,40 @@
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import os
-from PyQt5.QtCore import (QSettings, QRect)
-from PyQt5.QtGui import (QImage)
+from PySide6.QtCore import QSettings, QRect
+from PySide6.QtGui import QImage
 
 
-class JS06Settings:
-    settings = QSettings('sijung', 'js06')
+class JS08Settings:
+    settings = QSettings('sijung', 'js08')
 
     defaults = {
-        'data_csv_path': os.path.join('D:\\JS06', 'data'),
-        'target_csv_path': os.path.join('D:\\JS06', 'target'),
-        'image_save_path': os.path.join('D:\\JS06', 'image'),
+        'front_camera_name': 'PNM_9031RV_front',
+        'front_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.131/profile2/media.smp',
+        'front_main': 'rtsp://admin:sijung5520@192.168.100.131/profile5/media.smp',
+        'rear_camera_name': 'PNM_9031RV_rear',
+        'rear_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.132/profile2/media.smp',
+        'rear_main': 'rtsp://admin:sijung5520@192.168.100.132/profile5/media.smp',
+
+        # 'front_camera_name': 'PNM_9030V_front',
+        # 'front_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.102/profile2/media.smp',
+        # 'front_main': 'rtsp://admin:sijung5520@192.168.100.102/profile4/media.smp',
+        # 'rear_camera_name': 'PNM_9030V_rear',
+        # 'rear_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.103/profile2/media.smp',
+        # 'rear_main': 'rtsp://admin:sijung5520@192.168.100.103/profile4/media.smp',
+
+        'data_csv_path': os.path.join('F:\\JS08', 'data'),
+        'target_csv_path': os.path.join('F:\\JS08', 'target'),
+        'rgb_csv_path': os.path.join('F:\\JS08', 'rgb'),
+        'image_save_path': os.path.join('F:\\JS08', 'image'),
         'image_size': 0,
         'visibility_alert_limit': 1000,
         'login_id': 'admin',
-        'login_pw': '1234'
+        'login_pw': '1234',
+        'login_flag': True,
+        'first_step': True,
+        'maxfev_flag': False,
+        'maxfev_count': 0
     }
 
     @classmethod
@@ -41,17 +60,20 @@ class JS06Settings:
         for key, value in cls.defaults.items():
             cls.set(key, value)
 
+    @classmethod
+    def restore_value(cls, key):
+        if key in cls.defaults.keys():
+            cls.set(key, cls.defaults[key])
 
-class JS06SimpleTarget:
+    @classmethod
+    def add_maxfev_time(cls, data: list):
+        for i in data:
+            cls.settings.setValue('maxfev_time', i)
 
-    def __init__(self,
-                 label: str, wedge: str, azimuth: float,
-                 distance: float, roi: QRect, mask: QImage,
-                 input_width: int, input_height: int):
-        super().__init__()
-        self.label = label
-        self.wedge = wedge
-        self.azimuth = azimuth
-        self.distance = distance
-        self.roi = roi
 
+if __name__ == '__main__':
+
+    # JS08Settings.restore_defaults()
+    print(JS08Settings.get('front_camera_rtsp'))
+    print(JS08Settings.get('rear_camera_rtsp'))
+    print(JS08Settings.get('data_csv_path'))
