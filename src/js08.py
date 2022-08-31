@@ -81,6 +81,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.visibility_front = 0
         self.visibility_rear = 0
         self.prevailing_visibility = None
+        self.graph_visibility_value = []
 
         self.year_date = None
         self.data_date = []
@@ -234,10 +235,15 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         """
 
         self.convert_visibility(visibility)
-        visibility_front = round(float(visibility.get('visibility_front')), 3)
-        visibility_rear = round(float(visibility.get('visibility_rear')), 3)
+        visibility_front = visibility.get('visibility_front')
+        visibility_rear = visibility.get('visibility_rear')
 
-        print(self.prevailing_visibility / 1000, type(self.prevailing_visibility))
+        # graph_visibility_value
+        self.graph_visibility_value.append(self.prevailing_visibility / 1000)
+        if len(self.graph_visibility_value) >= 10:
+            del self.graph_visibility_value[0]
+        plot_value = round(float(np.mean(self.graph_visibility_value)), 3)
+        # print(f'{plot_value} - {self.graph_visibility_value}')
 
         epoch = QDateTime.currentSecsSinceEpoch()
         current_time = time.strftime('%Y-%m-%d %H:%M:00', time.localtime(epoch))
@@ -250,12 +256,14 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
             self.q_list = []
             for i in range(self.q_list_scale):
                 # self.q_list.append(visibility_front)
-                self.q_list.append(self.prevailing_visibility / 1000)
+                # self.q_list.append(self.prevailing_visibility / 1000)
+                self.q_list.append(plot_value)
             result_vis = np.mean(self.q_list)
         else:
             self.q_list.pop(0)
             # self.q_list.append(visibility_front)
-            self.q_list.append(self.prevailing_visibility / 1000)
+            # self.q_list.append(self.prevailing_visibility / 1000)
+            self.q_list.append(plot_value)
             result_vis = np.mean(self.q_list)
 
         if len(self.data_date) >= self.q_list_scale or len(self.data_vis) >= self.q_list_scale:
@@ -286,19 +294,25 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         try:
             result_front['date'] = [self.data_date[-1]]
             result_front['epoch'] = [self.data_time[-1]]
-            result_front['visibility'] = visibility_front
-            result_front['NE'] = round(float(visibility.get('NE')), 3)
-            result_front['EN'] = round(float(visibility.get('EN')), 3)
-            result_front['ES'] = round(float(visibility.get('ES')), 3)
-            result_front['SE'] = round(float(visibility.get('SE')), 3)
+            # result_front['visibility'] = visibility_front
+            result_front['visibility'] = plot_value
+            # result_front['NE'] = round(float(visibility.get('NE')), 3)
+            # result_front['EN'] = round(float(visibility.get('EN')), 3)
+            # result_front['ES'] = round(float(visibility.get('ES')), 3)
+            # result_front['SE'] = round(float(visibility.get('SE')), 3)
+            result_front['NE'] = visibility.get('NE')
+            result_front['EN'] = visibility.get('EN')
+            result_front['ES'] = visibility.get('ES')
+            result_front['SE'] = visibility.get('SE')
 
             result_rear['date'] = [self.data_date[-1]]
             result_rear['epoch'] = [self.data_time[-1]]
-            result_rear['visibility'] = visibility_rear
-            result_rear['SW'] = round(float(visibility.get('SW')), 3)
-            result_rear['WS'] = round(float(visibility.get('WS')), 3)
-            result_rear['WN'] = round(float(visibility.get('WN')), 3)
-            result_rear['NW'] = round(float(visibility.get('NW')), 3)
+            # result_rear['visibility'] = visibility_rear
+            result_rear['visibility'] = plot_value
+            result_rear['SW'] = visibility.get('SW')
+            result_rear['WS'] = visibility.get('WS')
+            result_rear['WN'] = visibility.get('WN')
+            result_rear['NW'] = visibility.get('NW')
 
         except TypeError as e:
             print(f'Occurred error ({current_time}) -\n{e}')
@@ -346,11 +360,11 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         Notes
         --------
-        - If visibility ranging from 0 m to less than 400 m, mark it in units of 25 m.
+        - If visibility ranging from 0 m to less than 400 m, mark it in units of *25 m*.
         - If visibility ranging from 400 m to less than 800 m, mark it in units of 50 m.
         .. math:: q (10 ^ { size - 1 } ) + re
 
-        - If the visibility is more than 800 m, mark it in units of 25 m.
+        - If the visibility is more than 800 m, mark it in units of 100 m.
         .. math:: q (10 ^{ 2 } ) + re
 
         Examples

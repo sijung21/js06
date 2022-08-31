@@ -148,6 +148,9 @@ class VisibilityView(QChartView):
 
         return prevailing
 
+    def wheelEvent(self, event):
+        print('wheel')
+
 
 if __name__ == '__main__':
     import sys

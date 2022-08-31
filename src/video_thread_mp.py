@@ -157,20 +157,21 @@ def producer(queue):
                 #               'SW': visibility_rear_SW, 'WS': visibility_rear_WS,
                 #               'WN': visibility_rear_WN, 'NW': visibility_rear_NW}
 
-                visibility = {'visibility_front': visibility_front, 'visibility_rear': visibility_rear,
-                              'NE': NE_average, 'EN': EN_average,
-                              'ES': ES_average, 'SE': SE_average,
-                              'SW': SW_average, 'WS': WS_average,
-                              'WN': WN_average, 'NW': NW_average}
+                visibility = {'visibility_front': round(float(visibility_front), 3),
+                              'visibility_rear': round(float(visibility_rear), 3),
+                              'NE': round(float(NE_average), 3), 'EN': round(float(EN_average), 3),
+                              'ES': round(float(ES_average), 3), 'SE': round(float(SE_average), 3),
+                              'SW': round(float(SW_average), 3), 'WS': round(float(WS_average), 3),
+                              'WN': round(float(WN_average), 3), 'NW': round(float(NW_average), 3)}
 
-                for i in previous_vis.keys():
-                    if int(float(visibility[i])) == 20:
-                        if int(float(previous_vis[i])) == 0:
-                            visibility[i] = previous_vis[i]
-
-                    elif int(float(visibility[i])) == 0:
-                        if int(float(previous_vis[i])) > 1:
-                            visibility[i] = previous_vis[i]
+                # for i in previous_vis.keys():
+                #     if int(float(visibility[i])) == 20:
+                #         if int(float(previous_vis[i])) == 0:
+                #             visibility[i] = previous_vis[i]
+                #
+                #     elif int(float(visibility[i])) == 0:
+                #         if int(float(previous_vis[i])) > 1:
+                #             visibility[i] = previous_vis[i]
 
                 queue.put(visibility)
                 previous_vis = visibility
