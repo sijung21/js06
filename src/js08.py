@@ -62,7 +62,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.get_date = []
         self.get_epoch = []
         self.q_list = []
-        self.q_list_scale = 180
+        self.q_list_scale = 1440
         self.result = pd.DataFrame
 
         current_time = time.strftime('%Y-%m-%d %H:%M:00', time.localtime(QDateTime.currentSecsSinceEpoch()))
