@@ -37,23 +37,12 @@ class DiscernmentView(QChartView):
         self.chart().setTheme(QChart.ChartThemeDark)
         self.chart().setBackgroundBrush(QBrush(QColor('#16202a')))
 
-        # pen = QPen()
-        # pen.setWidth(3)
-        # pen.setColor('green')
-        # self.series = QLineSeries()
-        # self.series.setName('Visibility')
-        # self.series.setColor(QColor('green'))
-        # self.series.setPen(pen)
-        # chart.addSeries(self.series)
+        self.past_dataDist = None
 
         self.axis_x = QValueAxis()
         self.axis_x.setTickCount(9)
         self.axis_x.setRange(0, 360)
         self.axis_x.setLabelFormat('%d \xc2\xb0')
-        # self.axis_x.setLabelFormat('%d')
-        # axis_x.setTitleText('Azimuth (deg)')
-        # axis_x.setTitleVisible(False)
-        # chart.setAxisX(self.axis_x, self.series)
 
         self.axis_distance = QCategoryAxis()
         self.axis_distance.setLabelsPosition(QCategoryAxis.AxisLabelsPositionOnValue)
@@ -61,11 +50,11 @@ class DiscernmentView(QChartView):
         self.axis_distance.setLabelsFont(QFont('Noto Sans', 15))
 
         data = np.arange(22.5, 360, 45)
-        dataName = ['NE', 'EN', 'ES', 'SE', 'SW', 'WS', 'WN', 'NW']
-        # self.dataDist = ['']
+        self.dataName = ['NE', 'EN', 'ES', 'SE', 'SW', 'WS', 'WN', 'NW']
+        self.dataDist = [0, 0, 0, 0, 0, 0, 0, 0]
 
-        for name, dt in zip(dataName, data):
-            self.axis_distance.append(f'{name}', dt)
+        for name, dist, dt in zip(self.dataName, self.dataDist, data):
+            self.axis_distance.append(f'{name} ({dist})', dt)
         self.axis_distance.setGridLineVisible(False)
         self.axis_distance.setLineVisible(False)
 
@@ -114,14 +103,10 @@ class DiscernmentView(QChartView):
     def refresh_stats(self, data: dict):
 
         self.upperLine.clear()
+        del data['visibility_front']
+        del data['visibility_rear']
 
-        # self.dataDist = [data.get('NE'), data.get('EN'), data.get('ES'), data.get('SE'),
-        #                  data.get('SW'), data.get('WS'), data.get('WN'), data.get('NW')]
-
-        dataName = ['NE', 'EN', 'ES', 'SE', 'SW', 'WS', 'WN', 'NW']
-
-        # for dn, dd, d in zip(dataName, self.dataDist, np.arange(22.5, 360, 45)):
-            # self.axis_distance.append(f'{dn} - {dd}', d)
+        dataDist = list(data.values())
 
         for i in range(0, 46):
             self.upperLine.append(i, data.get('NE'))
@@ -140,17 +125,15 @@ class DiscernmentView(QChartView):
         for i in range(315, 361):
             self.upperLine.append(i, data.get('NW'))
 
-        # self.series.append([
-        #     QPointF(360, float(data.get('front_N')))
-        # ])
-        #
-        # self.series.replace([
-        #     QPointF(0, float(data.get('front_N'))), QPointF(45, float(data.get('front_NE'))),
-        #     QPointF(90, float(data.get('front_E'))), QPointF(135, float(data.get('rear_SE'))),
-        #     QPointF(180, float(data.get('rear_S'))), QPointF(225, float(data.get('rear_SW'))),
-        #     QPointF(270, float(data.get('rear_W'))), QPointF(315, float(data.get('front_NW'))),
-        #     QPointF(360, float(data.get('front_N')))
-        # ])
+        if self.past_dataDist is None:
+            for name, dist, dt in zip(self.dataName, dataDist, data):
+                self.axis_distance.replaceLabel(f'{name} ({self.dataDist[self.dataName.index(name)]})',
+                                                f'{name} ({dist})')
+        else:
+            for name, dist, dt in zip(self.dataName, dataDist, data):
+                self.axis_distance.replaceLabel(f'{name} ({self.past_dataDist[self.dataName.index(name)]})',
+                                                f'{name} ({dist})')
+        self.past_dataDist = dataDist
 
     def mousePressEvent(self, event):
 
@@ -164,13 +147,11 @@ class DiscernmentView(QChartView):
         # print()
         # print(f'time: {JS08Settings.get("maxfev_time")}')
 
-        data = {'NE': round(random.uniform(10, 20), 3), 'EN': round(random.uniform(10, 20), 3),
-                  'ES': round(random.uniform(10, 20), 3), 'SE': round(random.uniform(10, 20), 3),
-                  'SW': round(random.uniform(10, 20), 3), 'WS': round(random.uniform(10, 20), 3),
-                  'WN': round(random.uniform(10, 20), 3), 'NW': round(random.uniform(10, 20), 3)}
+        # data = {'NE': round(random.uniform(10, 20), 3), 'EN': round(random.uniform(10, 20), 3),
+        #           'ES': round(random.uniform(10, 20), 3), 'SE': round(random.uniform(10, 20), 3),
+        #           'SW': round(random.uniform(10, 20), 3), 'WS': round(random.uniform(10, 20), 3),
+        #           'WN': round(random.uniform(10, 20), 3), 'NW': round(random.uniform(10, 20), 3)}
         # self.refresh_stats(data)
-
-        # self.axis_distance.replaceLabel('NE - 20.0', 'Hi')
 
 
 if __name__ == '__main__':
