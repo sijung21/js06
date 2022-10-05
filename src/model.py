@@ -73,7 +73,7 @@ class JS08Settings:
 
 if __name__ == '__main__':
 
-    # JS08Settings.restore_defaults()
+    JS08Settings.restore_defaults()
     print(JS08Settings.get('front_camera_rtsp'))
     print(JS08Settings.get('rear_camera_rtsp'))
     print(JS08Settings.get('data_csv_path'))

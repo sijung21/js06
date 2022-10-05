@@ -48,7 +48,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, q, _q):
         super(JS08MainWindow, self).__init__()
 
-        self.mp_flag = False
+        # self.mp_flag = False
 
         # if JS08Settings.get('login_flag'):
         #     login_window = LoginWindow()
@@ -149,11 +149,19 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.label_5hour.mouseDoubleClickEvent = self.thumbnail_click5
         self.label_6hour.mouseDoubleClickEvent = self.thumbnail_click6
 
+        self.real_time_label.mouseDoubleClickEvent = self.get_status
+
         self.setting_button.clicked.connect(self.setting_btn_click)
 
         JS08Settings.restore_value('maxfev_count')
 
         self.show()
+
+    def get_status(self, event):
+        print(f'front video: {self.front_video_widget.media_player.is_playing()}')
+        print(f'rear video: {self.rear_video_widget.media_player.is_playing()}')
+        self.rear_video_widget.media_player.play()
+        print()
 
     def alert_test(self):
         self.alert.setIcon(QIcon('resources/asset/red.png'))
@@ -233,17 +241,18 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         :param visibility: 8-degree Visibility value
         """
+        self.front_video_widget.get_status()
+        self.rear_video_widget.get_status()
 
         self.convert_visibility(visibility)
         visibility_front = visibility.get('visibility_front')
-        visibility_rear = visibility.get('visibility_rear')
+        # visibility_rear = visibility.get('visibility_rear')
 
         # graph_visibility_value
         self.graph_visibility_value.append(self.prevailing_visibility / 1000)
         if len(self.graph_visibility_value) >= 10:
             del self.graph_visibility_value[0]
         plot_value = round(float(np.mean(self.graph_visibility_value)), 3)
-        # print(f'{plot_value} - {self.graph_visibility_value}')
 
         epoch = QDateTime.currentSecsSinceEpoch()
         current_time = time.strftime('%Y-%m-%d %H:%M:00', time.localtime(epoch))
@@ -696,6 +705,7 @@ class VideoWidget(QWidget):
         self.instance.log_unset()
 
         self.media_player = self.instance.media_player_new()
+        self.uri = None
 
         # Current camera must be 'PNM-9031RV'
         self.media_player.video_set_aspect_ratio('21:9')
@@ -707,14 +717,18 @@ class VideoWidget(QWidget):
 
     def on_camera_change(self, uri: str):
         if uri[:4] == 'rtsp':
+            self.uri = uri
             self.media_player.set_media(self.instance.media_new(uri))
             self.media_player.play()
         else:
             pass
 
-    # def mouseDoubleClickEvent(self, event):
-    #     print('ddable click')
-    #     self.update()
+    def get_status(self):
+        if self.media_player.is_playing() == 0:
+            print(f'Player is not playing! in '
+                  f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(QDateTime.currentSecsSinceEpoch()))}')
+            self.media_player.set_media(self.instance.media_new(self.uri))
+            self.media_player.play()
 
 
 if __name__ == '__main__':

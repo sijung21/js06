@@ -79,7 +79,7 @@ def producer(queue):
                 rear_ret, rear_frame = rear_cap.read()
 
                 if not front_ret or not rear_ret:
-                    print('Found Error; Rebuilding stream')
+                    print(f'Found Error; Rebuilding stream in {time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))}')
 
                 front_cap.release()
                 rear_cap.release()
@@ -88,10 +88,13 @@ def producer(queue):
                 front_ret, front_frame = front_cap.read()
                 rear_ret, rear_frame = rear_cap.read()
 
-                visibility_front = target_info.minprint(epoch[:-2], front_left_range, front_right_range,
-                                                        front_distance, front_frame, front_cap_name)
-                visibility_rear = target_info.minprint(epoch[:-2], rear_left_range, rear_right_range,
-                                                       rear_distance, rear_frame, rear_cap_name)
+                try:
+                    visibility_front = target_info.minprint(epoch[:-2], front_left_range, front_right_range,
+                                                            front_distance, front_frame, front_cap_name)
+                    visibility_rear = target_info.minprint(epoch[:-2], rear_left_range, rear_right_range,
+                                                           rear_distance, rear_frame, rear_cap_name)
+                except AttributeError:
+                    continue
 
                 visibility_front_NE = target_info.minprint(epoch[:-2], front_left_range_NE, front_right_range_NE,
                                                            front_distance_NE, front_frame, front_cap_name)
@@ -110,6 +113,7 @@ def producer(queue):
                                                           rear_distance_WN, rear_frame, rear_cap_name)
                 visibility_rear_NW = target_info.minprint(epoch[:-2], rear_left_range_NW, rear_right_range_NW,
                                                           rear_distance_NW, rear_frame, rear_cap_name)
+
 
                 # for Moving Average
                 if len(NE) >= 20:
@@ -140,23 +144,6 @@ def producer(queue):
                 WN_average = round(float(np.mean(WN)))
                 NW_average = round(float(np.mean(NW)))
 
-                # print('-' * 20)
-                # print(f'NE({round(float(NE_average), 3)}): {NE}')
-                # print(f'EN({round(float(EN_average), 3)}): {EN}')
-                # print(f'ES({round(float(ES_average), 3)}): {ES}')
-                # print(f'SE({round(float(SE_average), 3)}): {SE}')
-                # print(f'SW({round(float(SW_average), 3)}): {SW}')
-                # print(f'WS({round(float(WS_average), 3)}): {WS}')
-                # print(f'WN({round(float(WN_average), 3)}): {WN}')
-                # print(f'NW({round(float(NW_average), 3)}): {NW}')
-                # print('-' * 20)
-
-                # visibility = {'visibility_front': visibility_front, 'visibility_rear': visibility_rear,
-                #               'NE': visibility_front_NE, 'EN': visibility_front_EN,
-                #               'ES': visibility_front_ES, 'SE': visibility_front_SE,
-                #               'SW': visibility_rear_SW, 'WS': visibility_rear_WS,
-                #               'WN': visibility_rear_WN, 'NW': visibility_rear_NW}
-
                 visibility = {'visibility_front': round(float(visibility_front), 3),
                               'visibility_rear': round(float(visibility_rear), 3),
                               'NE': round(float(NE_average), 3), 'EN': round(float(EN_average), 3),
@@ -164,17 +151,7 @@ def producer(queue):
                               'SW': round(float(SW_average), 3), 'WS': round(float(WS_average), 3),
                               'WN': round(float(WN_average), 3), 'NW': round(float(NW_average), 3)}
 
-                # for i in previous_vis.keys():
-                #     if int(float(visibility[i])) == 20:
-                #         if int(float(previous_vis[i])) == 0:
-                #             visibility[i] = previous_vis[i]
-                #
-                #     elif int(float(visibility[i])) == 0:
-                #         if int(float(previous_vis[i])) > 1:
-                #             visibility[i] = previous_vis[i]
-
                 queue.put(visibility)
-                previous_vis = visibility
 
                 if JS08Settings.get('image_size') == 0:  # Original size
                     cv2.imwrite(f'{image_save_path}/vista/{front_cap_name}/{date}/{epoch}.png', front_frame)
