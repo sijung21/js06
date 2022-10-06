@@ -20,15 +20,14 @@ from multiprocessing import Process, Queue
 
 from PySide6.QtGui import QPixmap, QIcon, QPainter, QPen
 from PySide6.QtWidgets import (QMainWindow, QWidget, QFrame, QMessageBox)
-from PySide6.QtCore import (Qt, Slot, QRect,
-                            QTimer, QObject, QDateTime)
+from PySide6.QtCore import (Qt, Slot, QRect, QTimer, QObject, QDateTime, QThread)
 
 from login_view import LoginWindow
 from video_thread_mp import producer
 from js08_settings import JS08SettingWidget
 from model import JS08Settings
 from curve_thread import CurveThread
-from clock import clockclock
+from clock import clock_clock
 from consumer import Consumer
 from thumbnail_view import ThumbnailView
 
@@ -39,8 +38,8 @@ from discernment_view import DiscernmentView
 from resources.main_window import Ui_MainWindow
 
 # Warning Message ignore
-import warnings
-warnings.filterwarnings('ignore')
+# import warnings
+# warnings.filterwarnings('ignore')
 
 
 class JS08MainWindow(QMainWindow, Ui_MainWindow):
@@ -48,21 +47,50 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, q, _q):
         super(JS08MainWindow, self).__init__()
 
-        # self.mp_flag = False
+        _producer = producer
 
         # if JS08Settings.get('login_flag'):
         #     login_window = LoginWindow()
         #     login_window.sijunglogo.setIcon(QIcon('resources/asset/f_logo.png'))
         #     login_window.exec()
-        self.mp_flag = True
+        # self.mp_flag = True
             # JS08Settings.set('login_flag', False)
 
         self.setupUi(self)
 
+        p = Process(name='clock', target=clock_clock, args=(q,), daemon=True)
+        p.start()
+        self.consumer = Consumer(q)
+        self.consumer.poped.connect(self.clock)
+        self.consumer.start()
+
+        _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
+        self.video_thread = CurveThread(_q)
+        self.video_thread.poped.connect(self.print_data)
+
+        if JS08Settings.get('first_step') is False:
+        #     _producer = producer
+        #
+        #     p = Process(name='clock', target=clock_clock, args=(q,), daemon=True)
+        #     _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
+        #
+        #     p.start()
+        #     _p.start()
+        #
+        #     self.consumer = Consumer(q)
+        #     self.consumer.poped.connect(self.clock)
+        #     p.start()
+        #     self.consumer.start()
+        #
+        #     self.video_thread = CurveThread(_q)
+        #     self.video_thread.poped.connect(self.print_data)
+            _p.start()
+            self.video_thread.start()
+
         self.get_date = []
         self.get_epoch = []
         self.q_list = []
-        self.q_list_scale = 1440
+        self.q_list_scale = 1440    # 60 * 24 = 1 day graph
         self.result = pd.DataFrame
 
         current_time = time.strftime('%Y-%m-%d %H:%M:00', time.localtime(QDateTime.currentSecsSinceEpoch()))
@@ -104,6 +132,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.setting_button.enterEvent = self.btn_on
         self.setting_button.leaveEvent = self.btn_off
 
+        # Azimuth paint event
         self.front_label.paintEvent = self.front_label_paintEvent
         self.rear_label.paintEvent = self.rear_label_paintEvent
 
@@ -117,23 +146,6 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.maxfev_alert.setIcon(QIcon('resources/asset/alert.png'))
         self.maxfev_alert.setToolTip('Optimal parameters not found: Number of calls to function has reached max fev = 5000.')
         self.maxfev_alert.setVisible(JS08Settings.get('maxfev_flag'))
-
-        if self.mp_flag:
-            _producer = producer
-
-            p = Process(name='clock', target=clockclock, args=(q,), daemon=True)
-            _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
-
-            p.start()
-            _p.start()
-
-            self.consumer = Consumer(q)
-            self.consumer.poped.connect(self.clock)
-            self.consumer.start()
-
-            self.video_thread = CurveThread(_q)
-            self.video_thread.poped.connect(self.print_data)
-            self.video_thread.start()
 
         self.click_style = 'border: 1px solid red;'
 
@@ -149,19 +161,9 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.label_5hour.mouseDoubleClickEvent = self.thumbnail_click5
         self.label_6hour.mouseDoubleClickEvent = self.thumbnail_click6
 
-        self.real_time_label.mouseDoubleClickEvent = self.get_status
-
         self.setting_button.clicked.connect(self.setting_btn_click)
 
-        JS08Settings.restore_value('maxfev_count')
-
         self.show()
-
-    def get_status(self, event):
-        print(f'front video: {self.front_video_widget.media_player.is_playing()}')
-        print(f'rear video: {self.rear_video_widget.media_player.is_playing()}')
-        self.rear_video_widget.media_player.play()
-        print()
 
     def alert_test(self):
         self.alert.setIcon(QIcon('resources/asset/red.png'))
@@ -246,7 +248,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.convert_visibility(visibility)
         visibility_front = visibility.get('visibility_front')
-        # visibility_rear = visibility.get('visibility_rear')
+        visibility_rear = visibility.get('visibility_rear')
 
         # graph_visibility_value
         self.graph_visibility_value.append(self.prevailing_visibility / 1000)
@@ -303,12 +305,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         try:
             result_front['date'] = [self.data_date[-1]]
             result_front['epoch'] = [self.data_time[-1]]
-            # result_front['visibility'] = visibility_front
-            result_front['visibility'] = plot_value
-            # result_front['NE'] = round(float(visibility.get('NE')), 3)
-            # result_front['EN'] = round(float(visibility.get('EN')), 3)
-            # result_front['ES'] = round(float(visibility.get('ES')), 3)
-            # result_front['SE'] = round(float(visibility.get('SE')), 3)
+            result_front['visibility'] = visibility_front
+            # result_front['visibility'] = plot_value
             result_front['NE'] = visibility.get('NE')
             result_front['EN'] = visibility.get('EN')
             result_front['ES'] = visibility.get('ES')
@@ -316,8 +314,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
             result_rear['date'] = [self.data_date[-1]]
             result_rear['epoch'] = [self.data_time[-1]]
-            # result_rear['visibility'] = visibility_rear
-            result_rear['visibility'] = plot_value
+            result_rear['visibility'] = visibility_rear
+            # result_rear['visibility'] = plot_value
             result_rear['SW'] = visibility.get('SW')
             result_rear['WS'] = visibility.get('WS')
             result_rear['WN'] = visibility.get('WN')
@@ -684,8 +682,10 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         painter.end()
 
     def closeEvent(self, e):
-        self.consumer.stop()
-        self.video_thread.stop()
+        if self.consumer.isRunning():
+            self.consumer.stop()
+        if self.video_thread.isRunning():
+            self.video_thread.stop()
         print(f'Close time: {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}')
 
 
@@ -735,8 +735,6 @@ if __name__ == '__main__':
     from PySide6.QtWidgets import QApplication
     from PySide6.QtGui import QGuiApplication
     from model import JS08Settings
-
-    # JS08Settings.set('first_step', True)
 
     print(f'Start time: {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}')
 

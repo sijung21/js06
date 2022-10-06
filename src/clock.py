@@ -9,7 +9,7 @@
 import time
 
 
-def clockclock(queue):
+def clock_clock(queue):
     """Real-time clock
     Current time to be expressed on JS-08
 

@@ -22,13 +22,6 @@ class JS08Settings:
         'rear_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.132/profile2/media.smp',
         'rear_main': 'rtsp://admin:sijung5520@192.168.100.132/profile5/media.smp',
 
-        # 'front_camera_name': 'PNM_9030V_front',
-        # 'front_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.102/profile2/media.smp',
-        # 'front_main': 'rtsp://admin:sijung5520@192.168.100.102/profile4/media.smp',
-        # 'rear_camera_name': 'PNM_9030V_rear',
-        # 'rear_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.103/profile2/media.smp',
-        # 'rear_main': 'rtsp://admin:sijung5520@192.168.100.103/profile4/media.smp',
-
         'data_csv_path': os.path.join('F:\\JS08', 'data'),
         'target_csv_path': os.path.join('F:\\JS08', 'target'),
         'rgb_csv_path': os.path.join('F:\\JS08', 'rgb'),
@@ -74,6 +67,7 @@ class JS08Settings:
 if __name__ == '__main__':
 
     JS08Settings.restore_defaults()
-    print(JS08Settings.get('front_camera_rtsp'))
+    print(JS08Settings.get('front_camera_name'))
     print(JS08Settings.get('rear_camera_rtsp'))
     print(JS08Settings.get('data_csv_path'))
+    print(JS08Settings.get('first_step'))

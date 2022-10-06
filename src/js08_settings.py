@@ -434,6 +434,9 @@ class JS08SettingWidget(QDialog, Ui_Dialog):
         self.save_target(self.current_camera)
         self.close()
 
+        QMessageBox.about(self, 'Restart JS-08', 'When JS-08 program is restarted, Target Detection Algorithm is started')
+        JS08Settings.set('first_step', False)
+
     def reject_click(self):
         self.close()
 
