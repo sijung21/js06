@@ -1,13 +1,1 @@
-<RCC>
-  <qresource prefix="icon">
-    <file>icon/clock.png</file>
-    <file>icon/graph.png</file>
-    <file>icon/settings.png</file>
-    <file>icon/settings_on.png</file>
-    <file>icon/vis.png</file>
-    <file>icon/green.png</file>
-  </qresource>
-  <qresource prefix="WindowIcon">
-    <file>icon/logo.png</file>
-  </qresource>
-</RCC>
+<RCC/>

@@ -7,20 +7,33 @@
 #     5jx2oh@gmail.com (Jongjin Oh)
 
 import os
-from PyQt5.QtCore import QSettings, QStandardPaths
+from PySide6.QtCore import QSettings, QRect
+from PySide6.QtGui import QImage
 
 
-class JS06Settings:
-    settings = QSettings('sijung', 'js06')
+class JS08Settings:
+    settings = QSettings('sijung', 'js08')
 
     defaults = {
-        'data_csv_path': os.path.join('D:\\JS06', 'data'),
-        'target_csv_path': os.path.join('D:\\JS06', 'target'),
-        'image_save_path': os.path.join('D:\\JS06', 'image'),
+        'front_camera_name': 'PNM_9031RV_front',
+        'front_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.131/profile2/media.smp',
+        'front_main': 'rtsp://admin:sijung5520@192.168.100.131/profile5/media.smp',
+        'rear_camera_name': 'PNM_9031RV_rear',
+        'rear_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.132/profile2/media.smp',
+        'rear_main': 'rtsp://admin:sijung5520@192.168.100.132/profile5/media.smp',
+
+        'data_csv_path': os.path.join('F:\\JS08', 'data'),
+        'target_csv_path': os.path.join('F:\\JS08', 'target'),
+        'rgb_csv_path': os.path.join('F:\\JS08', 'rgb'),
+        'image_save_path': os.path.join('F:\\JS08', 'image'),
         'image_size': 0,
         'visibility_alert_limit': 1000,
         'login_id': 'admin',
-        'login_pw': '1234'
+        'login_pw': '1234',
+        'login_flag': True,
+        'first_step': True,
+        'maxfev_flag': False,
+        'maxfev_count': 0
     }
 
     @classmethod
@@ -39,3 +52,22 @@ class JS06Settings:
     def restore_defaults(cls):
         for key, value in cls.defaults.items():
             cls.set(key, value)
+
+    @classmethod
+    def restore_value(cls, key):
+        if key in cls.defaults.keys():
+            cls.set(key, cls.defaults[key])
+
+    @classmethod
+    def add_maxfev_time(cls, data: list):
+        for i in data:
+            cls.settings.setValue('maxfev_time', i)
+
+
+if __name__ == '__main__':
+
+    JS08Settings.restore_defaults()
+    print(JS08Settings.get('front_camera_name'))
+    print(JS08Settings.get('rear_camera_rtsp'))
+    print(JS08Settings.get('data_csv_path'))
+    print(JS08Settings.get('first_step'))
