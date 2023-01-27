@@ -95,7 +95,7 @@ class TargetInfo:
             g_list = list(map(int, g_list))
             b_list = list(map(int, b_list))
 
-            col = ['time', 'target_name', 'r', 'g', 'b', 'distance']
+            col = ['target_name', 'r', 'g', 'b', 'distance']
             result = pd.DataFrame(columns=col)
             result['target_name'] = [f'target_{num}' for num in range(1, len(r_list) + 1)]
             result['r'] = r_list
@@ -107,7 +107,6 @@ class TargetInfo:
             try:
                 self.list1, self.list2, self.list3, self.select_color = self.coef.cal_curve(result)
             except TypeError:
-                # list1, list2, list3, select_color = [0.01], [0.01], [0.01], 'red'
                 pass
 
             visibility = self.extinc_print(self.list3, self.select_color)

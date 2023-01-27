@@ -9,7 +9,6 @@
 import os
 import sys
 
-import pandas
 import vlc
 import time
 
@@ -20,26 +19,23 @@ from multiprocessing import Process, Queue
 
 from PySide6.QtGui import QPixmap, QIcon, QPainter, QPen
 from PySide6.QtWidgets import (QMainWindow, QWidget, QFrame, QMessageBox)
-from PySide6.QtCore import (Qt, Slot, QRect, QTimer, QObject, QDateTime, QThread)
+from PySide6.QtCore import (Qt, Slot, QRect, QTimer, QObject, QDateTime)
 
 from login_view import LoginWindow
 from video_thread_mp import producer
-from js08_settings import JS08SettingWidget
-from model import JS08Settings
+from js08_settings_admin import JS08AdminSettingWidget
+from js08_settings_user import JS08UserSettingWidget
 from curve_thread import CurveThread
 from clock import clock_clock
 from consumer import Consumer
 from thumbnail_view import ThumbnailView
+from auto_file_delete import FileAutoDelete
 
 from visibility_view import VisibilityView
 from discernment_view import DiscernmentView
 
 # UI
 from resources.main_window import Ui_MainWindow
-
-# Warning Message ignore
-# import warnings
-# warnings.filterwarnings('ignore')
 
 
 class JS08MainWindow(QMainWindow, Ui_MainWindow):
@@ -49,17 +45,15 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         _producer = producer
 
-        # if JS08Settings.get('login_flag'):
-        #     login_window = LoginWindow()
-        #     login_window.sijunglogo.setIcon(QIcon('resources/asset/f_logo.png'))
-        #     login_window.exec()
-        # self.mp_flag = True
-            # JS08Settings.set('login_flag', False)
+        login_window = LoginWindow()
+        login_window.exec()
+        self.mp_flag = True
 
         self.setupUi(self)
 
         p = Process(name='clock', target=clock_clock, args=(q,), daemon=True)
         p.start()
+
         self.consumer = Consumer(q)
         self.consumer.poped.connect(self.clock)
         self.consumer.start()
@@ -97,7 +91,9 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         year = current_time[:4]
         md = current_time[5:7] + current_time[8:10]
 
-        self.get_date, self.get_epoch, self.q_list = self.get_data(year, md)
+        # self.get_date, self.get_epoch, self.q_list = self.get_data(year, md)
+        # self.q_list = self.get_data(year, md)
+        self.q_list = None
 
         self._plot = VisibilityView(self, self.q_list_scale)
         self._polar = DiscernmentView(self)
@@ -114,7 +110,6 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.year_date = None
         self.data_date = []
         self.data_time = []
-        self.data_vis = []
 
         self.front_video_widget = VideoWidget(self)
         self.front_video_widget.on_camera_change(JS08Settings.get('front_main'))
@@ -207,34 +202,65 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def setting_btn_click(self):
-        self.front_video_widget.media_player.stop()
-        self.rear_video_widget.media_player.stop()
-        self.consumer.pause()
+        if JS08Settings.get('right') == 'administrator':
+            self.front_video_widget.media_player.stop()
+            self.rear_video_widget.media_player.stop()
+            self.consumer.pause()
 
-        dlg = JS08SettingWidget()
-        dlg.show()
-        dlg.setWindowModality(Qt.ApplicationModal)
-        dlg.exec()
+            dlg = JS08AdminSettingWidget()
+            dlg.show()
+            dlg.setWindowModality(Qt.ApplicationModal)
+            dlg.exec()
 
-        self.front_video_widget.media_player.play()
-        self.rear_video_widget.media_player.play()
-        self.consumer.resume()
-        self.consumer.start()
+            self.front_video_widget.media_player.play()
+            self.rear_video_widget.media_player.play()
+            self.consumer.resume()
+            self.consumer.start()
+
+        elif JS08Settings.get('right') == 'user':
+            self.front_video_widget.media_player.stop()
+            self.rear_video_widget.media_player.stop()
+            self.consumer.pause()
+
+            dlg = JS08UserSettingWidget()
+            dlg.show()
+            dlg.setWindowModality(Qt.ApplicationModal)
+            dlg.exec()
+
+            self.front_video_widget.media_player.play()
+            self.rear_video_widget.media_player.play()
+            self.consumer.resume()
+            self.consumer.start()
+
+    # def get_data(self, year, month_day):
+    #
+    #     save_path = os.path.join(f'{JS08Settings.get("data_csv_path")}/{JS08Settings.get("front_camera_name")}/{year}')
+    #
+    #     if os.path.isfile(f'{save_path}/{month_day}.csv'):
+    #         self.result = pd.read_csv(f'{save_path}/{month_day}.csv')
+    #         # data_datetime = self.result['date'].tolist()
+    #         # data_epoch = self.result['epoch'].tolist()
+    #         data_visibility = self.result['visibility'].tolist()
+    #
+    #         # return data_datetime, data_epoch, data_visibility
+    #         return data_visibility
+    #
+    #     else:
+    #         # return [], [], []
+    #         return []
 
     def get_data(self, year, month_day):
 
-        save_path = os.path.join(f'{JS08Settings.get("data_csv_path")}/{JS08Settings.get("front_camera_name")}/{year}')
+        save_path = os.path.join(f'{JS08Settings.get("data_csv_path")}/Prevailing_Visibility/{year}')
 
         if os.path.isfile(f'{save_path}/{month_day}.csv'):
             self.result = pd.read_csv(f'{save_path}/{month_day}.csv')
-            data_datetime = self.result['date'].tolist()
-            data_epoch = self.result['epoch'].tolist()
-            data_visibility = self.result['visibility'].tolist()
+            data_visibility = self.result['prev'].tolist()
 
-            return data_datetime, data_epoch, data_visibility
+            return data_visibility
 
         else:
-            return [], [], []
+            return []
 
     @Slot(str)
     def print_data(self, visibility: dict):
@@ -243,14 +269,13 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         :param visibility: 8-degree Visibility value
         """
-        self.front_video_widget.get_status()
-        self.rear_video_widget.get_status()
+        FileAutoDelete()
 
         self.convert_visibility(visibility)
         visibility_front = visibility.get('visibility_front')
         visibility_rear = visibility.get('visibility_rear')
 
-        # graph_visibility_value
+        # Graph Visibility value
         self.graph_visibility_value.append(self.prevailing_visibility / 1000)
         if len(self.graph_visibility_value) >= 10:
             del self.graph_visibility_value[0]
@@ -258,10 +283,15 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         epoch = QDateTime.currentSecsSinceEpoch()
         current_time = time.strftime('%Y-%m-%d %H:%M:00', time.localtime(epoch))
+        _time = time.strftime('%Y%m%d%H%M%S', time.localtime(epoch))
         year = current_time[:4]
         md = current_time[5:7] + current_time[8:10]
 
-        self.get_date, self.get_epoch, self.q_list = self.get_data(year, md)
+        # if _time[-4:] == '0000':
+        # self.front_video_widget.get_status()
+        # self.rear_video_widget.get_status()
+
+        self.q_list = self.get_data(year, md)
 
         if len(self.q_list) == 0 or self.q_list_scale != len(self.q_list):
             self.q_list = []
@@ -277,30 +307,35 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
             self.q_list.append(plot_value)
             result_vis = np.mean(self.q_list)
 
-        if len(self.data_date) >= self.q_list_scale or len(self.data_vis) >= self.q_list_scale:
+        if len(self.data_date) >= self.q_list_scale:
             self.data_date.pop(0)
             self.data_time.pop(0)
-            self.data_vis.pop(0)
 
         self.data_date.append(current_time)
         self.data_time.append(epoch * 1000.0)
-        self.data_vis.append(visibility_front)
 
         save_path_front = os.path.join(
             f'{JS08Settings.get("data_csv_path")}/{JS08Settings.get("front_camera_name")}/{year}')
         save_path_rear = os.path.join(
             f'{JS08Settings.get("data_csv_path")}/{JS08Settings.get("rear_camera_name")}/{year}')
+        save_path_prevailing = os.path.join(f'{JS08Settings.get("data_csv_path")}/Prevailing_Visibility/{year}')
+
         file_front = f'{save_path_front}/{md}.csv'
         file_rear = f'{save_path_rear}/{md}.csv'
+        file_prevailing = f'{save_path_prevailing}/{md}.csv'
 
-        result_front = pd.DataFrame(columns=['date', 'epoch', 'visibility', 'NE', 'EN', 'ES', 'SE'])
-        result_rear = pd.DataFrame(columns=['date', 'epoch', 'visibility', 'SW', 'WS', 'WN', 'NW'])
+        result_front = pd.DataFrame(columns=['date', 'epoch', 'visibility', 'SW', 'WS', 'WN', 'NW'])
+        result_rear = pd.DataFrame(columns=['date', 'epoch', 'visibility', 'NE', 'EN', 'ES', 'SE'])
+        result_prevailing = pd.DataFrame(columns=['date', 'epoch', 'prev'])
 
-        if os.path.isfile(f'{file_front}') is False or os.path.isfile(f'{file_rear}') is False:
+        if os.path.isfile(f'{file_front}') is False or os.path.isfile(f'{file_rear}') is False \
+                or os.path.isfile(f'{file_prevailing}') is False:
             os.makedirs(f'{save_path_front}', exist_ok=True)
             os.makedirs(f'{save_path_rear}', exist_ok=True)
+            os.makedirs(f'{save_path_prevailing}', exist_ok=True)
             result_front.to_csv(f'{file_front}', mode='w', index=False)
             result_rear.to_csv(f'{file_rear}', mode='w', index=False)
+            result_prevailing.to_csv(f'{file_prevailing}', mode='w', index=False)
 
         try:
             result_front['date'] = [self.data_date[-1]]
@@ -321,11 +356,16 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
             result_rear['WN'] = visibility.get('WN')
             result_rear['NW'] = visibility.get('NW')
 
+            result_prevailing['date'] = [self.data_date[-1]]
+            result_prevailing['epoch'] = [self.data_time[-1]]
+            result_prevailing['prev'] = round(self.prevailing_visibility / 1000, 3)
+
         except TypeError as e:
             print(f'Occurred error ({current_time}) -\n{e}')
 
         result_rear.to_csv(f'{file_rear}', mode='a', index=False, header=False)
         result_front.to_csv(f'{file_front}', mode='a', index=False, header=False)
+        result_prevailing.to_csv(f'{file_prevailing}', mode='a', index=False, header=False)
 
         self.visibility_front = round(float(result_vis), 3)
 
@@ -448,7 +488,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         if one_hour_visibility in data_datetime:
             data = self.result.where(self.result['date'] == one_hour_visibility).dropna()
-            vis = int(data['visibility'].tolist()[0] * 1000)
+            vis = int(data['prev'].tolist()[0] * 1000)
             self.label_1hour_time.setText(f'{time.strftime("%H:%M", time.localtime(time.time() - 3600))}'
                                           f' - {vis} m')
         else:
@@ -456,7 +496,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         if two_hour_visibility in data_datetime:
             data = self.result.where(self.result['date'] == two_hour_visibility).dropna()
-            vis = int(data['visibility'].tolist()[0] * 1000)
+            vis = int(data['prev'].tolist()[0] * 1000)
             self.label_2hour_time.setText(f'{time.strftime("%H:%M", time.localtime(time.time() - 3600 * 2))}'
                                           f' - {vis} m')
         else:
@@ -464,7 +504,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         if three_hour_visibility in data_datetime:
             data = self.result.where(self.result['date'] == three_hour_visibility).dropna()
-            vis = int(data['visibility'].tolist()[0] * 1000)
+            vis = int(data['prev'].tolist()[0] * 1000)
             self.label_3hour_time.setText(f'{time.strftime("%H:%M", time.localtime(time.time() - 3600 * 3))}'
                                           f' - {vis} m')
         else:
@@ -472,7 +512,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         if four_hour_visibility in data_datetime:
             data = self.result.where(self.result['date'] == four_hour_visibility).dropna()
-            vis = int(data['visibility'].tolist()[0] * 1000)
+            vis = int(data['prev'].tolist()[0] * 1000)
             self.label_4hour_time.setText(f'{time.strftime("%H:%M", time.localtime(time.time() - 3600 * 4))}'
                                           f' - {vis} m')
         else:
@@ -480,7 +520,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         if five_hour_visibility in data_datetime:
             data = self.result.where(self.result['date'] == five_hour_visibility).dropna()
-            vis = int(data['visibility'].tolist()[0] * 1000)
+            vis = int(data['prev'].tolist()[0] * 1000)
             self.label_5hour_time.setText(f'{time.strftime("%H:%M", time.localtime(time.time() - 3600 * 5))}'
                                           f' - {vis} m')
         else:
@@ -488,7 +528,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         if six_hour_visibility in data_datetime:
             data = self.result.where(self.result['date'] == six_hour_visibility).dropna()
-            vis = int(data['visibility'].tolist()[0] * 1000)
+            vis = int(data['prev'].tolist()[0] * 1000)
             self.label_6hour_time.setText(f'{time.strftime("%H:%M", time.localtime(time.time() - 3600 * 6))}'
                                           f' - {vis} m')
         else:
@@ -654,10 +694,10 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         painter.drawLine((self.front_label.width() - 1), 0,
                          (self.front_label.width() - 1), self.front_label.height())
 
-        painter.drawText(self.front_label.width() * 0.125, 14, 'NE')
-        painter.drawText(self.front_label.width() * 0.375, 14, 'EN')
-        painter.drawText(self.front_label.width() * 0.625, 14, 'ES')
-        painter.drawText(self.front_label.width() * 0.875, 14, 'SE')
+        painter.drawText(self.front_label.width() * 0.125, 14, 'SW')
+        painter.drawText(self.front_label.width() * 0.375, 14, 'WS')
+        painter.drawText(self.front_label.width() * 0.625, 14, 'WN')
+        painter.drawText(self.front_label.width() * 0.875, 14, 'NW')
 
         painter.end()
 
@@ -674,10 +714,10 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         painter.drawLine((self.rear_label.width() - 1), 0,
                          (self.rear_label.width() - 1), self.rear_label.height())
 
-        painter.drawText(self.rear_label.width() * 0.125, 14, 'SW')
-        painter.drawText(self.rear_label.width() * 0.375, 14, 'WS')
-        painter.drawText(self.rear_label.width() * 0.625, 14, 'WN')
-        painter.drawText(self.rear_label.width() * 0.875, 14, 'NW')
+        painter.drawText(self.rear_label.width() * 0.125, 14, 'NE')
+        painter.drawText(self.rear_label.width() * 0.375, 14, 'EN')
+        painter.drawText(self.rear_label.width() * 0.625, 14, 'ES')
+        painter.drawText(self.rear_label.width() * 0.875, 14, 'SE')
 
         painter.end()
 
@@ -719,36 +759,38 @@ class VideoWidget(QWidget):
         if uri[:4] == 'rtsp':
             self.uri = uri
             self.media_player.set_media(self.instance.media_new(uri))
+            self.instance.vlm_set_loop(uri, True)
             self.media_player.play()
         else:
             pass
 
     def get_status(self):
-        if self.media_player.is_playing() == 0:
-            print(f'Player is not playing! in '
-                  f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(QDateTime.currentSecsSinceEpoch()))}')
-            self.media_player.set_media(self.instance.media_new(self.uri))
-            self.media_player.play()
+        # print(f'Video is playing?: {self.media_player.is_playing()}')
+        # if self.media_player.is_playing() == 0:
+        #     print(f'Player is not playing!!!!!!!!!!! in '
+        #           f'{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(QDateTime.currentSecsSinceEpoch()))}')
+        # print('replayed')
+        # self.media_player.set_media(self.instance.media_new(self.uri))
+        # self.media_player.play()
+
+        # print(f'is_seekable: {self.media_player.is_seekable()}')    # return 0
+        # print(f'is_playing: {self.media_player.is_playing()}')      # return 1
+
+        self.media_player.set_pause(1)
+        self.media_player.play()
 
 
 if __name__ == '__main__':
+    mp.freeze_support()
+
     from PySide6.QtWidgets import QApplication
     from PySide6.QtGui import QGuiApplication
     from model import JS08Settings
 
     print(f'Start time: {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}')
 
-    mp.freeze_support()
     q = Queue()
     _q = Queue()
-
-    # _producer = producer
-    #
-    # p = Process(name='clock', target=clockclock, args=(q,), daemon=True)
-    # _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
-    #
-    # p.start()
-    # _p.start()
 
     os.makedirs(f'{JS08Settings.get("data_csv_path")}', exist_ok=True)
     os.makedirs(f'{JS08Settings.get("target_csv_path")}', exist_ok=True)
@@ -756,6 +798,7 @@ if __name__ == '__main__':
     os.makedirs(f'{JS08Settings.get("image_save_path")}', exist_ok=True)
 
     app = QApplication(sys.argv)
+    # app.setStyle(QStyleFactory().create('Noto Sans'))
     screen_size = QGuiApplication.screens()[0].geometry()
     width, height = screen_size.width(), screen_size.height()
     if width != 1920 or height != 1080:

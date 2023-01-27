@@ -19,7 +19,7 @@ from PySide6.QtWidgets import QWidget
 from PySide6.QtCore import (Slot, QPointF, QDateTime,
                             QPoint, QTime)
 from PySide6.QtCharts import (QChartView, QLineSeries, QValueAxis,
-                              QChart, QDateTimeAxis, QAreaSeries)
+                              QChart, QDateTimeAxis, QAreaSeries, QSplineSeries)
 
 from model import JS08Settings
 
@@ -31,23 +31,21 @@ class VisibilityView(QChartView):
         self.setRenderHint(QPainter.Antialiasing)
         self.setMinimumSize(200, 200)
         self.setMaximumSize(600, 400)
-        # self.m_callouts = List[Callout] = []
 
         self.maxlen = maxlen
-        self._value_pos = QPoint()
-        self.rect_flip_x = -120
+        self.i = 0
 
         now = QDateTime.currentSecsSinceEpoch()
         str_now = str(now)
         sequence = '0'
         indicies = (10, 10)
         now = int(sequence.join([str_now[:indicies[0] - 1], str_now[indicies[1]:]]))
+        self.now = now
 
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(now))
         year = current_time[:4]
         md = current_time[5:7] + current_time[8:10]
 
-        self.setRenderHint(QPainter.Antialiasing)
         self.setMouseTracking(True)
 
         chart = QChart()
@@ -58,13 +56,14 @@ class VisibilityView(QChartView):
         self.chart().setBackgroundBrush(QBrush(QColor('#16202a')))
 
         self.series = QLineSeries(name='Prevailing Visibility')
+        # self.series = QSplineSeries(name='Prevailing Visibility')
         chart.addSeries(self.series)
 
         axis_x = QDateTimeAxis()
         axis_x.setFormat('MM/dd hh:mm')
         axis_x.setTitleText('Time')
 
-        save_path = os.path.join(f'{JS08Settings.get("data_csv_path")}/{JS08Settings.get("front_camera_name")}/{year}')
+        save_path = os.path.join(f'{JS08Settings.get("data_csv_path")}/Prevailing_Visibility/{year}')
         file = f'{save_path}/{md}.csv'
 
         if os.path.isfile(f'{file}') is False:
@@ -77,30 +76,30 @@ class VisibilityView(QChartView):
             axis_x.setRange(left, right)
             chart.setAxisX(axis_x, self.series)
         else:
-            path = os.path.join(f'{JS08Settings.get("data_csv_path")}/{JS08Settings.get("front_camera_name")}/{year}')
+            path = os.path.join(f'{JS08Settings.get("data_csv_path")}/Prevailing_Visibility/{year}')
             mtime = lambda f: os.stat(os.path.join(path, f)).st_mtime
             res = list(sorted(os.listdir(path), key=mtime))
 
-            if len(res) >= 2:
-                JS08Settings.set('first_step', False)
+            # if len(res) >= 2:
+            #     JS08Settings.set('first_step', False)
 
             result_today = pd.read_csv(file)
 
             epoch_today = result_today['epoch'].tolist()
-            vis_list_today = result_today['visibility'].tolist()
+            vis_list_today = result_today['prev'].tolist()
 
             data = []
 
-            if JS08Settings.get('first_step') is False:
+            if JS08Settings.get('first_step') is False and len(res) > 1:
                 if md == '0101':
                     save_path = os.path.join(f'{JS08Settings.get("data_csv_path")}/'
-                                             f'{JS08Settings.get("front_camera_name")}/{int(year) - 1}')
+                                             f'Prevailing_Visibility/{int(year) - 1}')
 
                 yesterday_file = f'{save_path}/{res[-2]}'
                 result_yesterday = pd.read_csv(yesterday_file)
 
                 epoch_yesterday = result_yesterday['epoch'].tolist()
-                vis_list_yesterday = result_yesterday['visibility'].tolist()
+                vis_list_yesterday = result_yesterday['prev'].tolist()
 
                 for i in range(len(epoch_yesterday)):
                     data.append((epoch_yesterday[i], vis_list_yesterday[i]))
@@ -108,7 +107,7 @@ class VisibilityView(QChartView):
             for i in range(len(epoch_today)):
                 data.append((epoch_today[i], vis_list_today[i]))
 
-            self.data = collections.deque(data, maxlen=1440)
+            self.data = collections.deque(data, maxlen=180)
 
             left = QDateTime.fromMSecsSinceEpoch(int(self.data[0][0]))
             right = QDateTime.fromMSecsSinceEpoch(int(self.data[-1][0]))
@@ -149,7 +148,18 @@ class VisibilityView(QChartView):
         return prevailing
 
     def wheelEvent(self, event):
-        print('wheel')
+        self.i += 1
+        # print(self.i)
+        self.maxlen += event.angleDelta().y()
+        if self.maxlen <= 0:
+            self.maxlen = 0
+
+        zeros = [(t * 1000.0, -1) for t in range(self.now - self.maxlen * 60, self.now, 60)]
+        self.data = collections.deque(zeros, self.maxlen)
+
+        left = QDateTime.fromMSecsSinceEpoch(int(self.data[0][0]))
+        right = QDateTime.fromMSecsSinceEpoch(int(self.data[-1][0]))
+        # axis_x.setRange(left, right)
 
 
 if __name__ == '__main__':
@@ -159,7 +169,7 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = QMainWindow()
     window.resize(600, 400)
-    visibility_view = VisibilityView(window, 1440)
+    visibility_view = VisibilityView(window, 180)
     # visibility_view.refresh_stats(visibility)
     window.setCentralWidget(visibility_view)
     window.show()

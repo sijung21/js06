@@ -360,6 +360,7 @@ class Ui_Dialog(object):
         self.image_size_comboBox = QComboBox(self.gridWidget)
         self.image_size_comboBox.addItem("")
         self.image_size_comboBox.addItem("")
+        self.image_size_comboBox.addItem("")
         self.image_size_comboBox.setObjectName(u"image_size_comboBox")
         self.image_size_comboBox.setStyleSheet(u"background-color: rgb(255, 255, 255);")
 
@@ -459,18 +460,17 @@ class Ui_Dialog(object):
 
         self.afd_horizontalLayout.addWidget(self.afd_label)
 
-        self.afd_button = QPushButton(self.gridWidget)
-        self.afd_button.setObjectName(u"afd_button")
-        sizePolicy3.setHeightForWidth(self.afd_button.sizePolicy().hasHeightForWidth())
-        self.afd_button.setSizePolicy(sizePolicy3)
-        self.afd_button.setMaximumSize(QSize(16777215, 16777215))
-        font5 = QFont()
-        font5.setPointSize(17)
-        self.afd_button.setFont(font5)
-        self.afd_button.setStyleSheet(u"background-color:rgb(27,49,70);\n"
-"color: #ffffff;")
+        self.afd_checkBox = QCheckBox(self.gridWidget)
+        self.afd_checkBox.setObjectName(u"afd_checkBox")
+        sizePolicy5.setHeightForWidth(self.afd_checkBox.sizePolicy().hasHeightForWidth())
+        self.afd_checkBox.setSizePolicy(sizePolicy5)
+        self.afd_checkBox.setStyleSheet(u"QCheckBox::indicator { width: 40px; height: 40px; };")
+        self.afd_checkBox.setIconSize(QSize(16, 16))
+        self.afd_checkBox.setChecked(False)
+        self.afd_checkBox.setAutoRepeat(False)
+        self.afd_checkBox.setTristate(False)
 
-        self.afd_horizontalLayout.addWidget(self.afd_button)
+        self.afd_horizontalLayout.addWidget(self.afd_checkBox)
 
 
         self.etc_verticalLayout.addLayout(self.afd_horizontalLayout)
@@ -479,10 +479,10 @@ class Ui_Dialog(object):
         self.buttonBox.setObjectName(u"buttonBox")
         sizePolicy4.setHeightForWidth(self.buttonBox.sizePolicy().hasHeightForWidth())
         self.buttonBox.setSizePolicy(sizePolicy4)
-        font6 = QFont()
-        font6.setFamilies([u"Noto Sans"])
-        font6.setPointSize(9)
-        self.buttonBox.setFont(font6)
+        font5 = QFont()
+        font5.setFamilies([u"Noto Sans"])
+        font5.setPointSize(9)
+        self.buttonBox.setFont(font5)
         self.buttonBox.setStyleSheet(u"background-color:rgb(27,49,70);\n"
 "color: #ffffff;")
         self.buttonBox.setOrientation(Qt.Horizontal)
@@ -533,8 +533,9 @@ class Ui_Dialog(object):
         self.image_save_path_label.setText(QCoreApplication.translate("Dialog", u" Image save Path: ", None))
         self.image_save_path_button.setText(QCoreApplication.translate("Dialog", u"\u21a9", None))
         self.vis_limit_label_2.setText(QCoreApplication.translate("Dialog", u" Image size: ", None))
-        self.image_size_comboBox.setItemText(0, QCoreApplication.translate("Dialog", u"Original", None))
-        self.image_size_comboBox.setItemText(1, QCoreApplication.translate("Dialog", u"FHD", None))
+        self.image_size_comboBox.setItemText(0, QCoreApplication.translate("Dialog", u"Original (PNG)", None))
+        self.image_size_comboBox.setItemText(1, QCoreApplication.translate("Dialog", u"Reduce (JPG)", None))
+        self.image_size_comboBox.setItemText(2, QCoreApplication.translate("Dialog", u"Resize to FHD (PNG)", None))
 
         self.vis_limit_label.setText(QCoreApplication.translate("Dialog", u" Visibility alert limit: ", None))
         self.vis_limit_spinBox.setSuffix(QCoreApplication.translate("Dialog", u" m", None))
@@ -542,6 +543,6 @@ class Ui_Dialog(object):
         self.id_label.setText(QCoreApplication.translate("Dialog", u" ID: ", None))
         self.pw_label.setText(QCoreApplication.translate("Dialog", u" P/W: ", None))
         self.afd_label.setText(QCoreApplication.translate("Dialog", u" File delete: ", None))
-        self.afd_button.setText(QCoreApplication.translate("Dialog", u"\u21a9", None))
+        self.afd_checkBox.setText("")
     # retranslateUi
 

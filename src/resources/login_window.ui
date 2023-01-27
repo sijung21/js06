@@ -88,7 +88,7 @@
          <string notr="true">background-color: #ffffff;</string>
         </property>
         <property name="echoMode">
-         <enum>QLineEdit::PasswordEchoOnEdit</enum>
+         <enum>QLineEdit::Password</enum>
         </property>
         <property name="placeholderText">
          <string>Password</string>
@@ -115,6 +115,9 @@
           <width>170</width>
           <height>90</height>
          </size>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
         </property>
         <property name="autoDefault">
          <bool>false</bool>

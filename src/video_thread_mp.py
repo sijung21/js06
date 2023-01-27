@@ -23,7 +23,6 @@ def producer(queue):
     front_cap = cv2.VideoCapture(JS08Settings.get('front_camera_rtsp'))
     rear_cap = cv2.VideoCapture(JS08Settings.get('rear_camera_rtsp'))
 
-    previous_vis = {}
     NE, EN, ES, SE, SW, WS, WN, NW = [], [], [], [], [], [], [], []
 
     if rear_cap.isOpened() and front_cap.isOpened():
@@ -33,7 +32,8 @@ def producer(queue):
             epoch = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             date = epoch[2:8]
 
-            if epoch[-2:] == '00':
+            if epoch[-1:] == '0':
+                # start = time.time()
                 front_target_name, front_left_range, front_right_range, front_distance, front_azimuth = \
                     target_info.get_target(front_cap_name)
 
@@ -75,18 +75,20 @@ def producer(queue):
                 os.makedirs(f'{image_save_path}/thumbnail/{front_cap_name}/{date}', exist_ok=True)
                 os.makedirs(f'{image_save_path}/thumbnail/{rear_cap_name}/{date}', exist_ok=True)
 
+                # front_ret, front_frame = front_cap.read()
+                # rear_ret, rear_frame = rear_cap.read()
+
+                # front_cap.release()
+                # rear_cap.release()
+                if rear_cap.isOpened() is False or front_cap.isOpened() is False:
+                    front_cap = cv2.VideoCapture(JS08Settings.get('front_camera_rtsp'))
+                    rear_cap = cv2.VideoCapture(JS08Settings.get('rear_camera_rtsp'))
+
                 front_ret, front_frame = front_cap.read()
                 rear_ret, rear_frame = rear_cap.read()
 
                 if not front_ret or not rear_ret:
                     print(f'Found Error; Rebuilding stream in {time.strftime("%Y.%m.%d %H:%M:%S", time.localtime(time.time()))}')
-
-                front_cap.release()
-                rear_cap.release()
-                front_cap = cv2.VideoCapture(JS08Settings.get('front_camera_rtsp'))
-                rear_cap = cv2.VideoCapture(JS08Settings.get('rear_camera_rtsp'))
-                front_ret, front_frame = front_cap.read()
-                rear_ret, rear_frame = rear_cap.read()
 
                 try:
                     visibility_front = target_info.minprint(epoch[:-2], front_left_range, front_right_range,
@@ -113,7 +115,6 @@ def producer(queue):
                                                           rear_distance_WN, rear_frame, rear_cap_name)
                 visibility_rear_NW = target_info.minprint(epoch[:-2], rear_left_range_NW, rear_right_range_NW,
                                                           rear_distance_NW, rear_frame, rear_cap_name)
-
 
                 # for Moving Average
                 if len(NE) >= 20:
@@ -157,7 +158,11 @@ def producer(queue):
                     cv2.imwrite(f'{image_save_path}/vista/{front_cap_name}/{date}/{epoch}.png', front_frame)
                     cv2.imwrite(f'{image_save_path}/vista/{rear_cap_name}/{date}/{epoch}.png', rear_frame)
 
-                elif JS08Settings.get('image_size') == 1:  # FHD size
+                elif JS08Settings.get('image_size') == 1:
+                    cv2.imwrite(f'{image_save_path}/vista/{front_cap_name}/{date}/{epoch}.jpg', front_frame)
+                    cv2.imwrite(f'{image_save_path}/vista/{rear_cap_name}/{date}/{epoch}.jpg', rear_frame)
+
+                elif JS08Settings.get('image_size') == 2:  # FHD size
                     front_frame = cv2.resize(front_frame, (1920, 640), interpolation=cv2.INTER_AREA)
                     rear_frame = cv2.resize(rear_frame, (1920, 640), interpolation=cv2.INTER_AREA)
 
@@ -175,6 +180,7 @@ def producer(queue):
                 cv2.imwrite(
                     f'{image_save_path}/thumbnail/{rear_cap_name}/{date}/{epoch}.jpg', rear_frame)
 
+                # print(f'코드 실행시간 {round(time.time() - start, 3)} 초')
                 time.sleep(1)
                 front_cap.release()
                 rear_cap.release()

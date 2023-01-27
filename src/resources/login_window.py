@@ -65,7 +65,7 @@ class Ui_Dialog(object):
         self.pw_lineEdit.setObjectName(u"pw_lineEdit")
         self.pw_lineEdit.setFont(font)
         self.pw_lineEdit.setStyleSheet(u"background-color: #ffffff;")
-        self.pw_lineEdit.setEchoMode(QLineEdit.PasswordEchoOnEdit)
+        self.pw_lineEdit.setEchoMode(QLineEdit.Password)
 
         self.gridLayout_2.addWidget(self.pw_lineEdit, 3, 0, 1, 1)
 
@@ -116,3 +116,11 @@ class Ui_Dialog(object):
         self.login_button.setText(QCoreApplication.translate("Dialog", u"Login", None))
     # retranslateUi
 
+
+if __name__ == '__main__':
+    import sys
+    from PySide6.QtWidgets import QApplication
+
+    app = QApplication(sys.argv)
+    window = Ui_Dialog()
+    sys.exit(app.exec())

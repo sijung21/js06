@@ -637,12 +637,17 @@ color: #ffffff;</string>
                 </property>
                 <item>
                  <property name="text">
-                  <string>Original</string>
+                  <string>Original (PNG)</string>
                  </property>
                 </item>
                 <item>
                  <property name="text">
-                  <string>FHD</string>
+                  <string>Reduce (JPG)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Resize to FHD (PNG)</string>
                  </property>
                 </item>
                </widget>
@@ -822,30 +827,33 @@ color: #ffffff;</string>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="afd_button">
+               <widget class="QCheckBox" name="afd_checkBox">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>16777215</height>
-                 </size>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>17</pointsize>
-                 </font>
-                </property>
                 <property name="styleSheet">
-                 <string notr="true">background-color:rgb(27,49,70);
-color: #ffffff;</string>
+                 <string notr="true">QCheckBox::indicator { width: 40px; height: 40px; };</string>
                 </property>
                 <property name="text">
-                 <string>↩</string>
+                 <string/>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>16</width>
+                  <height>16</height>
+                 </size>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+                <property name="tristate">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
