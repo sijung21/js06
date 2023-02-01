@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright 2021-2022 Sijung Co., Ltd.
+# Copyright 2021-2023 Sijung Co., Ltd.
 #
 # Authors:
 #     cotjdals5450@gmail.com (Seong Min Chae)
@@ -13,6 +13,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from model import JS08Settings
 from resources.user_list import Ui_Dialog
+from save_log import log
 
 
 class UserEdit(QDialog, Ui_Dialog):
@@ -49,54 +50,52 @@ class UserEdit(QDialog, Ui_Dialog):
             self.user_dict[ide] = pw
 
     def add(self):
-        # print(self.user_dict)
-        # count = self.listWidget.count() + 1
         for ide, pw in zip(list(self.user_dict.keys()), list(self.user_dict.values())):
             self.user_dict[ide] = pw
 
         if not 'Add_user' in self.user_dict.keys():
             self.listWidget.addItem('Add_user')
-            # self.user_dict[f'user{count}'] = ''
             self.user_dict['Add_user'] = ''
-            # print(self.user_dict)
         else:
             pass
+
         self.listWidget.clearSelection()
+        log(JS08Settings.get('current_id'), 'Add User accounts')
+        self.save()
         self.info.setText('사용자 추가')
 
     def delete(self):
         try:
             del self.user_dict[f'{self.listWidget.currentItem().text()}']
             delete = self.listWidget.currentItem().text()
+
+            self.listWidget.takeItem(self.listWidget.currentRow())
+            self.listWidget.clearSelection()
+            self.user_id.clear()
+            self.user_pw.clear()
+            self.info.setText(f'{delete} 제거')
+            log(JS08Settings.get('current_id'), 'Delete User accounts')
+
         except AttributeError:
             QMessageBox.information(None, 'Info', '삭제할 유저를 선택하세요.')
 
-        # print('delete:', self.user_dict)
-        self.listWidget.takeItem(self.listWidget.currentRow())
-        self.listWidget.clearSelection()
-        self.user_id.clear()
-        self.user_pw.clear()
-        self.info.setText(f'{delete} 제거')
-
     def save(self):
-        # print('save:', self.user_dict)
         if not self.listWidget.count() == 0:
             item = self.listWidget.currentItem().text()
 
             if not self.current_user[0] == '':
-                # print(item, self.current_user)
                 self.user_dict.__delitem__(item)
                 self.user_dict[self.current_user[0]] = self.current_user[1]
                 d1 = sorted(self.user_dict.items())
                 self.user_dict = dict(d1)
 
         JS08Settings.set('user', self.user_dict)
-        # print(self.user_dict)
 
         self.listWidget.clearSelection()
         self.listWidget.clear()
         self.listWidget.addItems(self.user_dict.keys())
         self.info.setText('사용자 저장')
+        log(f'{JS08Settings.get("admin_id")}', 'Save User accounts')
 
     def change_id(self):
         self.current_user[0] = self.user_id.text()
@@ -132,9 +131,6 @@ class UserEdit(QDialog, Ui_Dialog):
 
         if e.modifiers() & Qt.Key_Escape:
             self.close()
-
-    def closeEvent(self, e):
-        pass
 
 
 if __name__ == '__main__':

@@ -15,21 +15,14 @@ from scipy.optimize import curve_fit
 
 from PySide6.QtCore import (QPoint, QRect, Qt)
 from PySide6.QtGui import (QPixmap, QPainter, QBrush,
-                           QColor, QPen, QImage,
-                           QIcon, QFont)
+                           QColor, QPen, QImage, QFont)
 from PySide6.QtWidgets import (QInputDialog, QDialog, QMessageBox,
                                QFileDialog, QHeaderView, QTableWidget,
-                               QTableWidgetItem, QLineEdit)
-from PySide6.QtCharts import QChart, QChartView, QLineSeries, QValueAxis
+                               QTableWidgetItem)
+from PySide6.QtCharts import QChart, QChartView, QValueAxis, QLineSeries
 
 from target_info import TargetInfo
-from model import JS08Settings
-from user_edit import UserEdit
-from resources.admin_menu import Ui_Dialog
-from save_log import log
-
-import warnings
-warnings.filterwarnings('ignore')
+from resources.visibility_test_ui import Ui_Dialog
 
 
 class JS08AdminSettingWidget(QDialog, Ui_Dialog):
@@ -75,7 +68,7 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         self.b_list = []
         self.target_info = TargetInfo()
 
-        self.current_camera = JS08Settings.get('front_camera_name')
+        self.current_camera = 'PNO-A9081R01'
         self.cam_flag = False
 
         self.image_load()
@@ -84,38 +77,13 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
             self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
             self.show_target_table()
 
-        self.red_checkBox.clicked.connect(self.chart_update)
-        self.green_checkBox.clicked.connect(self.chart_update)
-        self.blue_checkBox.clicked.connect(self.chart_update)
-
-        self.flip_button.clicked.connect(self.camera_flip)
-        self.flip_button.setIcon(QIcon('resources/asset/flip_off.png'))
-        self.flip_button.enterEvent = self.btn_on
-        self.flip_button.leaveEvent = self.btn_off
-
-        self.data_csv_path_button.clicked.connect(self.data_csv_path)
-        self.target_csv_path_button.clicked.connect(self.target_csv_path)
-        self.image_save_path_button.clicked.connect(self.image_save_path)
-        # self.afd_checkBox.stateChanged.connect(self.afd_btn_click)
-        self.user_list_button.clicked.connect(self.user_list_click)
-
-        self.data_csv_path_textBrowser.setPlainText(JS08Settings.get('data_csv_path'))
-        self.target_csv_path_textBrowser.setPlainText(JS08Settings.get('target_csv_path'))
-        self.image_save_path_textBrowser.setPlainText(JS08Settings.get('image_save_path'))
-
-        self.vis_limit_spinBox.setValue(JS08Settings.get('visibility_alert_limit'))
-        self.id_textBrowser.setText(JS08Settings.get('admin_id'))
-        self.current_pw.setEchoMode(QLineEdit.Password)
-        self.new_pw.setEchoMode(QLineEdit.Password)
-        self.new_pw_check.setEchoMode(QLineEdit.Password)
-        # self.current_pw.setText(JS08Settings.get('admin_pw'))
-
-        self.image_size_comboBox.setCurrentIndex(JS08Settings.get('image_size'))
-
         self.image_label.paintEvent = self.lbl_paintEvent
         self.image_label.mousePressEvent = self.lbl_mousePressEvent
         self.image_label.mouseMoveEvent = self.lbl_mouseMoveEvent
         self.image_label.mouseReleaseEvent = self.lbl_mouseReleaseEvent
+
+        self.load_img.clicked.connect(self.load_img_btn)
+        self.vis_btn.clicked.connect(self.print_data)
 
         self.buttonBox.accepted.connect(self.accept_click)
         self.buttonBox.rejected.connect(self.reject_click)
@@ -134,14 +102,14 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tableWidget.setHorizontalHeaderLabels(['Number', 'Distance', 'Azimuth'])
 
-        for upper_left, lower_right in zip(self.left_range, self.right_range):
-            result = self.target_info.minrgb(upper_left, lower_right, copy_image)
-            min_x.append(result[0])
-            min_y.append(result[1])
-
-            self.r_list.append(copy_image[result[1], result[0], 0])
-            self.g_list.append(copy_image[result[1], result[0], 1])
-            self.b_list.append(copy_image[result[1], result[0], 2])
+        # for upper_left, lower_right in zip(self.left_range, self.right_range):
+        #     result = self.target_info.minrgb(upper_left, lower_right, copy_image)
+        #     min_x.append(result[0])
+        #     min_y.append(result[1])
+        #
+        #     self.r_list.append(copy_image[result[1], result[0], 0])
+        #     self.g_list.append(copy_image[result[1], result[0], 1])
+        #     self.b_list.append(copy_image[result[1], result[0], 2])
 
         for i in range(0, row_count):
             item2 = QTableWidgetItem(f'{i + 1}')
@@ -183,9 +151,9 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
             self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
             self.x.sort()
 
-            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
-            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.distance, self.g_list, maxfev=5000)
-            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.distance, self.b_list, maxfev=5000)
+            # hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
+            # hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.distance, self.g_list, maxfev=5000)
+            # hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.distance, self.b_list, maxfev=5000)
 
             chart = QChart()
             chart.setTheme(QChart.ChartThemeDark)
@@ -212,54 +180,53 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
             axis_y.setTitleText('Intensity')
             axis_y.setTitleBrush(QBrush('#ffffff'))
             axis_y.setRange(0, 255)
-            chart.addAxis(axis_y, Qt.AlignLeft)
 
-            # Red Graph
-            if self.red_checkBox.isChecked():
-                series1 = QLineSeries()
-                series1.setName('Red')
-                pen = QPen()
-                pen.setWidth(2)
-                series1.setPen(pen)
-                series1.setColor(QColor('Red'))
-
-                for dis in self.x:
-                    series1.append(*(dis, self.func(dis, *hanhwa_opt_r)))
-                chart.addSeries(series1)  # data feeding
-                series1.attachAxis(axis_x)
-                series1.attachAxis(axis_y)
-
-            # Green Graph
-            if self.green_checkBox.isChecked():
-                series2 = QLineSeries()
-                series2.setName('Green')
-                pen = QPen()
-                pen.setWidth(2)
-                series2.setPen(pen)
-                series2.setColor(QColor('Green'))
-
-                for dis in self.x:
-                    series2.append(*(dis, self.func(dis, *hanhwa_opt_g)))
-                chart.addSeries(series2)  # data feeding
-
-                series2.attachAxis(axis_x)
-                series2.attachAxis(axis_y)
-
-            # Blue Graph
-            if self.blue_checkBox.isChecked():
-                series3 = QLineSeries()
-                series3.setName('Blue')
-                pen = QPen()
-                pen.setWidth(2)
-                series3.setPen(pen)
-                series3.setColor(QColor('Blue'))
-
-                for dis in self.x:
-                    series3.append(*(dis, self.func(dis, *hanhwa_opt_b)))
-                chart.addSeries(series3)  # data feeding
-
-                series3.attachAxis(axis_x)
-                series3.attachAxis(axis_y)
+            # # Red Graph
+            # # if self.red_checkBox.isChecked():
+            # series1 = QLineSeries()
+            # series1.setName('Red')
+            # pen = QPen()
+            # pen.setWidth(2)
+            # series1.setPen(pen)
+            # series1.setColor(QColor('Red'))
+            #
+            # for dis in self.x:
+            #     series1.append(*(dis, self.func(dis, *hanhwa_opt_r)))
+            # chart.addSeries(series1)  # data feeding
+            # series1.attachAxis(axis_x)
+            # series1.attachAxis(axis_y)
+            #
+            # # Green Graph
+            # # if self.green_checkBox.isChecked():
+            # series2 = QLineSeries()
+            # series2.setName('Green')
+            # pen = QPen()
+            # pen.setWidth(2)
+            # series2.setPen(pen)
+            # series2.setColor(QColor('Green'))
+            #
+            # for dis in self.x:
+            #     series2.append(*(dis, self.func(dis, *hanhwa_opt_g)))
+            # chart.addSeries(series2)  # data feeding
+            #
+            # series2.attachAxis(axis_x)
+            # series2.attachAxis(axis_y)
+            #
+            # # Blue Graph
+            # # if self.blue_checkBox.isChecked():
+            # series3 = QLineSeries()
+            # series3.setName('Blue')
+            # pen = QPen()
+            # pen.setWidth(2)
+            # series3.setPen(pen)
+            # series3.setColor(QColor('Blue'))
+            #
+            # for dis in self.x:
+            #     series3.append(*(dis, self.func(dis, *hanhwa_opt_b)))
+            # chart.addSeries(series3)  # data feeding
+            #
+            # series3.attachAxis(axis_x)
+            # series3.attachAxis(axis_y)
 
             chart.legend().setAlignment(Qt.AlignRight)
 
@@ -267,42 +234,24 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
             chart.setBackgroundBrush(QBrush(QColor(22, 32, 42)))
             chart_view = QChartView(chart)
             chart_view.setRenderHint(QPainter.Antialiasing)
-            chart_view.setMaximumSize(800, 500)
+            chart_view.setMaximumSize(500, 500)
 
             return chart_view
 
         except TypeError as e:
             QMessageBox.about(self, 'Error', f'{e}')
-            log(JS08Settings.get('current_id'), str(e))
             pass
 
         except IndexError as e:
             QMessageBox.about(self, 'Error', f'{e}')
-            log(JS08Settings.get('current_id'), str(e))
             pass
-
-    def camera_flip(self):
-        if self.cam_flag:
-            self.cam_flag = False
-        else:
-            self.cam_flag = True
-        self.image_load()
 
     def image_load(self):
         self.left_range = None
         self.right_range = None
 
-        if self.cam_flag:   # cam_flag is True = PNM_9031RV_rear
-            src = JS08Settings.get('rear_camera_rtsp')
-            self.current_camera = JS08Settings.get('rear_camera_name')
-            self.target_setting_label.setText(f'  Rear Target Setting ({self.current_camera})')
-            self.get_target(self.current_camera)
-
-        else:   # cam_flag is False = PNM_9031RV_front
-            src = JS08Settings.get('front_camera_rtsp')
-            self.current_camera = JS08Settings.get('front_camera_name')
-            self.target_setting_label.setText(f'  Front Target Setting ({self.current_camera})')
-            self.get_target(self.current_camera)
+        src = 'rtsp://admin:sijung5520@192.168.100.210/profile2/media.smp'
+        self.get_target(self.current_camera)
 
         try:
             cap = cv2.VideoCapture(src)
@@ -312,7 +261,6 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
 
         except Exception as e:
             QMessageBox.about(self, 'Error', f'{e}')
-            log(JS08Settings.get('current_id'), str(e))
 
         self.image_label.setPixmap(self.convert_cv_qt(cp_image))
         self.show_target_table()
@@ -327,13 +275,14 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         self.cp_image = cv_img.copy()
 
         self.video_height, self.video_width, ch = cv_img.shape
+        print(self.video_width, self.video_height)
 
         bytes_per_line = ch * self.video_width
         convert_to_Qt_format = QImage(cv_img.data, self.video_width, self.video_height,
                                       bytes_per_line, QImage.Format_RGB888)
         p = convert_to_Qt_format.scaled(self.image_label.width(),
                                         self.image_label.height(),
-                                        Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                                        Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
 
         return QPixmap.fromImage(p)
 
@@ -355,47 +304,9 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         qImg = QImage(image.data.tobytes(), width, height, bytesPerLine, QImage.Format_RGB888)
         return qImg
 
-    def data_csv_path(self):
-        fName = QFileDialog.getExistingDirectory(
-            self, 'Select path to save data csv file', JS08Settings.get('data_csv_path'))
-        if fName:
-            self.data_csv_path_textBrowser.setPlainText(fName)
-        else:
-            pass
-
-    def target_csv_path(self):
-        fName = QFileDialog.getExistingDirectory(
-            self, 'Select path to save target csv file', JS08Settings.get('target_csv_path'))
-        if fName:
-            self.target_csv_path_textBrowser.setPlainText(fName)
-        else:
-            pass
-
-    def image_save_path(self):
-        fName = QFileDialog.getExistingDirectory(
-            self, 'Select path to save image file', JS08Settings.get('image_save_path'))
-        if fName:
-            self.image_save_path_textBrowser.setPlainText(fName)
-        else:
-            pass
-
-    def afd_btn_click(self):
-        if self.afd_checkBox.isChecked():
-            QMessageBox.warning(self, 'Starting auto file delete', 'Image file will be automatically delete'
-                                                                   ' and cannot be restored.')
-            # dlg = FileAutoDelete()
-            # dlg.show()
-            # dlg.exec()
-
-    def user_list_click(self):
-        dlg = UserEdit()
-        dlg.show()
-        dlg.setWindowModality(Qt.ApplicationModal)
-        dlg.exec()
-
     def save_target(self, camera: str):
 
-        file = f'{JS08Settings.get("target_csv_path")}/{camera}/{camera}.csv'
+        file = f'{camera}.csv'
         if self.left_range and os.path.isfile(file):
             col = ['target_name', 'left_range', 'right_range', 'distance', 'azimuth']
             result = pd.DataFrame(columns=col)
@@ -409,58 +320,29 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
 
     def get_target(self, camera: str):
 
-        save_path = os.path.join(f'{JS08Settings.get("target_csv_path")}/{camera}')
-        file = f'{save_path}/{camera}.csv'
+        file = f'{camera}.csv'
 
-        if os.path.isfile(f'{save_path}/{camera}.csv') is False:
-            os.makedirs(f'{save_path}', exist_ok=True)
-            if self.cam_flag is False:
-                result = pd.DataFrame(columns=['target_name', 'left_range', 'right_range', 'distance', 'azimuth'])
-                result['target_name'] = [1, 2, 3, 4]
-                result['left_range'] = [(95, 711), (367, 716), (293, 1749), (250, 124)]
-                result['right_range'] = [(31, 831), (279, 836), (236, 1841), (148, 211)]
-                result['distance'] = [0.1, 1.0, 2.0, 3.0]
-                result['azimuth'] = ['NE', 'NE', 'NE', 'NE']
-                result.to_csv(file, mode='w', index=False)
-            elif self.cam_flag:
-                result = pd.DataFrame(columns=['target_name', 'left_range', 'right_range', 'distance', 'azimuth'])
-                result['target_name'] = [1, 2, 3, 4]
-                result['left_range'] = [(95, 711), (367, 716), (293, 1749), (250, 124)]
-                result['right_range'] = [(31, 831), (279, 836), (236, 1841), (148, 211)]
-                result['distance'] = [0.1, 1.0, 2.0, 3.0]
-                result['azimuth'] = ['SW', 'SW', 'SW', 'SW']
-                result.to_csv(file, mode='w', index=False)
+        if os.path.isfile(f'{camera}.csv') is False:
+            result = pd.DataFrame(columns=['target_name', 'left_range', 'right_range', 'distance', 'azimuth'])
+            result['target_name'] = [1, 2, 3, 4]
+            result['left_range'] = [(95, 711), (367, 716), (293, 300), (250, 124)]
+            result['right_range'] = [(31, 831), (279, 836), (236, 350), (148, 211)]
+            result['distance'] = [0.1, 1.0, 2.0, 3.0]
+            result['azimuth'] = ['NE', 'NE', 'NE', 'NE']
+            result.to_csv(file, mode='w', index=False)
 
-        target_df = pd.read_csv(f'{save_path}/{camera}.csv')
+        target_df = pd.read_csv(f'{camera}.csv')
         self.target_name = target_df['target_name'].tolist()
         self.left_range = self.str_to_tuple(target_df['left_range'].tolist())
         self.right_range = self.str_to_tuple(target_df['right_range'].tolist())
         self.distance = target_df['distance'].tolist()
         self.azimuth = target_df['azimuth'].tolist()
 
+    def print_data(self):
+        self.vis_result.setText('Wait')
+
     def accept_click(self):
-        input_current_pw = self.current_pw.text()
-        input_new_pw = self.new_pw.text()
-        input_new_pw_check = self.new_pw_check.text()
-
-        if input_current_pw == JS08Settings.get('admin_pw') and \
-                input_new_pw == input_new_pw_check:
-
-            JS08Settings.set('data_csv_path', self.data_csv_path_textBrowser.toPlainText())
-            JS08Settings.set('target_csv_path', self.target_csv_path_textBrowser.toPlainText())
-            JS08Settings.set('image_save_path', self.image_save_path_textBrowser.toPlainText())
-            JS08Settings.set('image_size', self.image_size_comboBox.currentIndex())
-            JS08Settings.set('visibility_alert_limit', self.vis_limit_spinBox.value())
-            JS08Settings.set('admin_pw', input_new_pw)
-            if input_current_pw != input_new_pw:
-                log(f'{JS08Settings.get("admin_id")}', f'Change Password ({input_current_pw}) -> ({input_new_pw_check})')
-
         self.save_target(self.current_camera)
-
-        if JS08Settings.get('first_step'):
-            QMessageBox.about(None, 'Restart JS-08',
-                              'When JS-08 program is restarted, Target Detection is started')
-            JS08Settings.set('first_step', False)
         self.close()
 
     def reject_click(self):
@@ -471,11 +353,8 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         self.select_target = self.tableWidget.currentIndex().row()
         self.update()
 
-    def btn_on(self, event):
-        self.flip_button.setIcon(QIcon('resources/asset/flip_on.png'))
-
-    def btn_off(self, event):
-        self.flip_button.setIcon(QIcon('resources/asset/flip_off.png'))
+    def load_img_btn(self, event):
+        QFileDialog.getOpenFileName(self, '')
 
     def lbl_paintEvent(self, event):
         painter = QPainter(self.image_label)
@@ -484,8 +363,6 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         bk_image = QPixmap.fromImage(back_ground_image)
         painter.drawPixmap(QRect(0, 0, self.image_label.width(),
                                  self.image_label.height()), bk_image)
-
-        print(self.image_label.width(), self.image_label.height())
 
         painter.setPen(QPen(Qt.white, 1, Qt.DotLine))
 
@@ -545,8 +422,8 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
 
         # 좌 클릭시 실행
         if event.buttons() == Qt.LeftButton:
-            self.begin = event.pos()
-            self.end = event.pos()
+            self.begin = event.globalPosition().toPoint()
+            self.end = event.globalPosition().toPoint()
             self.upper_left = (int((self.begin.x() / self.image_label.width()) * self.video_width),
                                int((self.begin.y() / self.image_label.height()) * self.video_height))
 
@@ -580,7 +457,7 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
     def lbl_mouseMoveEvent(self, event):
         """마우스가 움직일 때 발생하는 이벤트, QLabel method overriding"""
         if event.buttons() == Qt.LeftButton:
-            self.end = event.pos()
+            self.end = event.globalPosition().toPoint()
             self.image_label.update()
 
     def lbl_mouseReleaseEvent(self, event):
@@ -614,7 +491,7 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
                     self.azimuth.append('SE')
                     self.current_azi = 'SE'
 
-            self.end = event.pos()
+            self.end = event.globalPosition().toPoint()
             self.image_label.update()
             self.lower_right = (int((self.end.x() / self.image_label.width()) * self.video_width),
                                 int((self.end.y() / self.image_label.height()) * self.video_height))
@@ -629,24 +506,12 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
                 self.left_range.append(self.upper_left)
                 self.right_range.append(self.lower_right)
                 self.distance.append(dist)
-                self.azimuth[-1] = azi
                 self.target_name.append(len(self.left_range))
 
                 self.end_drawing = True
-                log(JS08Settings.get('current_id'), 'Save Target ')
+
             else:
                 del self.azimuth[-1]
-
-            # if state:
-            #     self.left_range.append(self.upper_left)
-            #     self.right_range.append(self.lower_right)
-            #     self.distance.append(dist)
-            #     self.target_name.append(len(self.left_range))
-            #
-            #     self.end_drawing = True
-            #
-            # else:
-            #     del self.azimuth[-1]
 
             self.isDrawing = False
             self.show_target_table()

@@ -56,7 +56,7 @@
         </property>
         <property name="font">
          <font>
-          <family>Noto Sans</family>
+          <family>Noto Sans KR Medium</family>
           <pointsize>10</pointsize>
          </font>
         </property>

@@ -51,7 +51,7 @@ class Ui_Dialog(object):
         sizePolicy.setHeightForWidth(self.alert_label.sizePolicy().hasHeightForWidth())
         self.alert_label.setSizePolicy(sizePolicy)
         font1 = QFont()
-        font1.setFamilies([u"Noto Sans"])
+        font1.setFamilies([u"Noto Sans KR Medium"])
         font1.setPointSize(10)
         self.alert_label.setFont(font1)
         self.alert_label.setStyleSheet(u"color:#ff0000;")
@@ -80,6 +80,7 @@ class Ui_Dialog(object):
         icon.addFile(u"asset/f_logo.png", QSize(), QIcon.Normal, QIcon.Off)
         self.sijunglogo.setIcon(icon)
         self.sijunglogo.setIconSize(QSize(170, 90))
+        self.sijunglogo.setCheckable(False)
         self.sijunglogo.setAutoDefault(False)
         self.sijunglogo.setFlat(True)
 
@@ -116,11 +117,3 @@ class Ui_Dialog(object):
         self.login_button.setText(QCoreApplication.translate("Dialog", u"Login", None))
     # retranslateUi
 
-
-if __name__ == '__main__':
-    import sys
-    from PySide6.QtWidgets import QApplication
-
-    app = QApplication(sys.argv)
-    window = Ui_Dialog()
-    sys.exit(app.exec())

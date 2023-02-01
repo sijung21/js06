@@ -14,6 +14,7 @@ import numpy as np
 
 from model import JS08Settings
 from target_info import TargetInfo
+from save_log import log
 
 
 def producer(queue):
@@ -95,7 +96,8 @@ def producer(queue):
                                                             front_distance, front_frame, front_cap_name)
                     visibility_rear = target_info.minprint(epoch[:-2], rear_left_range, rear_right_range,
                                                            rear_distance, rear_frame, rear_cap_name)
-                except AttributeError:
+                except AttributeError as e:
+                    log(JS08Settings.get('current_id'), str(e))
                     continue
 
                 visibility_front_NE = target_info.minprint(epoch[:-2], front_left_range_NE, front_right_range_NE,

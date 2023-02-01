@@ -1,21 +1,23 @@
 #!/usr/bin/env python3
 #
-# Copyright 2021-2022 Sijung Co., Ltd.
+# Copyright 2021-2023 Sijung Co., Ltd.
 #
 # Authors:
 #     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
 
-import os
-import sys
-import time
 
-from PySide6.QtWidgets import QDialog, QLineEdit
+import sys
+import random
+import string
+
+from PySide6.QtWidgets import QDialog, QLineEdit, QMessageBox
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 
 from model import JS08Settings
 from resources.login_window import Ui_Dialog
+from save_log import log
 
 
 class LoginWindow(QDialog, Ui_Dialog):
@@ -55,23 +57,39 @@ class LoginWindow(QDialog, Ui_Dialog):
         input_id = self.id_lineEdit.text()
         input_pw = self.pw_lineEdit.text()
         if input_id in self.account.keys() and input_pw == self.account[f'{input_id}']:
-            if self.id_lineEdit.text() == 'admin':
+            if input_id == 'admin':
                 JS08Settings.set('right', 'administrator')
             else:
                 JS08Settings.set('right', 'user')
-            JS08Settings.set('current_id', self.id_lineEdit.text())
-            JS08Settings.set('current_pw', self.pw_lineEdit.text())
+            log(input_id, 'Login')
+            JS08Settings.set('current_id', input_id)
+            JS08Settings.set('current_pw', input_pw)
             self.close()
+
+        elif not input_id in self.account.keys():
+            self.alert_label.setText('없는 아이디 입니다.')
+
         else:
-            self.alert_label.setText('ID or P/W is not correct')
             self.flag = self.flag + 1
+            self.alert_label.setText(f'비밀번호가 올바르지 않습니다. ({self.flag} / 5)')
 
-            if self.flag >= 5:
-                self.alert_label.setText('P/W = 1 + 2 + 3 + 4')
+            if self.flag >= 5 and input_id != 'admin':
+                log(input_id, f'Account Blocking, Password initialized')
+                # log(input_id, f'User ({input_id}) Account Blocking')
+                QMessageBox.warning(None, '비밀번호 초기화', '비밀번호 5회 오류로 인해 비밀번호가 초기화 되었습니다.')
 
-                if self.flag > 10:
-                    self.close()
-                    sys.exit()
+                rand_str = ''
+                for i in range(10):
+                    rand_str += str(random.choice(string.ascii_uppercase + string.digits))
+                user = JS08Settings.get_user('user')
+                user[input_id] = rand_str
+                JS08Settings.set('user', user)
+
+                self.close()
+                sys.exit()
+
+            else:
+                pass
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:

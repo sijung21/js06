@@ -22,18 +22,28 @@ class ThumbnailView(QMainWindow, Ui_MainWindow):
         super().__init__()
 
         self.setupUi(self)
-        front_image = f'{JS08Settings.get("image_save_path")}/vista/{JS08Settings.get("front_camera_name")}/' \
-                      f'{date}/{image_file_name}.png'
-        rear_image = f'{JS08Settings.get("image_save_path")}/vista/{JS08Settings.get("rear_camera_name")}/' \
-                     f'{date}/{image_file_name}.png'
+        self.front_image_path = f'{JS08Settings.get("image_save_path")}/vista/{JS08Settings.get("front_camera_name")}/' \
+                                f'{date}/{image_file_name}.png'
+        self.rear_image_path = f'{JS08Settings.get("image_save_path")}/vista/{JS08Settings.get("rear_camera_name")}/' \
+                               f'{date}/{image_file_name}.png'
 
-        print(front_image)
-        print(rear_image)
-
-        if os.path.isfile(front_image) and os.path.isfile(rear_image):
+        if os.path.isfile(self.front_image_path) and os.path.isfile(self.rear_image_path):
+            print(self.size())
+            print(self.front_image.size())
             self.front_image.setPixmap(
-                QPixmap(front_image).scaled(self.width(), self.height(), Qt.KeepAspectRatio))
+                # QPixmap(self.front_image_path).scaled(self.width(), self.height(), Qt.IgnoreAspectRatio))
+                QPixmap(self.front_image_path).scaled(1035, 816, Qt.IgnoreAspectRatio))
             self.rear_image.setPixmap(
-                QPixmap(rear_image).scaled(self.width(), self.height(), Qt.KeepAspectRatio))
+                QPixmap(self.rear_image_path).scaled(self.width(), self.height(), Qt.IgnoreAspectRatio))
         else:
             print('no file')
+
+
+if __name__ == '__main__':
+    import sys
+    from PySide6.QtWidgets import QApplication
+
+    app = QApplication(sys.argv)
+    ui = ThumbnailView('20230130083300', 230130)
+    ui.show()
+    sys.exit(app.exec())

@@ -69,7 +69,8 @@ class Coef:
             hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.hanhwa_dist, self.hanhwa_b, p0=b_ext_init, maxfev=5000)
             JS08Settings.set('maxfev_flag', False)
 
-        except RuntimeError:
+        except RuntimeError as e:
+            print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}] - {e}')
             JS08Settings.set('maxfev_flag', True)
             JS08Settings.set('maxfev_count', JS08Settings.get('maxfev_count') + 1)
             return

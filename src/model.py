@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 #
-# Copyright 2021-2022 Sijung Co., Ltd.
+# Copyright 2021-2023 Sijung Co., Ltd.
 #
 # Authors:
 #     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
+
 
 import os
 from PySide6.QtCore import QSettings
@@ -25,20 +26,20 @@ class JS08Settings:
         'target_csv_path': os.path.join('F:\\JS08', 'target'),
         'rgb_csv_path': os.path.join('F:\\JS08', 'rgb'),
         'image_save_path': os.path.join('F:\\JS08', 'image'),
+        'log_path': os.path.join('F:\\JS08', 'log'),
         'image_size': 0,
         'visibility_alert_limit': 1000,
         'right': 'administrator',
         'admin_id': 'admin',
         'admin_pw': 'admin',
-        # 'user_id': ['user1', 'user2'],
-        # 'user_pw': ['1234', '9923'],
         'user': {},
         'current_id': '',
         'current_pw': '',
         'first_step': True,
         'maxfev_flag': False,
         'maxfev_count': 0,
-        'afd': False
+        'afd': False,
+        'log_key': b'',
     }
 
     @classmethod
@@ -84,6 +85,9 @@ if __name__ == '__main__':
     # print(JS08Settings.get('admin_id'))
     # print(JS08Settings.get('admin_pw'))
 
-    a = ['123', '9923']
-    data = {'user1': '1234', 'user2': '9923', 'user3': '4803'}
-    print(JS08Settings.get_user('user'))
+    # a = ['123', '9923']
+    # data = {'user1': '1234', 'user2': '9923', 'user3': '4803'}
+    user = JS08Settings.get_user('user')
+    print(user)
+    # user['user1'] = '1111'
+    # print(user)

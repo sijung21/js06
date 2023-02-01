@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 #
-# Copyright 2021-2022 Sijung Co., Ltd.
+# Copyright 2021-2023 Sijung Co., Ltd.
 #
 # Authors:
 #     cotjdals5450@gmail.com (Seong Min Chae)
 #     5jx2oh@gmail.com (Jongjin Oh)
+
 
 import os
 import sys
@@ -23,6 +24,7 @@ from PySide6.QtCore import (Qt, Slot, QRect, QTimer, QObject, QDateTime)
 
 from login_view import LoginWindow
 from video_thread_mp import producer
+from log_view import LogView
 from js08_settings_admin import JS08AdminSettingWidget
 from js08_settings_user import JS08UserSettingWidget
 from curve_thread import CurveThread
@@ -37,19 +39,23 @@ from discernment_view import DiscernmentView
 # UI
 from resources.main_window import Ui_MainWindow
 
+from save_log import log
+
 
 class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, q, _q):
         super(JS08MainWindow, self).__init__()
-
-        _producer = producer
+        self.setupUi(self)
+        self.setWindowIcon(QIcon('resources/asset/sijung_logo.png'))
 
         login_window = LoginWindow()
         login_window.exec()
-        self.mp_flag = True
 
-        self.setupUi(self)
+        if JS08Settings.get('right') != 'administrator':
+            self.log_view.setEnabled(False)
+            self.log_view.setVisible(False)
+            self.blank_label_3.setVisible(False)
 
         p = Process(name='clock', target=clock_clock, args=(q,), daemon=True)
         p.start()
@@ -58,42 +64,21 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.consumer.poped.connect(self.clock)
         self.consumer.start()
 
+        _producer = producer
         _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
         self.video_thread = CurveThread(_q)
         self.video_thread.poped.connect(self.print_data)
 
         if JS08Settings.get('first_step') is False:
-        #     _producer = producer
-        #
-        #     p = Process(name='clock', target=clock_clock, args=(q,), daemon=True)
-        #     _p = Process(name='producer', target=_producer, args=(_q,), daemon=True)
-        #
-        #     p.start()
-        #     _p.start()
-        #
-        #     self.consumer = Consumer(q)
-        #     self.consumer.poped.connect(self.clock)
-        #     p.start()
-        #     self.consumer.start()
-        #
-        #     self.video_thread = CurveThread(_q)
-        #     self.video_thread.poped.connect(self.print_data)
             _p.start()
             self.video_thread.start()
+            log(JS08Settings.get('current_id'), 'Visibility Measurement start')
 
         self.get_date = []
         self.get_epoch = []
         self.q_list = []
         self.q_list_scale = 1440    # 60 * 24 = 1 day graph
         self.result = pd.DataFrame
-
-        current_time = time.strftime('%Y-%m-%d %H:%M:00', time.localtime(QDateTime.currentSecsSinceEpoch()))
-        year = current_time[:4]
-        md = current_time[5:7] + current_time[8:10]
-
-        # self.get_date, self.get_epoch, self.q_list = self.get_data(year, md)
-        # self.q_list = self.get_data(year, md)
-        self.q_list = None
 
         self._plot = VisibilityView(self, self.q_list_scale)
         self._polar = DiscernmentView(self)
@@ -103,7 +88,6 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.visibility = None
         self.visibility_front = 0
-        self.visibility_rear = 0
         self.prevailing_visibility = None
         self.graph_visibility_value = []
 
@@ -138,6 +122,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.timeseries_button.setIcon(QIcon('resources/asset/polar.png'))
         self.prevailing_vis_button.setIcon(QIcon('resources/asset/vis.png'))
         self.button.setIcon(QIcon('resources/asset/pre_vis_1.png'))
+        self.log_view.setIcon(QIcon('resources/asset/log.png'))
         self.maxfev_alert.setIcon(QIcon('resources/asset/alert.png'))
         self.maxfev_alert.setToolTip('Optimal parameters not found: Number of calls to function has reached max fev = 5000.')
         self.maxfev_alert.setVisible(JS08Settings.get('maxfev_flag'))
@@ -156,6 +141,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.label_5hour.mouseDoubleClickEvent = self.thumbnail_click5
         self.label_6hour.mouseDoubleClickEvent = self.thumbnail_click6
 
+        self.log_view.clicked.connect(self.log_btn_click)
         self.setting_button.clicked.connect(self.setting_btn_click)
 
         self.show()
@@ -171,7 +157,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         except AttributeError:
             strOut = 'It has not measured yet.'
             pass
-        vis = QMessageBox()
+        vis = QMessageBox(None)
         vis.setStyleSheet('color:rgb(0,0,0);')
         vis.about(self, '8-Way Visibility', f'{strOut}')
 
@@ -195,10 +181,14 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.view.raise_()
 
     def thumbnail_show(self):
-        self.monitoring_label.setStyleSheet('color: #1c88e3; background-color: #1b3146')
-        self.monitoring_label.setText('   Monitoring')
         self.reset_StyleSheet()
         self.view.close()
+
+    def log_btn_click(self):
+        dlg = LogView()
+        dlg.show()
+        dlg.setWindowModality(Qt.ApplicationModal)
+        dlg.exec()
 
     @Slot()
     def setting_btn_click(self):
@@ -231,23 +221,6 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
             self.rear_video_widget.media_player.play()
             self.consumer.resume()
             self.consumer.start()
-
-    # def get_data(self, year, month_day):
-    #
-    #     save_path = os.path.join(f'{JS08Settings.get("data_csv_path")}/{JS08Settings.get("front_camera_name")}/{year}')
-    #
-    #     if os.path.isfile(f'{save_path}/{month_day}.csv'):
-    #         self.result = pd.read_csv(f'{save_path}/{month_day}.csv')
-    #         # data_datetime = self.result['date'].tolist()
-    #         # data_epoch = self.result['epoch'].tolist()
-    #         data_visibility = self.result['visibility'].tolist()
-    #
-    #         # return data_datetime, data_epoch, data_visibility
-    #         return data_visibility
-    #
-    #     else:
-    #         # return [], [], []
-    #         return []
 
     def get_data(self, year, month_day):
 
@@ -361,7 +334,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
             result_prevailing['prev'] = round(self.prevailing_visibility / 1000, 3)
 
         except TypeError as e:
-            print(f'Occurred error ({current_time}) -\n{e}')
+            # print(f'Occurred error ({current_time}) -\n{e}')
+            log(JS08Settings.get('current_id'), str(e))
 
         result_rear.to_csv(f'{file_rear}', mode='a', index=False, header=False)
         result_front.to_csv(f'{file_front}', mode='a', index=False, header=False)
@@ -389,8 +363,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
                 if self.visibility is not None:
                     self.c_vis_label.setText(
                         f'{format(int(self.prevailing_visibility), ",")} m')
-        except TypeError:
-            pass
+        except TypeError as e:
+            log(JS08Settings.get('current_id'), str(e))
 
         if current_time[-2:] == '00':
             self.thumbnail_refresh()
@@ -591,8 +565,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.reset_StyleSheet()
         self.label_1hour.setStyleSheet(self.click_style)
-        self.monitoring_label.setStyleSheet('color: #ffffff; background-color: #1b3146')
-        self.monitoring_label.setText(f' {self.label_1hour_time.text()} image')
+        # self.logo.setStyleSheet('color: #ffffff; background-color: #1b3146')
+        # self.logo.setText(f' {self.label_1hour_time.text()} image')
 
         QTimer.singleShot(2000, self.thumbnail_show)
 
@@ -603,8 +577,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.reset_StyleSheet()
         self.label_2hour.setStyleSheet(self.click_style)
-        self.monitoring_label.setStyleSheet('color: #ffffff; background-color: #1b3146')
-        self.monitoring_label.setText(f' {self.label_2hour_time.text()} image')
+        # self.logo.setStyleSheet('color: #ffffff; background-color: #1b3146')
+        # self.logo.setText(f' {self.label_2hour_time.text()} image')
 
         QTimer.singleShot(2000, self.thumbnail_show)
 
@@ -615,8 +589,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.reset_StyleSheet()
         self.label_3hour.setStyleSheet(self.click_style)
-        self.monitoring_label.setStyleSheet('color: #ffffff; background-color: #1b3146')
-        self.monitoring_label.setText(f' {self.label_3hour_time.text()} image')
+        # self.logo.setStyleSheet('color: #ffffff; background-color: #1b3146')
+        # self.logo.setText(f' {self.label_3hour_time.text()} image')
 
         QTimer.singleShot(2000, self.thumbnail_show)
 
@@ -627,8 +601,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.reset_StyleSheet()
         self.label_4hour.setStyleSheet(self.click_style)
-        self.monitoring_label.setStyleSheet('color: #ffffff; background-color: #1b3146')
-        self.monitoring_label.setText(f' {self.label_4hour_time.text()} image')
+        # self.logo.setStyleSheet('color: #ffffff; background-color: #1b3146')
+        # self.logo.setText(f' {self.label_4hour_time.text()} image')
 
         QTimer.singleShot(2000, self.thumbnail_show)
 
@@ -639,8 +613,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.reset_StyleSheet()
         self.label_5hour.setStyleSheet(self.click_style)
-        self.monitoring_label.setStyleSheet('color: #ffffff; background-color: #1b3146')
-        self.monitoring_label.setText(f' {self.label_5hour_time.text()} image')
+        # self.logo.setStyleSheet('color: #ffffff; background-color: #1b3146')
+        # self.logo.setText(f' {self.label_5hour_time.text()} image')
 
         QTimer.singleShot(2000, self.thumbnail_show)
 
@@ -651,8 +625,8 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.reset_StyleSheet()
         self.label_6hour.setStyleSheet(self.click_style)
-        self.monitoring_label.setStyleSheet('color: #ffffff; background-color: #1b3146')
-        self.monitoring_label.setText(f' {self.label_6hour_time.text()} image')
+        # self.logo.setStyleSheet('color: #ffffff; background-color: #1b3146')
+        # self.logo.setText(f' {self.label_6hour_time.text()} image')
 
         QTimer.singleShot(2000, self.thumbnail_show)
 
@@ -727,6 +701,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         if self.video_thread.isRunning():
             self.video_thread.stop()
         print(f'Close time: {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}')
+        log(JS08Settings.get('current_id'), 'Program closed, Logout')
 
 
 class VideoWidget(QWidget):
@@ -796,9 +771,9 @@ if __name__ == '__main__':
     os.makedirs(f'{JS08Settings.get("target_csv_path")}', exist_ok=True)
     os.makedirs(f'{JS08Settings.get("rgb_csv_path")}', exist_ok=True)
     os.makedirs(f'{JS08Settings.get("image_save_path")}', exist_ok=True)
+    os.makedirs(f'{JS08Settings.get("log_path")}/SET', exist_ok=True)
 
     app = QApplication(sys.argv)
-    # app.setStyle(QStyleFactory().create('Noto Sans'))
     screen_size = QGuiApplication.screens()[0].geometry()
     width, height = screen_size.width(), screen_size.height()
     if width != 1920 or height != 1080:
