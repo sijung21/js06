@@ -180,6 +180,7 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         """세팅창 그래프 칸에 소산계수 차트를 그리는 함수"""
 
         try:
+            self.distance.sort()
             self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
             self.x.sort()
 
@@ -484,8 +485,6 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         bk_image = QPixmap.fromImage(back_ground_image)
         painter.drawPixmap(QRect(0, 0, self.image_label.width(),
                                  self.image_label.height()), bk_image)
-
-        print(self.image_label.width(), self.image_label.height())
 
         painter.setPen(QPen(Qt.white, 1, Qt.DotLine))
 

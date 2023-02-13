@@ -39,7 +39,7 @@ class Ui_MainWindow(object):
         MainWindow.setFont(font)
         MainWindow.setMouseTracking(False)
         icon = QIcon()
-        icon.addFile(u"logo.png", QSize(), QIcon.Normal, QIcon.Off)
+        icon.addFile(u"asset/logo.png", QSize(), QIcon.Normal, QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setStyleSheet(u"background-color:rgb(22,32,42);\n"
 "color: rgb(255, 255, 255);")

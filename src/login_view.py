@@ -29,6 +29,7 @@ class LoginWindow(QDialog, Ui_Dialog):
         self.setWindowFlag(Qt.WindowCloseButtonHint, False)
         self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
         self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setWindowIcon(QIcon('resources/asset/logo.png'))
         self.show()
 
         self.sijunglogo.setIcon(QIcon('resources/asset/f_logo.png'))

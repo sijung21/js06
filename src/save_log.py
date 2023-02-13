@@ -12,8 +12,8 @@ import time
 from cryptography.fernet import Fernet
 from model import JS08Settings
 
-os.makedirs(f'{JS08Settings.get("log_path")}/SET', exist_ok=True)
 
+os.makedirs(f'{JS08Settings.get("log_path")}/SET', exist_ok=True)
 ym = time.strftime('%Y%m%d', time.localtime(time.time()))[2:]
 
 log_path = JS08Settings.get('log_path')
@@ -25,10 +25,10 @@ else:
     with open(f'{log_path}/SET/SET_{ym}.txt', 'a') as f:
         f.write(str(key.decode('utf-8')))
 
-fernet = Fernet(key)
-
 
 def log(ID: str, log_msg: str):
+    fernet = Fernet(key)
+
     current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
     with open(f'{log_path}/Log_{ym}.txt', 'a') as f:
         data = f'[{current_time}] {ID} >> {log_msg}'
@@ -37,6 +37,9 @@ def log(ID: str, log_msg: str):
 
 
 def decrypt_log(file):
+    print(file)
+    fernet = Fernet(key)
+
     result = []
     with open(file, 'r') as f:
         data = f.readlines()
@@ -50,5 +53,5 @@ def decrypt_log(file):
 if __name__ == '__main__':
     # for i in range(0, 10):
     #     log('TEST', 'TEST Function')
-    a = decrypt_log('F://JS08/log/Log_230130.txt')
+    a = decrypt_log('F://JS08/log/Log_230202.txt')
     print(a)

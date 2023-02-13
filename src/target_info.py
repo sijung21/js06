@@ -9,7 +9,6 @@
 import os
 import pandas as pd
 import numpy as np
-import cv2
 
 from cal_ext_coef import Coef
 from model import JS08Settings

@@ -47,7 +47,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, q, _q):
         super(JS08MainWindow, self).__init__()
         self.setupUi(self)
-        self.setWindowIcon(QIcon('resources/asset/sijung_logo.png'))
+        self.setWindowIcon(QIcon('resources/asset/logo.png'))
 
         login_window = LoginWindow()
         login_window.exec()
@@ -157,9 +157,9 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         except AttributeError:
             strOut = 'It has not measured yet.'
             pass
-        vis = QMessageBox(None)
-        vis.setStyleSheet('color:rgb(0,0,0);')
-        vis.about(self, '8-Way Visibility', f'{strOut}')
+        vis = QMessageBox.about(None, '8-Way Visibility', f'{strOut}')
+        # vis.setStyleSheet('color:rgb(0,0,0);')
+        # vis.about(self, '8-Way Visibility', f'{strOut}')
 
     def reset_StyleSheet(self):
         self.label_1hour.setStyleSheet('')
@@ -348,7 +348,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
         self.maxfev_alert.setVisible(JS08Settings.get('maxfev_flag'))
 
-    @Slot(str)
+    @Slot()
     def clock(self, data):
 
         current_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(float(data)))
@@ -701,7 +701,7 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         if self.video_thread.isRunning():
             self.video_thread.stop()
         print(f'Close time: {time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}')
-        log(JS08Settings.get('current_id'), 'Program closed, Logout')
+        log(JS08Settings.get('current_id'), 'Logout')
 
 
 class VideoWidget(QWidget):

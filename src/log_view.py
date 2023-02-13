@@ -28,8 +28,7 @@ class LogView(QDialog, Ui_Dialog):
     def open_file(self):
         fname = QFileDialog.getOpenFileName(self, 'Open file', JS08Settings.get('log_path'))
         if fname[0]:
-            data = decrypt_log(fname[0])
-            for v in data:
+            for v in decrypt_log(fname[0]):
                 self.textBrowser.append(v)
 
     def keyPressEvent(self, e):
