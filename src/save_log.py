@@ -19,9 +19,6 @@ ym = time.strftime('%Y%m%d', time.localtime(time.time()))[2:]       # 현재 날
 log_path = JS08Settings.get('log_path')         # QSettings 에서 log 경로를 불러온다
 if os.path.isfile(f'{log_path}/Log_{ym}.txt'):  # 만약 해당 경로에 Log 파일이 있으면,
     key = JS08Settings.get_user('log_key')
-    # with open(f'{log_path}/SET/SET_{ym}') as f:
-    #     pass
-    # key =
 else:
     key = Fernet.generate_key()
     JS08Settings.set('log_key', key)

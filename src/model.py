@@ -16,17 +16,17 @@ class JS08Settings:
 
     defaults = {
         'front_camera_name': 'XNP-9300RW_front',
-        'front_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.147/profile2/media.smp',
-        'front_main': 'rtsp://admin:sijung5520@192.168.100.147/profile4/media.smp',
+        'front_camera_rtsp': 'rtsp://admin:sijung5520@121.153.143.180/profile2/media.smp',
+        'front_main': 'rtsp://admin:sijung5520@121.153.143.180/profile4/media.smp',
         'rear_camera_name': 'XNP-9300RW_rear',
-        'rear_camera_rtsp': 'rtsp://admin:sijung5520@192.168.100.147/profile2/media.smp',
-        'rear_main': 'rtsp://admin:sijung5520@192.168.100.147/profile4/media.smp',
+        'rear_camera_rtsp': 'rtsp://admin:sijung5520@121.153.143.180/profile2/media.smp',
+        'rear_main': 'rtsp://admin:sijung5520@121.153.143.180/profile4/media.smp',
 
-        'data_csv_path': os.path.join('F:\\JS08', 'data'),
-        'target_csv_path': os.path.join('F:\\JS08', 'target'),
-        'rgb_csv_path': os.path.join('F:\\JS08', 'rgb'),
-        'image_save_path': os.path.join('F:\\JS08', 'image'),
-        'log_path': os.path.join('F:\\JS08', 'log'),
+        'data_csv_path': os.path.join('C:\\JS08', 'data'),
+        'target_csv_path': os.path.join('C:\\JS08', 'target'),
+        'rgb_csv_path': os.path.join('C:\\JS08', 'rgb'),
+        'image_save_path': os.path.join('C:\\JS08', 'image'),
+        'log_path': os.path.join('C:\\JS08', 'log'),
         'image_size': 0,
         'visibility_alert_limit': 1000,
         'right': 'administrator',
@@ -80,20 +80,12 @@ class JS08Settings:
 
 if __name__ == '__main__':
 
-    # JS08Settings.restore_defaults()
-    # print(JS08Settings.get('front_camera_name'))
-    # print(JS08Settings.get('rear_camera_rtsp'))
-    # print(JS08Settings.get('data_csv_path'))
-    # print(JS08Settings.get('admin_id'))
-    # print(JS08Settings.get('admin_pw'))
-
-    # a = ['123', '9923']
-    # data = {'user1': '1234', 'user2': '9923', 'user3': '4803'}
+    JS08Settings.restore_defaults()
     user = JS08Settings.get_user('user')
-    time_ = JS08Settings.get('login_time')
-    print(time_)
-    print(time_[-4])
-    print(type(time_))
+    # time_ = JS08Settings.get('login_time')
+    # print(time_)
+    # print(time_[-4])
+    # print(type(time_))
     # print(user)
     # user['user1'] = '1111'
     # print(user)
