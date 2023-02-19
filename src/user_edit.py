@@ -61,7 +61,7 @@ class UserEdit(QDialog, Ui_Dialog):
 
         self.listWidget.clearSelection()
         log(JS08Settings.get('current_id'), 'Add User accounts')
-        self.save()
+        # self.save()
         self.info.setText('사용자 추가')
 
     def delete(self):

@@ -111,6 +111,10 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.setting_button.enterEvent = self.btn_on
         self.setting_button.leaveEvent = self.btn_off
 
+        self.log_view.setIcon(QIcon('resources/asset/log.png'))
+        self.log_view.enterEvent = self.log_on
+        self.log_view.leaveEvent = self.log_off
+
         # Azimuth paint event
         self.front_label.paintEvent = self.front_label_paintEvent
         self.rear_label.paintEvent = self.rear_label_paintEvent
@@ -122,7 +126,6 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
         self.timeseries_button.setIcon(QIcon('resources/asset/polar.png'))
         self.prevailing_vis_button.setIcon(QIcon('resources/asset/vis.png'))
         self.button.setIcon(QIcon('resources/asset/pre_vis_1.png'))
-        self.log_view.setIcon(QIcon('resources/asset/log.png'))
         self.maxfev_alert.setIcon(QIcon('resources/asset/alert.png'))
         self.maxfev_alert.setToolTip('Optimal parameters not found: Number of calls to function has reached max fev = 5000.')
         self.maxfev_alert.setVisible(JS08Settings.get('maxfev_flag'))
@@ -208,19 +211,19 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
             self.consumer.start()
 
         elif JS08Settings.get('right') == 'user':
-            self.front_video_widget.media_player.stop()
-            self.rear_video_widget.media_player.stop()
-            self.consumer.pause()
+            # self.front_video_widget.media_player.stop()
+            # self.rear_video_widget.media_player.stop()
+            # self.consumer.pause()
 
             dlg = JS08UserSettingWidget()
             dlg.show()
             dlg.setWindowModality(Qt.ApplicationModal)
             dlg.exec()
 
-            self.front_video_widget.media_player.play()
-            self.rear_video_widget.media_player.play()
-            self.consumer.resume()
-            self.consumer.start()
+            # self.front_video_widget.media_player.play()
+            # self.rear_video_widget.media_player.play()
+            # self.consumer.resume()
+            # self.consumer.start()
 
     def get_data(self, year, month_day):
 
@@ -635,6 +638,12 @@ class JS08MainWindow(QMainWindow, Ui_MainWindow):
 
     def btn_off(self, event):
         self.setting_button.setIcon(QIcon('resources/asset/settings.png'))
+
+    def log_on(self, event):
+        self.log_view.setIcon(QIcon('resources/asset/log_on.png'))
+
+    def log_off(self, event):
+        self.log_view.setIcon(QIcon('resources/asset/log.png'))
 
     def unit_convert(self, event):
         if self.km_mile_convert:

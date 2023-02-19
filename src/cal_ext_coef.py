@@ -16,6 +16,7 @@ import traceback
 
 from scipy.optimize import curve_fit
 from model import JS08Settings
+from save_log import log
 
 
 class Coef:
@@ -70,9 +71,10 @@ class Coef:
             JS08Settings.set('maxfev_flag', False)
 
         except RuntimeError as e:
-            print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}] - {e}')
-            JS08Settings.set('maxfev_flag', True)
-            JS08Settings.set('maxfev_count', JS08Settings.get('maxfev_count') + 1)
+            # print(f'[{time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}] - {e}')
+            # JS08Settings.set('maxfev_flag', True)
+            # JS08Settings.set('maxfev_count', JS08Settings.get('maxfev_count') + 1)
+            log(JS08Settings.get('current_id'), 'maxfev Error')
             return
 
         list1 = []

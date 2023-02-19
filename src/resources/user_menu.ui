@@ -730,33 +730,56 @@ color: #ffffff;</string>
          </layout>
         </item>
         <item>
-         <widget class="QDialogButtonBox" name="buttonBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="font">
-           <font>
-            <family>Noto Sans KR Medium</family>
-            <pointsize>9</pointsize>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">background-color:rgb(27,49,70);
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QDialogButtonBox" name="buttonBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <family>Noto Sans KR Medium</family>
+              <pointsize>9</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color:rgb(27,49,70);
 color: #ffffff;</string>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="standardButtons">
-           <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-          </property>
-          <property name="centerButtons">
-           <bool>false</bool>
-          </property>
-         </widget>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="standardButtons">
+             <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+            </property>
+            <property name="centerButtons">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="info">
+            <property name="font">
+             <font>
+              <family>Noto Sans KR Medium</family>
+              <pointsize>10</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">color: rgb(255, 0, 0);</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>

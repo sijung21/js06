@@ -26,6 +26,7 @@ class LogView(QDialog, Ui_Dialog):
         self.pushButton.clicked.connect(self.open_file)
 
     def open_file(self):
+        self.textBrowser.clear()
         fname = QFileDialog.getOpenFileName(self, 'Open file', JS08Settings.get('log_path'))
         if fname[0]:
             for v in decrypt_log(fname[0]):

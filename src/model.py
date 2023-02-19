@@ -35,6 +35,8 @@ class JS08Settings:
         'user': {},
         'current_id': '',
         'current_pw': '',
+        'login_time': '',
+        'login_flag': 0,
         'first_step': True,
         'maxfev_flag': False,
         'maxfev_count': 0,
@@ -88,6 +90,10 @@ if __name__ == '__main__':
     # a = ['123', '9923']
     # data = {'user1': '1234', 'user2': '9923', 'user3': '4803'}
     user = JS08Settings.get_user('user')
-    print(user)
+    time_ = JS08Settings.get('login_time')
+    print(time_)
+    print(time_[-4])
+    print(type(time_))
+    # print(user)
     # user['user1'] = '1111'
     # print(user)

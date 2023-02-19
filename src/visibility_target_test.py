@@ -58,6 +58,7 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         self.img = None
         self.end_drawing = True
 
+        self.x = None
         self.chart_view = None
         self.select_target = None
         self.select_name = None
@@ -161,25 +162,18 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
     def chart_draw(self, azimuth: str):
         """세팅창 그래프 칸에 소산계수 차트를 그리는 함수"""
 
-        indices = []
-        for i in range(len(self.azimuth)):
-            if self.azimuth[i] == azimuth:
-                indices.append(i)
-        # print(azimuth, indices)
-        # print(self.distance)
-        distance = []
-        for i in indices:
-            distance.append(self.distance[i])
-        # print(distance)
+        # indices = []
+        # for i in range(len(self.azimuth)):
+        #     if self.azimuth[i] == azimuth:
+        #         indices.append(i)
+        # distance = []
+        distance = self.distance.copy()
+        # for i in indices:
+        #     distance.append(self.distance[i])
 
         distance.sort()
-        # self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
         self.x = np.linspace(distance[0], distance[-1], 100, endpoint=True)
-        self.x.sort()
-
-        print(distance)
-        print(self.distance)
-        print()
+        # self.x.sort()
 
         # hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
         # hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.distance, self.g_list, maxfev=5000)
@@ -289,7 +283,7 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         # self.image_label.setPixmap(self.convert_cv_qt(cp_image))
         self.image_label.setPixmap(self.convert_cv_qt(self.img))
         self.show_target_table()
-        # self.chart_update()
+        self.chart_update()
         self.update()
 
     def convert_cv_qt(self, cv_img):
@@ -609,8 +603,6 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
 
             self.isDrawing = False
             self.show_target_table()
-
-            print(self.azimuth)
 
 
 if __name__ == '__main__':

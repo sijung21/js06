@@ -25,7 +25,7 @@ class Ui_Dialog(object):
         if not Dialog.objectName():
             Dialog.setObjectName(u"Dialog")
         Dialog.resize(417, 310)
-        Dialog.setStyleSheet(u"background-color:rgb(22,32,42);")
+        Dialog.setStyleSheet(u"")
         self.gridLayout = QGridLayout(Dialog)
         self.gridLayout.setObjectName(u"gridLayout")
         self.horizontalLayout = QHBoxLayout()
@@ -100,7 +100,7 @@ class Ui_Dialog(object):
         font1.setFamilies([u"Noto Sans KR Medium"])
         font1.setPointSize(10)
         self.info.setFont(font1)
-        self.info.setStyleSheet(u"color: rgb(255, 255, 255);")
+        self.info.setStyleSheet(u"color:rgb(22,32,42);")
         self.info.setAlignment(Qt.AlignCenter)
 
         self.verticalLayout_2.addWidget(self.info)

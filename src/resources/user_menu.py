@@ -357,6 +357,8 @@ class Ui_Dialog(object):
 
         self.etc_verticalLayout.addLayout(self.pw_horizontalLayout_4)
 
+        self.horizontalLayout = QHBoxLayout()
+        self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.buttonBox = QDialogButtonBox(self.gridWidget)
         self.buttonBox.setObjectName(u"buttonBox")
         sizePolicy5 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Maximum)
@@ -374,7 +376,18 @@ class Ui_Dialog(object):
         self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(False)
 
-        self.etc_verticalLayout.addWidget(self.buttonBox)
+        self.horizontalLayout.addWidget(self.buttonBox)
+
+        self.info = QLabel(self.gridWidget)
+        self.info.setObjectName(u"info")
+        self.info.setFont(font1)
+        self.info.setStyleSheet(u"color: rgb(255, 0, 0);")
+        self.info.setAlignment(Qt.AlignCenter)
+
+        self.horizontalLayout.addWidget(self.info)
+
+
+        self.etc_verticalLayout.addLayout(self.horizontalLayout)
 
 
         self.gridLayout_2.addLayout(self.etc_verticalLayout, 0, 0, 1, 1)
@@ -412,5 +425,6 @@ class Ui_Dialog(object):
         self.pw_label_3.setText(QCoreApplication.translate("Dialog", u" \ud604\uc7ac \ube44\ubc00\ubc88\ud638", None))
         self.pw_label.setText(QCoreApplication.translate("Dialog", u" \uc0c8 \ube44\ubc00\ubc88\ud638", None))
         self.pw_label_4.setText(QCoreApplication.translate("Dialog", u" \uc0c8 \ube44\ubc00\ubc88\ud638 \ud655\uc778", None))
+        self.info.setText("")
     # retranslateUi
 

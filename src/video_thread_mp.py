@@ -33,7 +33,7 @@ def producer(queue):
             epoch = time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))
             date = epoch[2:8]
 
-            if epoch[-1:] == '0':
+            if epoch[-2:] == '00':
                 # start = time.time()
                 front_target_name, front_left_range, front_right_range, front_distance, front_azimuth = \
                     target_info.get_target(front_cap_name)

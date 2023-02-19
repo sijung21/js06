@@ -100,8 +100,13 @@ class JS08UserSettingWidget(QDialog, Ui_Dialog):
 
             self.close()
 
-        else:
-            QMessageBox.warning(self, 'Warning', 'Password Error')
+        elif input_current_pw != JS08Settings.get('current_pw'):
+            self.info.setText('현재 비밀번호가 올바르지 않습니다.')
+            # QMessageBox.warning(self, 'Warning', 'Password Error')
+
+        elif input_current_pw == JS08Settings.get('current_pw') and \
+            input_new_pw != input_new_pw_check:
+            self.info.setText('새 비밀번호가 동일하지 않습니다.')
 
     def reject_click(self):
         self.close()

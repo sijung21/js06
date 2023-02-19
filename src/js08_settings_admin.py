@@ -180,13 +180,15 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
         """세팅창 그래프 칸에 소산계수 차트를 그리는 함수"""
 
         try:
-            self.distance.sort()
-            self.x = np.linspace(self.distance[0], self.distance[-1], 100, endpoint=True)
-            self.x.sort()
+            # self.distance.sort()
+            distance = self.distance.copy()
+            distance.sort()
+            self.x = np.linspace(distance[0], distance[-1], 100, endpoint=True)
+            # self.x.sort()
 
-            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, self.distance, self.r_list, maxfev=5000)
-            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, self.distance, self.g_list, maxfev=5000)
-            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, self.distance, self.b_list, maxfev=5000)
+            hanhwa_opt_r, hanhwa_cov_r = curve_fit(self.func, distance, self.r_list, maxfev=5000)
+            hanhwa_opt_g, hanhwa_cov_g = curve_fit(self.func, distance, self.g_list, maxfev=5000)
+            hanhwa_opt_b, hanhwa_cov_b = curve_fit(self.func, distance, self.b_list, maxfev=5000)
 
             chart = QChart()
             chart.setTheme(QChart.ChartThemeDark)
@@ -649,8 +651,6 @@ class JS08AdminSettingWidget(QDialog, Ui_Dialog):
 
             self.isDrawing = False
             self.show_target_table()
-
-            print(self.azimuth)
 
 
 if __name__ == '__main__':

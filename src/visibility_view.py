@@ -35,6 +35,8 @@ class VisibilityView(QChartView):
         self.maxlen = maxlen
         self.i = 0
 
+        # self.chart().hoverEnterEvent(self.hover)
+
         now = QDateTime.currentSecsSinceEpoch()
         str_now = str(now)
         sequence = '0'
@@ -160,6 +162,9 @@ class VisibilityView(QChartView):
         left = QDateTime.fromMSecsSinceEpoch(int(self.data[0][0]))
         right = QDateTime.fromMSecsSinceEpoch(int(self.data[-1][0]))
         # axis_x.setRange(left, right)
+
+    def hover(self, event):
+        print('hi')
 
 
 if __name__ == '__main__':

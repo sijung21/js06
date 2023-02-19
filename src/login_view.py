@@ -10,6 +10,8 @@
 import sys
 import random
 import string
+import time
+from datetime import datetime
 
 from PySide6.QtWidgets import QDialog, QLineEdit, QMessageBox
 from PySide6.QtCore import Qt
@@ -59,7 +61,16 @@ class LoginWindow(QDialog, Ui_Dialog):
         input_pw = self.pw_lineEdit.text()
         if input_id in self.account.keys() and input_pw == self.account[f'{input_id}']:
             if input_id == 'admin':
-                JS08Settings.set('right', 'administrator')
+                now = datetime.now()
+                agga = datetime.strptime(JS08Settings.get('login_time'), '%Y-%m-%d %H:%M:%S')
+                diff = now - agga
+                if diff.seconds >= 60:
+                    JS08Settings.set('right', 'administrator')
+                    JS08Settings.set('login_flag', 0)
+                else:
+                    QMessageBox.warning(None, '계정 일시 차단', '잠시 후에 다시 로그인을 시도해 주세요.')
+                    self.close()
+                    sys.exit()
             else:
                 JS08Settings.set('right', 'user')
             log(input_id, 'Login')
@@ -77,7 +88,8 @@ class LoginWindow(QDialog, Ui_Dialog):
             if self.flag >= 5 and input_id != 'admin':
                 log(input_id, f'Account Blocking, Password initialized')
                 # log(input_id, f'User ({input_id}) Account Blocking')
-                QMessageBox.warning(None, '비밀번호 초기화', '비밀번호 5회 오류로 인해 비밀번호가 초기화 되었습니다.')
+                QMessageBox.warning(None, '비밀번호 초기화', '비밀번호 5회 오류로 인해 비밀번호가 교체됩니다.'
+                                                      '관리자에게 문의하세요.')
 
                 rand_str = ''
                 for i in range(10):
@@ -85,7 +97,16 @@ class LoginWindow(QDialog, Ui_Dialog):
                 user = JS08Settings.get_user('user')
                 user[input_id] = rand_str
                 JS08Settings.set('user', user)
+                self.close()
+                sys.exit()
 
+            elif self.flag >= 5 and input_id == 'admin':
+                if JS08Settings.get('login_flag') >= 3:
+                    JS08Settings.restore_value('admin_pw')
+                    QMessageBox.information(None, '비밀번호 초기화', '비밀번호가 초기화 됩니다.')
+                QMessageBox.warning(None, '비밀번호 5회 오류', '잠시 후에 다시 로그인을 시도해 주세요.')
+                JS08Settings.set('login_time', time.strftime('%Y-%m-%d %H:%M:00', time.localtime()))
+                JS08Settings.set('login_flag', JS08Settings.get('login_flag') + 1)
                 self.close()
                 sys.exit()
 
